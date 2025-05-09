@@ -1,7 +1,8 @@
+import 'package:balanced_foods/screens/modulo_pedidos/order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
-import 'package:balanced_foods/screens/dashboard_screen.dart';
-import 'package:balanced_foods/screens/customer_screen.dart';
+import 'package:balanced_foods/screens/modulo_dashboard/dashboard_screen.dart';
+import 'package:balanced_foods/screens/modulo_clientes/customer_screen.dart';
 
 class SalesModuleScreen extends StatefulWidget {
   const SalesModuleScreen({super.key});
@@ -31,7 +32,7 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
   final List<Widget> _screens = [
     DashboardScreen(),
     CustomerScreen(),
-    Placeholder(),
+    OrderScreen(),
     Placeholder(),
     Placeholder(),
   ];
@@ -94,34 +95,35 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
   Widget _buildMainPanel() {
     return Column(
       children: [
-        const SizedBox(height: 60),
+        SizedBox(height: 35),
         // Header con usuario
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15), // Reduce el padding
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Builder(
-                builder: (context) {
-                  return GestureDetector(
-                    onTap: () => Scaffold.of(context).openDrawer(),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                      child: const Image(
-                        image: AssetImage('assets/images/user.jpg'),
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  Builder(
+                    builder: (context) {
+                      return IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                        icon: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: const Image(
+                            image: AssetImage('assets/images/user.jpg'),
+                            width: 35,
+                            height: 35,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        tooltip: 'Abrir menú',
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
                     'Hola {name}',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
@@ -131,7 +133,7 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
                       decoration: TextDecoration.none,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'Bienvenida a tu panel de trabajo',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
@@ -243,7 +245,7 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
               child: DrawerHeader(
                 decoration: const BoxDecoration(color: Color(0xFFFF6600)),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center, // Alinea verticalmente
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     ClipRRect(
@@ -257,7 +259,7 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
                     ),
                     const SizedBox(width: 10),
                     Column(
-                      mainAxisAlignment: MainAxisAlignment.center, // Centra los textos en el eje vertical
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(

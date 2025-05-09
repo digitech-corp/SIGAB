@@ -12,7 +12,6 @@ class FrontPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Contenedor de la imagen
           Container(
             width: 365,
             height: 140,
@@ -21,7 +20,6 @@ class FrontPage extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          // Contenedor de la información
           Container(
             width: 282,
             child: Column(
@@ -63,9 +61,6 @@ class FrontPage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // if (_formKey.currentState!.validate()) {
-                      //   Navigator.pop(context);
-                      // }
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -93,9 +88,6 @@ class FrontPage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // if (_formKey.currentState!.validate()) {
-                      //   Navigator.pop(context);
-                      // }
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => NewUserScreen()),
