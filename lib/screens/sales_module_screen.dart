@@ -1,4 +1,6 @@
+import 'package:balanced_foods/screens/modulo_cobranzas/collection_screen.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/order_screen.dart';
+import 'package:balanced_foods/screens/modulo_seguimiento/follow_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
 import 'package:balanced_foods/screens/modulo_dashboard/dashboard_screen.dart';
@@ -33,8 +35,8 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
     DashboardScreen(),
     CustomerScreen(),
     OrderScreen(),
-    Placeholder(),
-    Placeholder(),
+    FollowScreen(),
+    CollectionScreen(),
   ];
 
   void _onItemTapped(int index) {
