@@ -1,3 +1,5 @@
+import 'package:balanced_foods/screens/modulo_clientes/edit_customer_screen.dart';
+import 'package:balanced_foods/screens/modulo_clientes/new_customer_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -174,62 +176,70 @@ class _CustomerScreenState extends State<CustomerScreen> {
                         ),
                         ...grupo.map((p) => Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CircleAvatar(
-                                radius: 18,
-                                backgroundImage: NetworkImage(p.imagenUrl),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      p.nombre,
-                                      style: const TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        color: Color(0xFFFF6600),
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 12,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => EditCustomerScreen(persona: p)),
+                              );
+                            },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundImage: NetworkImage(p.imagenUrl),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.nombre,
+                                        style: const TextStyle(
+                                          fontFamily: 'Montserrat',
+                                          color: Color(0xFFFF6600),
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      p.empresa,
-                                      style: const TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 10,
-                                        color: Colors.black87,
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        p.empresa,
+                                        style: const TextStyle(
+                                          fontFamily: 'Montserrat',
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 10,
+                                          color: Colors.black87,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: Image.asset('assets/images/phone.png', color: Colors.black),
+                                IconButton(
+                                  icon: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: Image.asset('assets/images/phone.png', color: Colors.black),
+                                  ),
+                                  onPressed: () {
+                                    debugPrint('Llamando a ${p.nombre}');
+                                  },
                                 ),
-                                onPressed: () {
-                                  debugPrint('Llamando a ${p.nombre}');
-                                },
-                              ),
-                              SizedBox(width: 8),
-                              IconButton(
-                                icon: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                                SizedBox(width: 8),
+                                IconButton(
+                                  icon: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                                  ),
+                                  onPressed: () {
+                                    debugPrint('Chateando con ${p.nombre}');
+                                  },
                                 ),
-                                onPressed: () {
-                                  debugPrint('Chateando con ${p.nombre}');
-                                },
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         )),
                       ],
@@ -248,7 +258,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
                         color: Color(0xFFFF6600),
                         size: 45,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => NewCustomerScreen()),
+                        );
+                      },
                     ),
                   ],
                 ),

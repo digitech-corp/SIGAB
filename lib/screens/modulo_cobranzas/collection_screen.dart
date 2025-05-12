@@ -35,7 +35,7 @@ class CollectionScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 1),
                 const Text(
-                  'Gestión de Clientes',
+                  'Módulo de Cobranzas',
                   style: TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 16,
@@ -120,26 +120,24 @@ class _CreditosCardState extends State<CreditosCard> {
           // Contenido del gráfico
           Padding(
             padding: const EdgeInsets.all(18.0),
-            child: Expanded(
-              child: Column(
-                children: [
-                  IndexedStack(
-                    index: _selectedIndex,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: _overdueCredits()),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Expanded(child: _dueCredits()),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            child: Column(
+              children: [
+                IndexedStack(
+                  index: _selectedIndex,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: _overdueCredits()),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(child: _dueCredits()),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
