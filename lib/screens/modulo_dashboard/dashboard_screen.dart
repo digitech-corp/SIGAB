@@ -282,7 +282,6 @@ class _VentasTotalesCardState extends State<VentasTotalesCard> {
       ),
       child: Column(
         children: [
-          // Botones de filtro
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 15),
             child: Row(

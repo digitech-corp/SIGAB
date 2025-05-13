@@ -28,7 +28,6 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
     super.initState();
 
     if (widget.showSuccess) {
-      // Mostrar el SnackBar después de que el widget se haya montado
       Future.microtask(() {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -126,7 +125,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                               return null;
                             },
                             hintText: 'p. ej. Alfredo Fiestas',
-                            hintStyle: const TextStyle( // solo aquí cambia el estilo
+                            hintStyle: const TextStyle(
                               fontFamily: 'Montserrat',
                               fontSize: 20,
                               fontWeight: FontWeight.w300,

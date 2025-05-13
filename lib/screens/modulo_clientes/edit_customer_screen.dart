@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'customer_screen.dart'; // Asegúrate de importar donde está la clase Persona
+import 'customer_screen.dart';
 
 class EditCustomerScreen extends StatelessWidget {
   final Persona persona;
@@ -280,10 +280,6 @@ class EditCustomerScreen extends StatelessWidget {
                   height: 37,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(builder: (context) => NewCustomerScreen()),
-                      // );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -333,10 +329,6 @@ class _RecordCardState extends State<RecordCard> {
     return Container(
       width: double.infinity,
       height: 180,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
       child: Column(
         children: [
           // Botones de filtro
@@ -352,7 +344,7 @@ class _RecordCardState extends State<RecordCard> {
                     padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected 
-                        ? Colors.white
+                        ? null
                         : null,
                       border: isSelected
                           ? Border.all(color: const Color(0xFFBDBDBD))

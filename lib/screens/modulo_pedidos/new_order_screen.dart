@@ -1,11 +1,21 @@
+import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 
-class NewOrderScreen extends StatelessWidget {
+class NewOrderScreen extends StatefulWidget {
   const NewOrderScreen({super.key});
 
   @override
+  State<NewOrderScreen> createState() => _NewOrderScreenState();
+}
+
+class _NewOrderScreenState extends State<NewOrderScreen> {
+  bool _contado = false;
+  bool _credito = false;
+
+  @override
   Widget build(BuildContext context) {
+    final bool haySeleccion = _credito || _contado;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
@@ -49,7 +59,7 @@ class NewOrderScreen extends StatelessWidget {
         ),
       ),
 
-      body: SafeArea(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 25),
           child: Column(
@@ -80,11 +90,6 @@ class NewOrderScreen extends StatelessWidget {
                           child: Container(
                             height: 25,
                             child: TextField(
-                              // onChanged: (val) {
-                              //   setState(() {
-                              //     query = val;
-                              //   });
-                              // },
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -244,13 +249,21 @@ class NewOrderScreen extends StatelessWidget {
                               ),
                               Column(
                                 children: [
-                                  Text(
-                                    'Ver Catálogo',
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => ProductCatalogScreen()),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Ver Catálogo',
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -268,11 +281,6 @@ class NewOrderScreen extends StatelessWidget {
                           child: Container(
                             height: 25,
                             child: TextField(
-                              // onChanged: (val) {
-                              //   setState(() {
-                              //     query = val;
-                              //   });
-                              // },
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -373,13 +381,330 @@ class NewOrderScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 10),
-                      Text('Modalidad de Pago'),
-                      SizedBox(height: 10),
-                      Text('...No se que mas va aca...'),
+                      Text(
+                        'Modalidad de Pago',
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF333333)
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: 18,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'CONTADO',
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w300,
+                                    color: Color(0xFF333333),
+                                  ),
+                                ),
+                                Transform.scale(
+                                  scale: 0.9,
+                                  child: Checkbox(
+                                    visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
+                                    activeColor: Color(0xFFFF6600),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    value: _contado,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _contado = value!;
+                                        if (_contado) _credito = false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          SizedBox(
+                            height: 18,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'CRÉDITO',
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w300,
+                                    color: Color(0xFF333333),
+                                  ),
+                                ),
+                                Transform.scale(
+                                  scale: 0.9,
+                                  child: Checkbox(
+                                    visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
+                                    activeColor: Color(0xFFFF6600),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    value: _credito,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _credito = value!;
+                                        if (_credito) _contado = false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              
+                              SizedBox(
+                                height: 30,
+                                child: ElevatedButton(
+                                  onPressed: haySeleccion 
+                                    ? () {}
+                                    : null,
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: haySeleccion 
+                                    ? Color(0xFFFF6600)
+                                    : Colors.white,
+                                    foregroundColor: haySeleccion
+                                      ? Colors.white
+                                      : Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: EdgeInsets.symmetric(horizontal: 40),
+                                  ),
+                                  child: Text(
+                                    'Registrar Pago',
+                                    style: TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w300,
+                                      color: haySeleccion
+                                      ? Colors.white
+                                      : Color(0xFFFF6600),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 15),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-              )
+              ),
+
+              const SizedBox(height: 20),
+              Text(
+                'OBSERVACIONES', 
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: Colors.black
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity, //POR MIENTRAS
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  color: Color(0xFFECEFF1),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text(
+                            'Lugar de Entrega:',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF333333),
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 1),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 11,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text(
+                            'Fecha de Entrega:',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF333333),
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 1),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 11,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text(
+                            'Hora de Entrega:',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF333333),
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 1),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 11,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Text(
+                            'Información Adicional:',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF333333),
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: TextField(
+                              maxLines: 2,
+                              minLines: 2,
+                              keyboardType: TextInputType.multiline,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 1),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 11,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Acción al presionar el botón
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: Color(0xFFFF6600),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'REGISTRAR PEDIDO',
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),

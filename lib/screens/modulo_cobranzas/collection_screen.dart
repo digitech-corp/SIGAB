@@ -81,7 +81,6 @@ class _CreditosCardState extends State<CreditosCard> {
       ),
       child: Column(
         children: [
-          // Botones de filtro
           Padding(
             padding: const EdgeInsets.only(top: 15),
             child: Row(

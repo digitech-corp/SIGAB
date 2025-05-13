@@ -151,7 +151,13 @@ class OrderScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: _detailOrder('Cuota Mensual', 'S/20,000.00')),
+                      Expanded(
+                        child: _detailOrder(
+                          'MOLINOS PERUANOS SA', 
+                          'Beto del Castillo Limo',
+                          'PEDIDO N° 78-2025'
+                        )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 100),
@@ -184,36 +190,96 @@ class OrderScreen extends StatelessWidget {
     );
   }
 
-  Widget _detailOrder(String title, String amount) {
+  Widget _detailOrder(String company, String person, String codOrder) {
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SizedBox(
         height: 70,
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 12,
-                  color: Color(0xFFFF6600),
-                  fontWeight: FontWeight.w400,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundImage: NetworkImage('https://img.freepik.com/foto-gratis/joven-barbudo-camisa-rayas_273609-5677.jpg'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          company,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 12,
+                            color: Color(0xFFFF6600),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          person,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 10,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          codOrder,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 10,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 15),
+                    Column(
+                      children: [
+                        Text(
+                          '8:46 am',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w300,
+                            color: Color(0xFF333333),
+                          ),
+                        )
+                      ],
+                    ),
+                    Spacer(),
+                    Column(
+                      children: [
+                        Text(
+                          'S/. 460.80',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF333333),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                amount,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 20,
-                  color: Color(0xFF333333),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
