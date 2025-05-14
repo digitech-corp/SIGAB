@@ -39,230 +39,150 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFF6600),
-      body: Column(
-        children: [
-          Container(
-            height: 525,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(64),
-                bottomRight: Radius.circular(64),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  IconButton(icon: Icon(Icons.arrow_back_ios), color: Color(0xFFFF6600), onPressed: () {Navigator.pop(context);}),
-                  const SizedBox(height: 25),
-                  Container(
-                    width: 290,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Buen día',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            color: Color(0xFF333333),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          'Ingresa tu usuario y contraseña para acceder a tu cuenta',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            color: Color(0xFF333333),
-                            fontWeight: FontWeight.w300,
-                            fontSize: 14,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              children: [
+                Container(
+                  height: screenHeight * 0.65,
+                  width: screenWidth,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(64),
+                      bottomRight: Radius.circular(64),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  // Formulario
-                  Form(
-                    key: _formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Usuario',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _buildTextField(
-                          controller: _userName,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa un nombre de usuario';
-                            }
-                            return null;
-                          },
-                        ),
                         const SizedBox(height: 40),
-                        Text(
-                          'Contraseña',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios),
+                          color: const Color(0xFFFF6600),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                        _buildTextField(
-                          controller: _userPassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa una contraseña';
-                            }
-                            return null;
-                          },
-                          obscureText: true,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Transform.scale(
-                                  scale: 0.80,
-                                  child: Checkbox(
-                                    value: true,
-                                    onChanged: (_) {},
-                                    activeColor: Color(0xFFFF6600),
-                                    shape: const CircleBorder(),
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                                  ),
-                                ),
-                                const Text(
-                                  'Recordarme',
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => RecoverPasswordScreen()),
-                              );
-                              },
-                              child: const Text(
-                                '¿Olvidaste tu contraseña?',
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  color: Color(0xFFFF6600),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 25),
+                        const LoginHeader(),
+                        const SizedBox(height: 30),
+                        LoginForm(
+                          formKey: _formKey,
+                          userName: _userName,
+                          userPassword: _userPassword,
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 55),
-          // Botones
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 70),
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Validación exitosa")),
-                        );
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SalesModuleScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Iniciar Sesión',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        color: Color(0xFFFF6600),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Registrado correctamente")),
-                        );
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => NewUserScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFF6600),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: Colors.white, 
-                          width: 1, 
-                        ),
-                      ),
-                    ),
-                    child: const Text(
-                      'Registrarse',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 55),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+                  child: LoginButtons(formKey: _formKey),
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class LoginHeader extends StatelessWidget {
+  const LoginHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Buen día', style: AppTextStyles.strong),
+            const SizedBox(height: 12),
+            Text(
+              'Ingresa tu usuario y contraseña para acceder a tu cuenta',
+              style: AppTextStyles.weak,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LoginForm extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController userName;
+  final TextEditingController userPassword;
+
+  const LoginForm({
+    super.key,
+    required this.formKey,
+    required this.userName,
+    required this.userPassword,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Usuario', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: userName,
+            validator: (value) =>
+                value == null || value.isEmpty ? 'Por favor, ingresa un nombre de usuario' : null,
+          ),
+          const SizedBox(height: 40),
+          Text('Contraseña', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: userPassword,
+            validator: (value) =>
+                value == null || value.isEmpty ? 'Por favor, ingresa una contraseña' : null,
+            obscureText: true,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Transform.scale(
+                    scale: 0.80,
+                    child: Checkbox(
+                      value: true,
+                      onChanged: (_) {},
+                      activeColor: const Color(0xFFFF6600),
+                      shape: const CircleBorder(),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                    ),
+                  ),
+                  Text('Recordarme', style: AppTextStyles.remember),
+                ],
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RecoverPasswordScreen()),
+                  );
+                },
+                child: Text('¿Olvidaste tu contraseña?', style: AppTextStyles.orange),
+              ),
+            ],
           ),
         ],
       ),
@@ -284,6 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       obscureText: obscureText,
       decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 9.0),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFFF6600)),
         ),
@@ -297,4 +219,89 @@ class _LoginScreenState extends State<LoginScreen> {
       validator: validator,
     );
   }
+}
+
+class LoginButtons extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+
+  const LoginButtons({super.key, required this.formKey});
+
+  @override
+  Widget build(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final horizontalPadding = screenWidth * 0.0;
+
+  return ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: 480),
+    child: Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        child: Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Validación exitosa")),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SalesModuleScreen()),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('Iniciar Sesión', style: AppTextStyles.orange),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Registrado correctamente")),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => NewUserScreen()),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF6600),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: Colors.white),
+                  ),
+                ),
+                child: Text('Registrarse', style: AppTextStyles.register),
+              ),
+            ),
+          ],
+        ),
+      ),
+  );
+  }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 14,
+    decoration: TextDecoration.none,
+  );
+  static final weak = base.copyWith(color: Color(0xFF333333), fontWeight: FontWeight.w300);
+  static final strong = base.copyWith(color: Color(0xFF333333), fontWeight: FontWeight.w600, fontSize: 20);
+  static final orange = base.copyWith(color: Color(0xFFFF6600));
+  static final remember = base.copyWith(color: Colors.black);
+  static final register = base.copyWith(color: Colors.white);
 }

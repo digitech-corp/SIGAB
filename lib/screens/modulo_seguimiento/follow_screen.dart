@@ -14,6 +14,7 @@ class _FollowScreenState extends State<FollowScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFECEFF1),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
         child: ClipRRect(
@@ -168,6 +169,16 @@ class _FollowScreenState extends State<FollowScreen> {
   }
 
   Widget _detailOrder() {
+
+    final _labelStyle = TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: 10,
+      // fontWeight: FontWeight.w300,
+      color: Color(0xFF333333),
+    );
+    final _weakStyle = _labelStyle.copyWith(fontWeight: FontWeight.w300);
+    final _strongStyle = _labelStyle.copyWith(fontWeight: FontWeight.w400);    
+    
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -213,21 +224,138 @@ class _FollowScreenState extends State<FollowScreen> {
                 children: [
                   Text(
                     'Resumen del Pedido:', 
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF333333)
-                    )
+                    style: _strongStyle
                   ),
-                  Text('03 ADYaves Plus ...'),
-                  Text('01 Campero Cerdos ...'),
-                  Text('04 ADV Alevino Alta ...'),
-                  SizedBox(height: 5),
-                  Text('Tipo de Pago: Contado'),
-                  Text('Dirección: Dirección fiscal'),
-                  Text('Hora: 11:30 am'),
-                  Text('Observación: Dirige frente al grifo San Antonio'),
+                  const SizedBox(height: 5),
+                  Container(
+                    height: 80,
+                    width: double.infinity,
+                    color: const Color.fromARGB(255, 229, 231, 231),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Tabla',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 10,
+                              color: Color(0xFF333333),
+                              fontWeight: FontWeight.w400
+                            ),
+                          ),
+                        ],
+                      )
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        height: 80,
+                        width: 100,
+                        color: const Color.fromARGB(255, 229, 231, 231),
+                        child: Center(
+                          child: Text(
+                            'Totales',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 10,
+                              color: Color(0xFF333333),
+                              fontWeight: FontWeight.w400
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Text(
+                        'Tipo de Pago',
+                        style: _strongStyle
+                      ),
+                      const SizedBox(width: 33),
+                      Text(
+                        'Contado',
+                        style: _weakStyle
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            'Datos de Entrega',
+                            style: _strongStyle
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 15),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lugar:',
+                            style: _weakStyle
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Fecha:',
+                            style: _weakStyle
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Hora:',
+                            style: _weakStyle
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Observación',
+                            style: _weakStyle
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '{Dirección fiscal}',
+                              style: _weakStyle
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              '{25/05/2025}',
+                              style: _weakStyle
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              '{11:30 am}',
+                              style: _weakStyle
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              '{Dejar frente al grifo San Antonio}',
+                              style: _weakStyle,
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Ubicación Geográfica',
+                    style: _strongStyle
+                  ),
                   SizedBox(height: 10),
                   Container(
                     height: 150,
