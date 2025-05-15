@@ -36,8 +36,11 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bodyPadding = screenWidth * 0.06;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6600),
+      backgroundColor: AppColors.orange,
       body: Column(
         children: [
           Container(
@@ -50,28 +53,19 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: bodyPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 40),
-                  IconButton(icon: Icon(Icons.arrow_back_ios), color: Color(0xFFFF6600), onPressed: () {Navigator.pop(context);}),
+                  IconButton(icon: Icon(Icons.arrow_back_ios), color: AppColors.orange, onPressed: () {Navigator.pop(context);}),
                   const SizedBox(height: 25),
                   Container(
                     width: 290,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Recuperar Contraseña',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            color: Color(0xFF333333),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
+                      children: [
+                        Text('Recuperar Contraseña', style: AppTextStyles.strong),
                       ],
                     ),
                   ),
@@ -82,15 +76,7 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Ingrese su correo electrónico',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text('Ingrese su correo electrónico', style: AppTextStyles.orange),
                         _buildTextField(
                           controller: _userName,
                           validator: (value) {
@@ -113,20 +99,12 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFFFF6600),
+                                backgroundColor: AppColors.orange,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: const Text(
-                                'Restablecer contraseña',
-                                style: TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              child: Text('Restablecer contraseña', style: AppTextStyles.white),
                             ),
                           ),
                         ),
@@ -150,27 +128,41 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
   }) {
     return TextFormField(
       controller: controller,
-      style: const TextStyle(
-        fontFamily: 'Montserrat',
-        fontSize: 14,
-        color: Color(0xFF333333),
-        fontWeight: FontWeight.w500,
-      ),
+      style: AppTextStyles.controller,
       obscureText: obscureText,
       decoration: const InputDecoration(
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 9.0),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFF6600)),
+          borderSide: BorderSide(color: AppColors.orange),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFF6600), width: 2.0),
+          borderSide: BorderSide(color: AppColors.orange, width: 2.0),
         ),
         border: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFF6600)),
+          borderSide: BorderSide(color: AppColors.orange),
         ),
       ),
       validator: validator,
     );
   }
 }
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+      color: AppColors.gris,
+      fontWeight: FontWeight.w500,
+      fontSize: 14,
+  );
+  static final strong = base.copyWith(fontWeight: FontWeight.w700, fontSize: 20, decoration: TextDecoration.none);
+  static final orange = base.copyWith(color: AppColors.orange);
+  static final white = base.copyWith(color: Colors.white);
+  static final controller = base.copyWith();
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+}
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:balanced_foods/screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,20 +25,29 @@ class NewUserScreen extends StatefulWidget {
 
 class _NewUserScreenState extends State<NewUserScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _userName = TextEditingController();
+  final _name = TextEditingController();
+  final _dni = TextEditingController();
+  final _email = TextEditingController();
   final _userPassword = TextEditingController();
+  final _confirmPassword = TextEditingController();
 
   @override
   void dispose() {
-    _userName.dispose();
+    _name.dispose();
+    _dni.dispose();
+    _email.dispose();
     _userPassword.dispose();
+    _confirmPassword.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bodyPadding = screenWidth * 0.06;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6600),
+      backgroundColor: AppColors.orange,
       body: Column(
         children: [
           Container(
@@ -50,148 +60,24 @@ class _NewUserScreenState extends State<NewUserScreen> {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: bodyPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 40),
-                  IconButton(icon: Icon(Icons.arrow_back_ios), color: Color(0xFFFF6600), onPressed: () {Navigator.pop(context);}),
+                  IconButton(icon: Icon(Icons.arrow_back_ios), color: AppColors.orange, onPressed: () {Navigator.pop(context);}),
                   const SizedBox(height: 20),
-                  Container(
-                    width: 290,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Nuevo Usuario',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            color: Color(0xFF333333),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Registra tus datos para crear un usuario usando tu cuenta de correo corporativo',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            color: Color(0xFF333333),
-                            fontWeight: FontWeight.w300,
-                            fontSize: 14,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // Header
+                  const NewUserHeader(),
                   const SizedBox(height: 30),
                   // Formulario
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Nombre Completo',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _buildTextField(
-                          controller: _userName,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa un nombre de usuario';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                        Text(
-                          'N° Documento de Identidad - DNI',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _buildTextField(
-                          controller: _userPassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa una contraseña';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                        Text(
-                          'Correo Corporativo',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _buildTextField(
-                          controller: _userPassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa una contraseña';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 30),
-                        Text(
-                          'Contraseña',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _buildTextField(
-                          controller: _userPassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa una contraseña';
-                            }
-                            return null;
-                          },
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 30),
-                        Text(
-                          'Confirmar Contraseña',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 14,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        _buildTextField(
-                          controller: _userPassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingresa una contraseña';
-                            }
-                            return null;
-                          },
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
+                  NewUserForm(
+                    formKey: _formKey,
+                    name: _name,
+                    dni: _dni,
+                    email: _email,
+                    userPassword: _userPassword,
+                    confirmPassword: _confirmPassword,
                   ),
                 ],
               ),
@@ -199,40 +85,117 @@ class _NewUserScreenState extends State<NewUserScreen> {
           ),
           const SizedBox(height: 35),
           // Botones
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 70),
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Registrado correctamente")),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Registrarse',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        color: Color(0xFFFF6600),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          RegisterButton(formKey: _formKey),
+        ],
+      ),
+    );
+  }
+}
+
+class NewUserHeader extends StatelessWidget {
+  const NewUserHeader({super.key});
+
+  @override
+  Widget build(BuildContext context){
+    return SizedBox(
+      width: 290,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Nuevo Usuario', style: AppTextStyles.strong),
+          const SizedBox(height: 8),
+          Text('Registra tus datos para crear un usuario usando tu cuenta de correo corporativo', style: AppTextStyles.weak),
+        ],
+      ),
+    );
+  }
+}
+
+class NewUserForm extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController  name;
+  final TextEditingController  dni;
+  final TextEditingController  email;
+  final TextEditingController  userPassword;
+  final TextEditingController  confirmPassword;
+  
+   const NewUserForm({
+     super.key,
+     required this.formKey,
+     required this.name,
+     required this.dni,
+     required this.email,
+     required this.userPassword,
+     required this.confirmPassword,
+   });
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Nombre Completo', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: name,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, ingresa tu nombre completo';
+              }
+              return null;
+            },
           ),
+          const SizedBox(height: 30),
+          Text('N° Documento de Identidad - DNI', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: dni,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, ingresa tu DNI';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 30),
+          Text('Correo Corporativo', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: email,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, ingresa tu correo corporativo';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 30),
+          Text('Contraseña', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: userPassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, ingresa tu contraseña';
+              }
+              return null;
+            },
+            obscureText: true,
+          ),
+          const SizedBox(height: 30),
+          Text('Confirmar Contraseña', style: AppTextStyles.orange),
+          _buildTextField(
+            controller: confirmPassword,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, repite la contraseña';
+              }
+              if (value != userPassword.text) {
+                return 'Las contraseñas no coinciden';
+              }
+              return null;
+            },
+            obscureText: true,
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -244,28 +207,84 @@ class _NewUserScreenState extends State<NewUserScreen> {
     bool obscureText = false,
   }) {
     return TextFormField(
-      controller: controller,
-      style: const TextStyle(
-        fontFamily: 'Montserrat',
-        fontSize: 14,
-        color: Color(0xFF333333),
-        fontWeight: FontWeight.w300,
-      ),
+      controller: controller, style: AppTextStyles.controller,
       obscureText: obscureText,
       decoration: const InputDecoration(
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 5.0),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFF6600)),
+          borderSide: BorderSide(color: AppColors.orange),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFF6600), width: 2.0),
+          borderSide: BorderSide(color: AppColors.orange, width: 2.0),
         ),
         border: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFF6600)),
+          borderSide: BorderSide(color: AppColors.orange),
         ),
       ),
       validator: validator,
     );
   }
+}
+
+class RegisterButton extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+
+  const RegisterButton({super.key, required this.formKey});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth * 0.15;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Registrado correctamente")),
+                  );
+                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text('Registrarse', style: AppTextStyles.register),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 14,
+    color: AppColors.orange
+  );
+  static final strong = base.copyWith(color: AppColors.gris,fontWeight: FontWeight.w600,fontSize: 20,decoration: TextDecoration.none);
+  static final weak = base.copyWith(color: AppColors.gris,fontWeight: FontWeight.w300,decoration: TextDecoration.none);
+  static final orange = base.copyWith();
+  static final register = base.copyWith();
+  static final controller = base.copyWith(color: AppColors.gris,fontWeight: FontWeight.w300);
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
 }

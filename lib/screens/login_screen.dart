@@ -41,55 +41,52 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    final isLandscape = screenWidth > screenHeight;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFF6600),
       body: SingleChildScrollView(
         child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                Container(
-                  height: screenHeight * 0.65,
-                  width: screenWidth,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(64),
-                      bottomRight: Radius.circular(64),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 40),
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios),
-                          color: const Color(0xFFFF6600),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const SizedBox(height: 25),
-                        const LoginHeader(),
-                        const SizedBox(height: 30),
-                        LoginForm(
-                          formKey: _formKey,
-                          userName: _userName,
-                          userPassword: _userPassword,
-                        ),
-                      ],
-                    ),
+          child: Column(
+            children: [
+              Container(
+                constraints: BoxConstraints(minHeight: isLandscape ? 340 : 500),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(64),
+                    bottomRight: Radius.circular(64),
                   ),
                 ),
-                const SizedBox(height: 55),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
-                  child: LoginButtons(formKey: _formKey),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth*0.05),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: isLandscape ? 8 : 40),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios),
+                        color: const Color(0xFFFF6600),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      SizedBox(height: isLandscape ? 5 : 25),
+                      const LoginHeader(),
+                      SizedBox(height: isLandscape ? 16 : 30),
+                      LoginForm(
+                        formKey: _formKey,
+                        userName: _userName,
+                        userPassword: _userPassword,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              SizedBox(height: isLandscape ? 16 : 30),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
+                child: LoginButtons(formKey: _formKey),
+              ),
+            ],
           ),
         ),
       ),
@@ -102,20 +99,21 @@ class LoginHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Buen día', style: AppTextStyles.strong),
-            const SizedBox(height: 12),
-            Text(
-              'Ingresa tu usuario y contraseña para acceder a tu cuenta',
-              style: AppTextStyles.weak,
-            ),
-          ],
-        ),
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isLandscape = screenWidth > screenHeight;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Buen día', style: AppTextStyles.strong),
+          SizedBox(height: isLandscape ? 2 : 12),
+          Text(
+            'Ingresa tu usuario y contraseña para acceder a tu cuenta',
+            style: AppTextStyles.weak,
+          ),
+        ],
       ),
     );
   }
@@ -135,6 +133,9 @@ class LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isLandscape = screenWidth > screenHeight;
     return Form(
       key: formKey,
       child: Column(
@@ -142,13 +143,15 @@ class LoginForm extends StatelessWidget {
         children: [
           Text('Usuario', style: AppTextStyles.orange),
           _buildTextField(
+            context: context,
             controller: userName,
             validator: (value) =>
                 value == null || value.isEmpty ? 'Por favor, ingresa un nombre de usuario' : null,
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: isLandscape ? 20 : 40),
           Text('Contraseña', style: AppTextStyles.orange),
           _buildTextField(
+            context: context,
             controller: userPassword,
             validator: (value) =>
                 value == null || value.isEmpty ? 'Por favor, ingresa una contraseña' : null,
@@ -190,10 +193,12 @@ class LoginForm extends StatelessWidget {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String? Function(String?) validator,
     bool obscureText = false,
   }) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     return TextFormField(
       controller: controller,
       style: const TextStyle(
@@ -203,9 +208,9 @@ class LoginForm extends StatelessWidget {
         fontWeight: FontWeight.w500,
       ),
       obscureText: obscureText,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 9.0),
+        contentPadding: EdgeInsets.symmetric(vertical: isLandscape ? 5 : 9.0),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFFF6600)),
         ),
@@ -230,7 +235,8 @@ class LoginButtons extends StatelessWidget {
   Widget build(BuildContext context) {
   final screenWidth = MediaQuery.of(context).size.width;
   final horizontalPadding = screenWidth * 0.0;
-
+  final screenHeight = MediaQuery.of(context).size.height;
+  final isLandscape = screenWidth > screenHeight;
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 480),
     child: Padding(
@@ -260,20 +266,15 @@ class LoginButtons extends StatelessWidget {
                 child: Text('Iniciar Sesión', style: AppTextStyles.orange),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: isLandscape ? 5 : 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Registrado correctamente")),
-                    );
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => NewUserScreen()),
-                    );
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NewUserScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF6600),
@@ -285,6 +286,7 @@ class LoginButtons extends StatelessWidget {
                 child: Text('Registrarse', style: AppTextStyles.register),
               ),
             ),
+            SizedBox(height: isLandscape ? 10 : 10),
           ],
         ),
       ),
@@ -297,10 +299,11 @@ class AppTextStyles {
     fontFamily: 'Montserrat',
     fontWeight: FontWeight.w500,
     fontSize: 14,
+    color: Color(0xFF333333),
     decoration: TextDecoration.none,
   );
-  static final weak = base.copyWith(color: Color(0xFF333333), fontWeight: FontWeight.w300);
-  static final strong = base.copyWith(color: Color(0xFF333333), fontWeight: FontWeight.w600, fontSize: 20);
+  static final weak = base.copyWith(fontWeight: FontWeight.w300);
+  static final strong = base.copyWith(fontWeight: FontWeight.w600, fontSize: 20);
   static final orange = base.copyWith(color: Color(0xFFFF6600));
   static final remember = base.copyWith(color: Colors.black);
   static final register = base.copyWith(color: Colors.white);

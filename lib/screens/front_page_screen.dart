@@ -11,23 +11,23 @@ class FrontPage extends StatelessWidget {
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
         final screenHeight = constraints.maxHeight;
+        final isLandscape = screenWidth > screenHeight;
 
         return Container(
-          color: const Color(0xFFFF6600),
+          color: AppColors.orange,
           width: screenWidth,
           height: screenHeight,
           child: SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: screenHeight - 64, // 64 = padding vertical * 2
-              ),
+              constraints: BoxConstraints(minHeight: screenHeight - 64),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    FrontLogoSection(),
-                    SizedBox(height: 12),
-                    FrontActionSection(),
+                  children: [
+                    FrontLogoSection(isLandscape: isLandscape),
+                    const SizedBox(height: 12),
+                    FrontActionSection(isLandscape: isLandscape),
+                    SizedBox(height: isLandscape ? 24 : 48),
                   ],
                 ),
               ),
@@ -40,12 +40,13 @@ class FrontPage extends StatelessWidget {
 }
 
 class FrontLogoSection extends StatelessWidget {
-  const FrontLogoSection({super.key});
+  final bool isLandscape;
+  const FrontLogoSection({super.key, required this.isLandscape});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final logoWidth = screenWidth * 0.8; // 70% del ancho de pantalla
+    final logoWidth = screenWidth * (isLandscape ? 0.6 : 0.8);
 
     return SizedBox(
       width: logoWidth,
@@ -57,8 +58,10 @@ class FrontLogoSection extends StatelessWidget {
   }
 }
 
+
 class FrontActionSection extends StatelessWidget {
-  const FrontActionSection({super.key});
+  final bool isLandscape;
+  const FrontActionSection({super.key, required this.isLandscape});
 
   @override
   Widget build(BuildContext context) {
@@ -66,20 +69,17 @@ class FrontActionSection extends StatelessWidget {
     final isSmallScreen = screenWidth < 400;
 
     return FractionallySizedBox(
-      widthFactor: isSmallScreen ? 0.64 : 0.65, // ancho adaptado
+      widthFactor: isSmallScreen ? 0.64 : 0.65,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Bienvenidos a SIGAB',
-            style: AppTextStyles.strong,
-          ),
+          Text('Bienvenidos a SIGAB', style: AppTextStyles.strong),
           const SizedBox(height: 12),
           Text(
             'Sistema Integral de Gestión de Alimentos Balanceados',
             style: AppTextStyles.weak,
           ),
-          const SizedBox(height: 80),
+          SizedBox(height: isLandscape ? 32 : 80),
           ElevatedButton(
             onPressed: () => Navigator.push(
               context,
@@ -90,23 +90,23 @@ class FrontActionSection extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              minimumSize: Size(double.infinity, 42),
+              minimumSize: const Size(double.infinity, 42),
             ),
             child: Text('Ingresar', style: AppTextStyles.login),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isLandscape ? 12 : 20),
           ElevatedButton(
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const NewUserScreen()),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF6600),
+              backgroundColor: AppColors.orange,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
                 side: const BorderSide(color: Colors.white),
               ),
-              minimumSize: Size(double.infinity, 42),
+              minimumSize: const Size(double.infinity, 42),
             ),
             child: Text('Registrarse', style: AppTextStyles.register),
           ),
@@ -116,17 +116,23 @@ class FrontActionSection extends StatelessWidget {
   }
 }
 
+
 class AppTextStyles {
   static const base = TextStyle(
     fontFamily: 'Montserrat',
-      color: Color(0xFF333333),
+      color: AppColors.gris,
       fontWeight: FontWeight.w500,
       fontSize: 14,
       decoration: TextDecoration.none,
   );
   static final weak = base.copyWith(fontWeight: FontWeight.w300);
   static final strong = base.copyWith(fontWeight: FontWeight.w600, fontSize: 20);
-  static final login = base.copyWith(color: Color(0xFFFF6600));
+  static final login = base.copyWith(color: AppColors.orange);
   static final register = base.copyWith(color: Colors.white);
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
 }
 
