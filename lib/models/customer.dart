@@ -6,6 +6,9 @@ class Customer {
   String customerAddress; 
   String customerReference; 
   int idCompany;
+  int idDepartment;
+  int idProvince;
+  int idDistrict;
 
   Customer({
     required this.customerName,
@@ -15,6 +18,9 @@ class Customer {
     required this.customerAddress,
     required this.customerReference,
     required this.idCompany,
+    required this.idDepartment,
+    required this.idProvince,
+    required this.idDistrict,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,9 @@ class Customer {
       customerAddress: (json['customerAddress'] ?? '').toString(),
       customerReference: (json['customerReference'] ?? '').toString(),
       idCompany: int.tryParse(json['idCompany'].toString()) ?? 0,
+      idDepartment: int.tryParse(json['idDepartment'].toString()) ?? 0,
+      idProvince: int.tryParse(json['idProvince'].toString()) ?? 0,
+      idDistrict: int.tryParse(json['idDistrict'].toString()) ?? 0,
     );
   } 
 }

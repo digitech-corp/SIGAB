@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'customer_screen.dart';
+
 import 'package:balanced_foods/models/customer.dart';
 
 class EditCustomerScreen extends StatelessWidget {
-  final Customer persona;
+  final Customer customer;
+  final String companyName;
 
-  const EditCustomerScreen({Key? key, required this.persona}) : super(key: key);
+  const EditCustomerScreen({
+    Key? key, 
+    required this.customer, 
+    required this.companyName,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,32 +26,26 @@ class EditCustomerScreen extends StatelessWidget {
           child: AppBar(
             toolbarHeight: double.infinity,
             automaticallyImplyLeading: false,
-            backgroundColor: const Color(0xFFFF6600),
+            backgroundColor: AppColors.orange,
             title: Center(
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(persona.customerImage),
+                    radius: 58,
+                    backgroundImage: customer.customerImage.isNotEmpty
+                        ? NetworkImage(customer.customerImage)
+                        : null,
+                    backgroundColor: Colors.grey[300],
+                    child: customer.customerImage.isEmpty
+                        ? Icon(
+                            Icons.person,
+                            size: 100,
+                            color: AppColors.gris,
+                          )
+                        : null,
                   ),
-                  Text(
-                    persona.customerName, 
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white
-                    )
-                  ),
-                  Text(
-                    persona.idCompany.toString(),
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.black
-                    )
-                  ),
+                  Text(customer.customerName, style: AppTextStyles.name),
+                  Text(companyName, style: AppTextStyles.company),
                 ],
               ),
             ),
@@ -82,23 +81,12 @@ class EditCustomerScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 10),
                       Text(
-                        '{972 143 314}',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
+                        customer.customerPhone.length == 9
+                        ? '${customer.customerPhone.substring(0, 3)} ${customer.customerPhone.substring(3, 6)} ${customer.customerPhone.substring(6)}'
+                        : customer.customerPhone,
+                        style: AppTextStyles.customerData
                       ),
-                      Text(
-                        'Celular',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFFBDBDBD),
-                        ),
-                      )
+                      Text('Celular', style: AppTextStyles.subtitle),
                     ],
                   ),
                   Spacer(),
@@ -146,24 +134,8 @@ class EditCustomerScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 10),
-                      Text(
-                        '{adiazchero@gmail.com}',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                      Text(
-                        'Particular',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFFBDBDBD),
-                        ),
-                      )
+                      Text(customer.customerEmail, style: AppTextStyles.customerData),
+                      Text('Particular', style: AppTextStyles.subtitle),
                     ],
                   ),
                   Spacer(),
@@ -216,33 +188,15 @@ class EditCustomerScreen extends StatelessWidget {
                       children: [
                         const SizedBox(height: 10),
                         Text(
-                          '{Mza. F Lote 3 (Cal J. Zapata frente al Col. Cristo Jesus)}',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
+                          '${customer.customerAddress} (${customer.customerReference})',
+                          style: AppTextStyles.customerData,
                           softWrap: true,
                         ),
                         Text(
-                          'Trujillo, La Libertad',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
+                          '${customer.idDepartment}, ${customer.idProvince}, ${customer.idDistrict}',
+                          style: AppTextStyles.customerData
                         ),
-                        Text(
-                          'Dirección Fiscal',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFFBDBDBD),
-                          ),
-                        )
+                        Text('Dirección Fiscal', style: AppTextStyles.subtitle),
                       ],
                     ),
                   ),
@@ -286,20 +240,12 @@ class EditCustomerScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
-                          color: Color(0xFFFF6600), 
+                          color: AppColors.orange, 
                           width: 1, 
                         ),
                       ),
                     ),
-                    child: const Text(
-                      'Editar Contacto',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        color: Color(0xFFFF6600),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    child: Text('Editar Contacto', style: AppTextStyles.btn),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -347,26 +293,19 @@ class _RecordCardState extends State<RecordCard> {
                         ? null
                         : null,
                       border: isSelected
-                          ? Border.all(color: const Color(0xFFBDBDBD))
-                          : Border.all(color: Color(0xFFBDBDBD)),
+                          ? Border.all(color: AppColors.lightGris)
+                          : Border.all(color: AppColors.lightGris),
                     ),
                     child: Text(
                       _titulos[index],
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected 
-                        ? const Color(0xFFFF6600)
-                        : const Color(0xFFBDBDBD),
-                      ),
+                       style: AppTextStyles.titleCards(isSelected),
                     ),
                   ),
                 );
               }),
             ),
           ),
-          const Divider(color: Color(0xFFBDBDBD), thickness: 1.0, height: 0,),
+          const Divider(color: AppColors.lightGris, thickness: 1.0, height: 0,),
           const SizedBox(height: 15),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18.0),
@@ -493,4 +432,31 @@ class _RecordCardState extends State<RecordCard> {
       ),
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w300,
+    fontSize: 13,
+    color: AppColors.gris
+  );
+  static final name = base.copyWith(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white);
+  static final company = base.copyWith(fontSize: 12,color: Colors.black);
+  static final customerData = base.copyWith();
+  static final subtitle = base.copyWith(fontSize: 10, color: AppColors.lightGris);
+  static final btn = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
+  static TextStyle titleCards(bool isSelected) {
+    return base.copyWith(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: isSelected ? AppColors.orange : AppColors.lightGris,
+    );
+  }
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const lightGris = Color(0xFFBDBDBD);
 }
