@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/new_user_screen.dart';
 import 'package:balanced_foods/screens/recover_password_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -36,13 +39,20 @@ class _LoginScreenState extends State<LoginScreen> {
     _userPassword.dispose();
     super.dispose();
   }
+  
+  // Future<List<dynamic>> Users() async {
+  //   final url = Uri.parse('http://localhost:3333/users');
+  //   final response = await http.get(url);
+  //   final data = jsonDecode(response.body);
+  //   return data['users'];
+  // }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final isLandscape = screenWidth > screenHeight;
-
+    // Users();
     return Scaffold(
       backgroundColor: const Color(0xFFFF6600),
       body: SingleChildScrollView(

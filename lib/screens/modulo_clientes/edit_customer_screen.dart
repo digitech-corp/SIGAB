@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'customer_screen.dart';
+import 'package:balanced_foods/models/customer.dart';
 
 class EditCustomerScreen extends StatelessWidget {
-  final Persona persona;
+  final Customer persona;
 
   const EditCustomerScreen({Key? key, required this.persona}) : super(key: key);
 
@@ -27,10 +27,10 @@ class EditCustomerScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: NetworkImage(persona.imagenUrl),
+                    backgroundImage: NetworkImage(persona.customerImage),
                   ),
                   Text(
-                    persona.nombre, 
+                    persona.customerName, 
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 20,
@@ -39,7 +39,7 @@ class EditCustomerScreen extends StatelessWidget {
                     )
                   ),
                   Text(
-                    persona.empresa,
+                    persona.idCompany.toString(),
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 12,

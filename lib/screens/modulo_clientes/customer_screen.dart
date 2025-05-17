@@ -1,7 +1,11 @@
+import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/screens/modulo_clientes/edit_customer_screen.dart';
 import 'package:balanced_foods/screens/modulo_clientes/new_customer_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -11,45 +15,47 @@ class CustomerScreen extends StatefulWidget {
 }
 
 class _CustomerScreenState extends State<CustomerScreen> {
+  List<Customer> customers = [];
+  bool isLoading = true;
   String query = '';
-
-  List<Persona> personas = [
-    Persona(
-      nombre: 'Alberto Diaz Cerro',
-      empresa: 'JC Company Sociedad Anonima',
-      imagenUrl: 'https://img.freepik.com/foto-gratis/joven-barbudo-camisa-rayas_273609-5677.jpg',
-    ),
-    Persona(
-      nombre: 'Angela Jimenez Puican',
-      empresa: 'Agropecuaria del Norte SAC',
-      imagenUrl: 'https://media.istockphoto.com/id/1389348844/es/foto/foto-de-estudio-de-una-hermosa-joven-sonriendo-mientras-est%C3%A1-de-pie-sobre-un-fondo-gris.jpg?s=1024x1024&w=is&k=20&c=OQE7FSSw4bJdPxfEsPQt-cr_vK56LuUBdvFM43quMg8=',
-    ),
-    Persona(
-      nombre: 'Armando Sandoval Saucedo',
-      empresa: 'Sandoval y Asociados',
-      imagenUrl: 'https://st2.depositphotos.com/4431055/7495/i/950/depositphotos_74950191-stock-photo-men-latin-american-and-hispanic.jpg',
-    ),
-    Persona(
-      nombre: 'Beatriz Bocanegra Senmache',
-      empresa: 'Bocanegra Consulting',
-      imagenUrl: 'https://media.istockphoto.com/id/1389348844/es/foto/foto-de-estudio-de-una-hermosa-joven-sonriendo-mientras-est%C3%A1-de-pie-sobre-un-fondo-gris.jpg?s=1024x1024&w=is&k=20&c=OQE7FSSw4bJdPxfEsPQt-cr_vK56LuUBdvFM43quMg8=',
-    ),
-    Persona(
-      nombre: 'Beto del castillo Limo',
-      empresa: 'Del Castillo Exportaciones',
-      imagenUrl: 'https://media.istockphoto.com/id/1090878494/es/foto/retrato-de-joven-sonriente-a-hombre-guapo-en-camiseta-polo-azul-aislado-sobre-fondo-gris-de.jpg?s=612x612&w=is&k=20&c=Dflvwx6khOs9VBQYSaQGVbfG6yVLCnuNr8uGhvNBLm0=',
-    ),
-  ];
+  
+  Future<List<Customer>> fetchCustomers() async {
+    final url = Uri.parse('http://10.0.2.2:12346/customers');
+    final response = await http.get(url);
+    // V1
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List<dynamic> rawCustomers = data['customers'];
+      print('Clientes cargados: ${rawCustomers.length}');
+      print(rawCustomers);
+      return rawCustomers.map((json) => Customer.fromJson(json)).toList();
+    } else {
+      throw Exception('Error al cargar los clientes');
+    }
+  }
 
   @override
+  void initState() {
+    super.initState();
+    fetchCustomers().then((data) {
+      setState(() {
+        customers = data;
+        isLoading = false;
+      });
+    });
+  }
+  
+  @override
   Widget build(BuildContext context) {
-    final listaFiltrada = personas
+    final listaFiltrada = customers
         .where((p) =>
-            p.nombre.toLowerCase().contains(query.toLowerCase()) ||
-            p.empresa.toLowerCase().contains(query.toLowerCase()))
+            p.customerName.toLowerCase().contains(query.toLowerCase()) ||
+            p.idCompany.toString().contains(query))
         .toList();
     final agrupado = agruparPorInicial(listaFiltrada);
-
+  if (agrupado.isEmpty) {
+  return const Center(child: Text('No se encontraron clientes'));
+}
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
@@ -152,101 +158,15 @@ class _CustomerScreenState extends State<CustomerScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: agrupado.length,
-                  itemBuilder: (context, index) {
-                    String letra = agrupado.keys.elementAt(index);
-                    List<Persona> grupo = agrupado[letra]!;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Text(
-                            letra,
-                            style: const TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFFFF6600),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        ...grupo.map((p) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => EditCustomerScreen(persona: p)),
-                              );
-                            },
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                CircleAvatar(
-                                  radius: 18,
-                                  backgroundImage: NetworkImage(p.imagenUrl),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        p.nombre,
-                                        style: const TextStyle(
-                                          fontFamily: 'Montserrat',
-                                          color: Color(0xFFFF6600),
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        p.empresa,
-                                        style: const TextStyle(
-                                          fontFamily: 'Montserrat',
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 10,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: Image.asset('assets/images/phone.png', color: Colors.black),
-                                  ),
-                                  onPressed: () {
-                                    debugPrint('Llamando a ${p.nombre}');
-                                  },
-                                ),
-                                SizedBox(width: 8),
-                                IconButton(
-                                  icon: SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
-                                  ),
-                                  onPressed: () {
-                                    debugPrint('Chateando con ${p.nombre}');
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        )),
-                      ],
-                    );
-                  },
-                ),
+              Expanded(
+                child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : agrupado.isEmpty
+                      ? const Center(child: Text('No hay clientes disponibles'))
+                      : _CustomersList(context, agrupado),
               ),
+                
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 25),
                 child: Row(
@@ -274,35 +194,130 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
     );
   }
+  
+  Widget _CustomersList(BuildContext context, Map<String, List<Customer>> agrupado) {
+    return ListView.builder(
+      itemCount: agrupado.length,
+      itemBuilder: (context, index) {
+        String letra = agrupado.keys.elementAt(index);
+        List<Customer> grupo = agrupado[letra]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                letra,
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFFF6600),
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            ...grupo.map((p) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => EditCustomerScreen(persona: p)),
+                  );
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 18,
+                      backgroundImage: p.customerImage.isNotEmpty
+                        ? NetworkImage(p.customerImage)
+                        : null,
+                      backgroundColor: Colors.grey[300],
+                      child: p.customerImage.isEmpty
+                        ? Icon(Icons.person, color: Colors.white)
+                        : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p.customerName,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              color: Color(0xFFFF6600),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            p.idCompany.toString(),
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 10,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: Image.asset('assets/images/phone.png', color: Colors.black),
+                      ),
+                      onPressed: () {
+                        debugPrint('Llamando a ${p.customerName}');
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                      ),
+                      onPressed: () {
+                        debugPrint('Chateando con ${p.customerName}');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            )),
+          ],
+        );
+      },
+    );
+  }
 }
 
-// MODELO DE DATOS
-class Persona {
-  final String nombre;
-  final String empresa;
-  final String imagenUrl;
+Map<String, List<Customer>> agruparPorInicial(List<Customer> customers) {
+  Map<String, List<Customer>> agrupado = {};
 
-  Persona({
-    required this.nombre,
-    required this.empresa,
-    required this.imagenUrl,
-  });
-}
+  for (var customer in customers) {
+    // Validar que tenga nombre no vacío
+    if (customer.customerName.trim().isEmpty) continue;
 
-Map<String, List<Persona>> agruparPorInicial(List<Persona> personas) {
-  Map<String, List<Persona>> agrupado = {};
+    String inicial = customer.customerName[0].toUpperCase();
 
-  for (var persona in personas) {
-    String inicial = persona.nombre[0].toUpperCase();
     if (!agrupado.containsKey(inicial)) {
       agrupado[inicial] = [];
     }
-    agrupado[inicial]!.add(persona);
+    agrupado[inicial]!.add(customer);
   }
 
   var keysOrdenadas = agrupado.keys.toList()..sort();
+
   return {
     for (var key in keysOrdenadas)
-      key: (agrupado[key]!..sort((a, b) => a.nombre.compareTo(b.nombre)))
+      key: (agrupado[key]!..sort((a, b) => a.customerName.compareTo(b.customerName)))
   };
 }
+

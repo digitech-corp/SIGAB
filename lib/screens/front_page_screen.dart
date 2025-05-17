@@ -94,7 +94,7 @@ class FrontActionSection extends StatelessWidget {
             ),
             child: Text('Ingresar', style: AppTextStyles.login),
           ),
-          SizedBox(height: isLandscape ? 12 : 20),
+          //SizedBox(height: isLandscape ? 12 : 20),
           ElevatedButton(
             onPressed: () => Navigator.push(
               context,
