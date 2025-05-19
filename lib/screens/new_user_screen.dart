@@ -1,5 +1,8 @@
+import 'package:balanced_foods/models/user.dart';
+import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -85,7 +88,13 @@ class _NewUserScreenState extends State<NewUserScreen> {
           ),
           const SizedBox(height: 35),
           // Botones
-          RegisterButton(formKey: _formKey),
+          RegisterButton(
+            formKey: _formKey,
+            name: _name,
+            dni: _dni,
+            email: _email,
+            userPassword: _userPassword,
+          ),
         ],
       ),
     );
@@ -229,9 +238,19 @@ class NewUserForm extends StatelessWidget {
 
 class RegisterButton extends StatelessWidget {
   final GlobalKey<FormState> formKey;
+  final TextEditingController name;
+  final TextEditingController dni;
+  final TextEditingController email;
+  final TextEditingController userPassword;
 
-  const RegisterButton({super.key, required this.formKey});
-
+  const RegisterButton({
+    super.key,
+    required this.formKey,
+    required this.name,
+    required this.dni,
+    required this.email,
+    required this.userPassword,
+  });
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -243,16 +262,30 @@ class RegisterButton extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Registrado correctamente")),
+                  final provider = Provider.of<UsersProvider>(context, listen: false);
+                  final newUser = User(
+                    name: name.text,
+                    dni: dni.text,
+                    email: email.text,
+                    password: userPassword.text,
                   );
-                  
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
+
+                  final success = await provider.registerUser(newUser);
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Registrado correctamente")),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Error al registrar")),
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(

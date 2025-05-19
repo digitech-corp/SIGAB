@@ -1,10 +1,9 @@
-import 'dart:convert';
-
+import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/new_user_screen.dart';
 import 'package:balanced_foods/screens/recover_password_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,13 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _userPassword.dispose();
     super.dispose();
   }
-  
-  // Future<List<dynamic>> Users() async {
-  //   final url = Uri.parse('http://localhost:3333/users');
-  //   final response = await http.get(url);
-  //   final data = jsonDecode(response.body);
-  //   return data['users'];
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: isLandscape ? 16 : 30),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.15),
-                child: LoginButtons(formKey: _formKey),
+                child: LoginButtons(
+                    formKey: _formKey,
+                    userName: _userName,
+                    userPassword: _userPassword,
+                  ),
               ),
             ],
           ),
@@ -238,8 +234,15 @@ class LoginForm extends StatelessWidget {
 
 class LoginButtons extends StatelessWidget {
   final GlobalKey<FormState> formKey;
+  final TextEditingController userName;
+  final TextEditingController userPassword;
 
-  const LoginButtons({super.key, required this.formKey});
+  const LoginButtons({
+    super.key,
+    required this.formKey,
+    required this.userName,
+    required this.userPassword,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -256,15 +259,27 @@ class LoginButtons extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Validación exitosa")),
+                    final usersProvider = Provider.of<UsersProvider>(context, listen: false);
+                    final isValid = await usersProvider.validateUser(
+                      userName.text.trim(),
+                      userPassword.text.trim(),
                     );
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SalesModuleScreen()),
-                    );
+
+                    if (isValid) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Inicio de sesión exitoso")),
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SalesModuleScreen()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Usuario o contraseña incorrectos")),
+                      );
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(

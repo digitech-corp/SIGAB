@@ -1,13 +1,13 @@
 import 'package:balanced_foods/models/customer.dart';
-import 'package:balanced_foods/models/company.dart';
+import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/customers_provider.dart';
 
 import 'package:balanced_foods/screens/modulo_clientes/edit_customer_screen.dart';
 import 'package:balanced_foods/screens/modulo_clientes/new_customer_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -17,55 +17,23 @@ class CustomerScreen extends StatefulWidget {
 }
 
 class _CustomerScreenState extends State<CustomerScreen> {
-  List<Customer> customers = [];
-  List<Company> companies = [];
-  bool isLoading = true;
   String query = '';
-  //v1
 
-  @override
+   @override
   void initState() {
     super.initState();
-    loadData();
+    Future.microtask(() {
+      Provider.of<CustomersProvider>(context, listen: false).fetchCustomers();
+      Provider.of<CompaniesProvider>(context, listen: false).fetchCompanies();
+    });
   }
-
-  Future<void> loadData() async {
-    try {
-      final customersUrl = Uri.parse('http://10.0.2.2:12346/customers');
-      final companiesUrl = Uri.parse('http://10.0.2.2:12346/company');
-
-      final customersResponse = await http.get(customersUrl);
-      final companiesResponse = await http.get(companiesUrl);
-
-      if (customersResponse.statusCode == 200 && companiesResponse.statusCode == 200) {
-        final customersData = jsonDecode(customersResponse.body);
-        final companiesData = jsonDecode(companiesResponse.body);
-
-        final List<dynamic> rawCustomers = customersData['customers'];
-        final List<dynamic> rawCompanies = companiesData['company'];
-
-        setState(() {
-          customers = rawCustomers.map((json) => Customer.fromJson(json)).toList();
-          companies = rawCompanies.map((json) => Company.fromJson(json)).toList();
-          isLoading = false;
-        });
-      } else {
-        throw Exception('Error al cargar los datos');
-      }
-    } catch (e) {
-      print('Error: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-
-
-  //V1
   
   @override
   Widget build(BuildContext context) {
+    final customersProvider = Provider.of<CustomersProvider>(context);
+    final companiesProvider = Provider.of<CompaniesProvider>(context);
+    final companies = companiesProvider.companies;
+    
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
@@ -153,10 +121,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
               const SizedBox(height: 10),
 
               Expanded(
-                child: isLoading
+                child: customersProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : () {
-                        final listaFiltrada = customers
+                        final listaFiltrada = customersProvider.customers
                             .where((c) =>
                                 c.customerName.toLowerCase().contains(query.toLowerCase()) ||
                                 c.idCompany.toString().contains(query))
@@ -168,7 +136,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                             child: Text('No se encontraron clientes', style: AppTextStyles.msj),
                           );
                         }
-                        return _CustomersList(context, agrupado);
+                        
+                        return _CustomersList(context, agrupado, companies);
                       }(),
               ),
                 
@@ -200,7 +169,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
   
-  Widget _CustomersList(BuildContext context, Map<String, List<Customer>> agrupado) {
+  Widget _CustomersList(BuildContext context, Map<String, List<Customer>> agrupado, companies) {
     return ListView.builder(
       itemCount: agrupado.length,
       itemBuilder: (context, index) {
@@ -302,9 +271,7 @@ Map<String, List<Customer>> agruparPorInicial(List<Customer> customers) {
     }
     agrupado[inicial]!.add(customer);
   }
-
   var keysOrdenadas = agrupado.keys.toList()..sort();
-
   return {
     for (var key in keysOrdenadas)
       key: (agrupado[key]!..sort((a, b) => a.customerName.compareTo(b.customerName)))

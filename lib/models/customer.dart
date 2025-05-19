@@ -1,4 +1,4 @@
-class Customer {
+class Customer{
   String customerName;
   String customerImage;
   String customerPhone;
@@ -9,6 +9,7 @@ class Customer {
   int idDepartment;
   int idProvince;
   int idDistrict;
+  List<String> customerSteps;
 
   Customer({
     required this.customerName,
@@ -21,20 +22,43 @@ class Customer {
     required this.idDepartment,
     required this.idProvince,
     required this.idDistrict,
+    required this.customerSteps
   });
 
-  factory Customer.fromJson(Map<String, dynamic> json) {
+  factory Customer.fromJSON(Map<String, dynamic> json){
     return Customer(
-      customerName: (json['customerName'] ?? '').toString().trim(),
-      customerImage: (json['customerImage'] ?? '').toString(),
-      customerPhone: (json['customerPhone'] ?? '').toString(),
-      customerEmail: (json['customerEmail'] ?? '').toString(),
-      customerAddress: (json['customerAddress'] ?? '').toString(),
-      customerReference: (json['customerReference'] ?? '').toString(),
-      idCompany: int.tryParse(json['idCompany'].toString()) ?? 0,
-      idDepartment: int.tryParse(json['idDepartment'].toString()) ?? 0,
-      idProvince: int.tryParse(json['idProvince'].toString()) ?? 0,
-      idDistrict: int.tryParse(json['idDistrict'].toString()) ?? 0,
+      customerName: json['customerName'],
+      customerImage: json['customerImage'],
+      customerPhone: json['customerPhone'],
+      customerEmail: json['customerEmail'],
+      customerAddress: json['customerAddress'],
+      customerReference: json['customerReference'],
+      idCompany: json['idCompany'] ?? 0,
+      idDepartment: json['idDepartment'] ?? 0,
+      idProvince: json['idProvince'] ?? 0,
+      idDistrict: json['idDistrict'] ?? 0,
+      customerSteps: List<String>.from(json['customer']),
     );
-  } 
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'customerName': customerName,
+      'customerImage': customerImage,
+      'customerPhone': customerPhone,
+      'customerEmail': customerEmail,
+      'customerAddress': customerAddress,
+      'customerReference': customerReference,
+      'idCompany': idCompany,
+      'idDepartment': idDepartment,
+      'idProvince': idProvince,
+      'idDistrict': idDistrict,
+      'customer': customerSteps
+    };
+  }
+
+  @override
+  String toString() {
+    return 'Customer{customerName: $customerName, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict, customer: $customerSteps}';
+  }
 }
