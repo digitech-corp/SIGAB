@@ -1,19 +1,45 @@
+import 'package:balanced_foods/providers/departments_provider.dart';
+import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:balanced_foods/models/customer.dart';
+import 'package:provider/provider.dart';
 
-class EditCustomerScreen extends StatelessWidget {
+class EditCustomerScreen extends StatefulWidget {
   final Customer customer;
   final String companyName;
 
   const EditCustomerScreen({
-    Key? key, 
-    required this.customer, 
+    Key? key,
+    required this.customer,
     required this.companyName,
   }) : super(key: key);
 
   @override
+  State<EditCustomerScreen> createState() => _EditCustomerScreenState();
+}
+
+class _EditCustomerScreenState extends State<EditCustomerScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      Provider.of<DepartmentsProvider>(context, listen: false).fetchDepartments();
+      Provider.of<ProvincesProvider>(context, listen: false).fetchProvinces();
+      Provider.of<DistrictsProvider>(context, listen: false).fetchDistricts();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final departmentsProvider = Provider.of<DepartmentsProvider>(context);
+    final departmentName = departmentsProvider.getDepartmentName(widget.customer.idDepartment);
+    final provincesProvider = Provider.of<ProvincesProvider>(context);
+    final provinceName = provincesProvider.getProvinceName(widget.customer.idProvince);
+    final districtsProvider = Provider.of<DistrictsProvider>(context);
+    final districtName = districtsProvider.getDistrictName(widget.customer.idDistrict);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -32,11 +58,11 @@ class EditCustomerScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 58,
-                    backgroundImage: customer.customerImage.isNotEmpty
-                        ? NetworkImage(customer.customerImage)
+                    backgroundImage: widget.customer.customerImage.isNotEmpty
+                        ? NetworkImage(widget.customer.customerImage)
                         : null,
                     backgroundColor: Colors.grey[300],
-                    child: customer.customerImage.isEmpty
+                    child: widget.customer.customerImage.isEmpty
                         ? Icon(
                             Icons.person,
                             size: 100,
@@ -44,8 +70,8 @@ class EditCustomerScreen extends StatelessWidget {
                           )
                         : null,
                   ),
-                  Text(customer.customerName, style: AppTextStyles.name),
-                  Text(companyName, style: AppTextStyles.company),
+                  Text(widget.customer.customerName, style: AppTextStyles.name),
+                  Text(widget.companyName, style: AppTextStyles.company),
                 ],
               ),
             ),
@@ -76,20 +102,21 @@ class EditCustomerScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 10),
-                      Text(
-                        customer.customerPhone.length == 9
-                        ? '${customer.customerPhone.substring(0, 3)} ${customer.customerPhone.substring(3, 6)} ${customer.customerPhone.substring(6)}'
-                        : customer.customerPhone,
-                        style: AppTextStyles.customerData
-                      ),
-                      Text('Celular', style: AppTextStyles.subtitle),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.customer.customerPhone.length == 9
+                          ? '${widget.customer.customerPhone.substring(0, 3)} ${widget.customer.customerPhone.substring(3, 6)} ${widget.customer.customerPhone.substring(6)}'
+                          : widget.customer.customerPhone,
+                          style: AppTextStyles.customerData
+                        ),
+                        Text('Celular', style: AppTextStyles.subtitle),
+                      ],
+                    ),
                   ),
-                  Spacer(),
                   Column(
                     children: [
                       IconButton(
@@ -130,15 +157,16 @@ class EditCustomerScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 10),
-                      Text(customer.customerEmail, style: AppTextStyles.customerData),
-                      Text('Particular', style: AppTextStyles.subtitle),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(widget.customer.customerEmail, style: AppTextStyles.customerData),
+                        Text('Particular', style: AppTextStyles.subtitle),
+                      ],
+                    ),
                   ),
-                  Spacer(),
                   Column(
                     children: [
                       IconButton(
@@ -182,18 +210,18 @@ class EditCustomerScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Flexible(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
                         Text(
-                          '${customer.customerAddress} (${customer.customerReference})',
+                          '${widget.customer.customerAddress} (${widget.customer.customerReference})',
                           style: AppTextStyles.customerData,
                           softWrap: true,
                         ),
                         Text(
-                          '${customer.idDepartment}, ${customer.idProvince}, ${customer.idDistrict}',
+                          '$districtName, $provinceName, $departmentName',
                           style: AppTextStyles.customerData
                         ),
                         Text('Dirección Fiscal', style: AppTextStyles.subtitle),

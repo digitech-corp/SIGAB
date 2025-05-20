@@ -10,14 +10,14 @@ class CustomersProvider extends ChangeNotifier{
   Future<void> fetchCustomers() async {
     isLoading = true;
     notifyListeners();
-    final customersUrl = Uri.parse('http://10.0.2.2:12346/customers');
+    final url = Uri.parse('http://10.0.2.2:12346/customers');
     try {
-      final customersResponse = await http.get(customersUrl);
-      if (customersResponse.statusCode == 200) {
-        final customersData = jsonDecode(customersResponse.body);
-        customers = List<Customer>.from(customersData['customers'].map((customer) => Customer.fromJSON(customer)));
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        customers = List<Customer>.from(data['customers'].map((customer) => Customer.fromJSON(customer)));
       } else {
-        print('Error ${customersResponse.statusCode}');
+        print('Error ${response.statusCode}');
         customers = [];
       }
     } catch (e) {

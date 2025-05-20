@@ -4,6 +4,7 @@ import 'package:balanced_foods/screens/new_user_screen.dart';
 import 'package:balanced_foods/screens/recover_password_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,11 +33,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final _userName = TextEditingController();
   final _userPassword = TextEditingController();
 
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
   @override
   void dispose() {
     _userName.dispose();
     _userPassword.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final remember = prefs.getBool('remember_me') ?? false;
+    if (remember) {
+      setState(() {
+        _rememberMe = true;
+        _userName.text = prefs.getString('saved_username') ?? '';
+      });
+    }
+  }
+
+  Future<void> _saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('remember_me', _rememberMe);
+    if (_rememberMe) {
+      await prefs.setString('saved_username', _userName.text.trim());
+    } else {
+      await prefs.remove('saved_username');
+    }
   }
 
   @override
@@ -78,6 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         formKey: _formKey,
                         userName: _userName,
                         userPassword: _userPassword,
+                        rememberMe: _rememberMe,
+                        onRememberMeChanged: (value) {
+                          setState(() {
+                            _rememberMe = value ?? false;
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -90,6 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     formKey: _formKey,
                     userName: _userName,
                     userPassword: _userPassword,
+                    rememberMe: _rememberMe,
+                    onSaveCredentials: _saveCredentials,
                   ),
               ),
             ],
@@ -129,12 +167,16 @@ class LoginForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController userName;
   final TextEditingController userPassword;
+  final bool rememberMe;
+  final ValueChanged<bool?> onRememberMeChanged;
 
   const LoginForm({
     super.key,
     required this.formKey,
     required this.userName,
     required this.userPassword,
+    required this.rememberMe,
+    required this.onRememberMeChanged,
   });
 
   @override
@@ -171,14 +213,15 @@ class LoginForm extends StatelessWidget {
                   Transform.scale(
                     scale: 0.80,
                     child: Checkbox(
-                      value: true,
-                      onChanged: (_) {},
+                      value: rememberMe,
+                      onChanged: onRememberMeChanged,
                       activeColor: const Color(0xFFFF6600),
                       shape: const CircleBorder(),
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text('Recordarme', style: AppTextStyles.remember),
                 ],
               ),
@@ -236,12 +279,16 @@ class LoginButtons extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController userName;
   final TextEditingController userPassword;
+  final bool rememberMe;
+  final Future<void> Function() onSaveCredentials;
 
   const LoginButtons({
     super.key,
     required this.formKey,
     required this.userName,
     required this.userPassword,
+    required this.rememberMe,
+    required this.onSaveCredentials,
   });
 
   @override
@@ -250,6 +297,7 @@ class LoginButtons extends StatelessWidget {
   final horizontalPadding = screenWidth * 0.0;
   final screenHeight = MediaQuery.of(context).size.height;
   final isLandscape = screenWidth > screenHeight;
+  
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 480),
     child: Padding(
@@ -261,17 +309,18 @@ class LoginButtons extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-                    final isValid = await usersProvider.validateUser(
+                    final userProvider = Provider.of<UsersProvider>(context, listen: false);
+                    final user  = await userProvider.validateUser(
                       userName.text.trim(),
                       userPassword.text.trim(),
                     );
 
-                    if (isValid) {
+                    if (user  != null) {
+                      await onSaveCredentials();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Inicio de sesión exitoso")),
                       );
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const SalesModuleScreen()),
                       );

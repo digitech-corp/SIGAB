@@ -1,3 +1,4 @@
+import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:balanced_foods/screens/modulo_cobranzas/collection_screen.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/order_screen.dart';
 import 'package:balanced_foods/screens/modulo_seguimiento/follow_screen.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
 import 'package:balanced_foods/screens/modulo_dashboard/dashboard_screen.dart';
 import 'package:balanced_foods/screens/modulo_clientes/customer_screen.dart';
+import 'package:provider/provider.dart';
 
 class SalesModuleScreen extends StatefulWidget {
   const SalesModuleScreen({super.key});
@@ -83,13 +85,12 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
   Widget _buildMainPanel() {
     final screenWidth = MediaQuery.of(context).size.width;
     final bodyPadding = screenWidth * 0.06;
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: bodyPadding),
       child: Column(
         children: [
-          const SizedBox(height: 35),
-          const SalesModuleHeader(),
+          const SizedBox(height: 40),
+          SalesModuleHeader(),
           const SizedBox(height: 35),
           SalesModuleCards(onCardTap: _onItemTapped),
         ],
@@ -98,6 +99,7 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
   }
   
   Widget _buildDrawer(BuildContext context) {
+    final loggedUser = Provider.of<UsersProvider>(context).loggedUser;
     return Drawer(
       child: Column(
         children: [
@@ -116,20 +118,35 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(50),
-                      child: const Image(
-                        image: AssetImage('assets/images/user.jpg'),
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
+                      child: loggedUser?.image != null && loggedUser!.image!.isNotEmpty
+                      ? Image.network(
+                          loggedUser.image!,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'assets/images/user.jpg',
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          'assets/images/user.jpg',
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        ),
                     ),
                     const SizedBox(width: 10),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('{Nombre de Usuario}', style: AppTextStyles.titleDrawer),
-                        Text('{Rol de Usuario}', style: AppTextStyles.weak),
+                        Text(loggedUser?.name ??'Invitado', style: AppTextStyles.titleDrawer),
+                        Text(loggedUser?.role ??'Sin rol', style: AppTextStyles.weak),
                       ],
                     ),
                   ],
@@ -193,6 +210,7 @@ class SalesModuleHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loggedUser = Provider.of<UsersProvider>(context).loggedUser;
     return  Row(
       children: [
         Column(
@@ -205,19 +223,34 @@ class SalesModuleHeader extends StatelessWidget {
                   onPressed: () => Scaffold.of(context).openDrawer(),
                   icon: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
-                    child: const Image(
-                      image: AssetImage('assets/images/user.jpg'),
-                      width: 35,
-                      height: 35,
-                      fit: BoxFit.cover,
-                    ),
+                    child: loggedUser?.image != null && loggedUser!.image!.isNotEmpty
+                    ? Image.network(
+                        loggedUser.image!,
+                        width: 35,
+                        height: 35,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/user.jpg',
+                            width: 35,
+                            height: 35,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        'assets/images/user.jpg',
+                        width: 35,
+                        height: 35,
+                        fit: BoxFit.cover,
+                      ),
                   ),
                   tooltip: 'Abrir menú',
                 );
               },
             ),
-            const SizedBox(height: 8),
-            Text('Hola {name}', style: AppTextStyles.strong),
+            const SizedBox(height: 15),
+            Text('Hola ${loggedUser?.name ?? 'Usuario'}', style: AppTextStyles.strong),
             Text('Bienvenida a tu panel de trabajo', style: AppTextStyles.weak),
           ],
         ),

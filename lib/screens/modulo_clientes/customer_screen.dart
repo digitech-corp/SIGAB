@@ -19,7 +19,7 @@ class CustomerScreen extends StatefulWidget {
 class _CustomerScreenState extends State<CustomerScreen> {
   String query = '';
 
-   @override
+  @override
   void initState() {
     super.initState();
     Future.microtask(() {
@@ -121,43 +121,43 @@ class _CustomerScreenState extends State<CustomerScreen> {
               const SizedBox(height: 10),
 
               Expanded(
-                child: customersProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : () {
-                        final listaFiltrada = customersProvider.customers
-                            .where((c) =>
-                                c.customerName.toLowerCase().contains(query.toLowerCase()) ||
-                                c.idCompany.toString().contains(query))
-                            .toList();
-                        final agrupado = agruparPorInicial(listaFiltrada);
-
-                        if (agrupado.isEmpty) {
-                          return Center(
-                            child: Text('No se encontraron clientes', style: AppTextStyles.msj),
-                          );
-                        }
-                        
-                        return _CustomersList(context, agrupado, companies);
-                      }(),
-              ),
-                
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 25),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                child: Stack(
                   children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.add_circle,
-                        color: AppColors.orange,
-                        size: 45,
+                    customersProvider.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : () {
+                            final listaFiltrada = customersProvider.customers
+                                .where((c) =>
+                                    c.customerName.toLowerCase().contains(query.toLowerCase()) ||
+                                    c.idCompany.toString().contains(query))
+                                .toList();
+                            final agrupado = agruparPorInicial(listaFiltrada);
+
+                            if (agrupado.isEmpty) {
+                              return Center(
+                                child: Text('No se encontraron clientes', style: AppTextStyles.msj),
+                              );
+                            }
+
+                            return _CustomersList(context, agrupado, companies);
+                          }(),
+
+                    Positioned(
+                      bottom: 20,
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.add_circle,
+                          color: AppColors.orange,
+                          size: 45,
+                        ),
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => NewCustomerScreen()),
+                          );
+                        },
                       ),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => NewCustomerScreen()),
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -180,11 +180,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Text(letra, style: AppTextStyles.orange),
             ),
             ...grupo.map((c) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.only(left: 10, top: 4, bottom: 4),
               child: InkWell(
                 onTap: () {
                   Navigator.push(

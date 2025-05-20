@@ -10,14 +10,14 @@ class CompaniesProvider extends ChangeNotifier{
   Future<void> fetchCompanies() async {
     isLoading = true;
     notifyListeners();
-    final companiesUrl = Uri.parse('http://10.0.2.2:12346/companies');
+    final url = Uri.parse('http://10.0.2.2:12346/companies');
     try {
-      final companiesResponse = await http.get(companiesUrl);
-      if (companiesResponse.statusCode == 200) {
-        final companiesData = jsonDecode(companiesResponse.body);
-        companies = List<Company>.from(companiesData['companies'].map((company) => Company.fromJSON(company)));
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        companies = List<Company>.from(data['companies'].map((company) => Company.fromJSON(company)));
       } else {
-        print('Error ${companiesResponse.statusCode}');
+        print('Error ${response.statusCode}');
         companies = [];
       }
     } catch (e) {
