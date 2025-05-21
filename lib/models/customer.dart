@@ -9,7 +9,6 @@ class Customer{
   int idDepartment;
   int idProvince;
   int idDistrict;
-  List<String> customerSteps;
 
   Customer({
     required this.customerName,
@@ -21,8 +20,7 @@ class Customer{
     required this.idCompany,
     required this.idDepartment,
     required this.idProvince,
-    required this.idDistrict,
-    required this.customerSteps
+    required this.idDistrict
   });
 
   factory Customer.fromJSON(Map<String, dynamic> json){
@@ -36,8 +34,7 @@ class Customer{
       idCompany: json['idCompany'] ?? 0,
       idDepartment: json['idDepartment'] ?? 0,
       idProvince: json['idProvince'] ?? 0,
-      idDistrict: json['idDistrict'] ?? 0,
-      customerSteps: List<String>.from(json['customer']),
+      idDistrict: json['idDistrict'] ?? 0
     );
   }
 
@@ -52,13 +49,12 @@ class Customer{
       'idCompany': idCompany,
       'idDepartment': idDepartment,
       'idProvince': idProvince,
-      'idDistrict': idDistrict,
-      'customer': customerSteps
+      'idDistrict': idDistrict
     };
   }
 
   @override
   String toString() {
-    return 'Customer{customerName: $customerName, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict, customer: $customerSteps}';
+    return 'Customer{customerName: $customerName, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict}';
   }
 }

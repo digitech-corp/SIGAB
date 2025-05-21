@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 class DepartmentsProvider extends ChangeNotifier{
   bool isLoading = false;
   List<Department> departments = [];
+
+  int? selectedDepartmentId;
+  int? selectedProvinceId;
   
   Future<void> fetchDepartments() async {
     isLoading = true;

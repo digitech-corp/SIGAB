@@ -28,4 +28,28 @@ class CustomersProvider extends ChangeNotifier{
       notifyListeners();
     }
   }
+
+  Future<bool> registerCustomer(Customer customer) async {
+    final url = Uri.parse('http://10.0.2.2:12346/customers');
+    
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(customer.toJson()),
+      );
+      
+      if (response.statusCode == 201) {
+        await fetchCustomers();
+        return true;
+        
+      } else {
+        print('Error al registrar: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
 }

@@ -28,4 +28,17 @@ class CompaniesProvider extends ChangeNotifier{
       notifyListeners();
     }
   }
+
+  Future<int?> createCompany(Company company) async {
+    final response = await http.post(Uri.parse('http://10.0.2.2:12346/companies'),
+    // headers: {'Content-Type': 'application/json'},
+    // body: jsonEncode(company.toJson()),
+    );
+    
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return data['idCompany'];
+    }
+    return null;
+  }
 }
