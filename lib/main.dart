@@ -2,6 +2,7 @@ import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:balanced_foods/screens/front_page_screen.dart';
@@ -36,6 +37,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => DistrictsProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProductsProvider(),
         )
       ],
       child: const MaterialApp(

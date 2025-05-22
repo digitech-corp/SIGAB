@@ -254,6 +254,9 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
     final departmentsProvider = Provider.of<DepartmentsProvider>(context);
     final provincesProvider = Provider.of<ProvincesProvider>(context);
     final districtsProvider = Provider.of<DistrictsProvider>(context);
+    //Nuevo
+    final companyProvider = Provider.of<CompaniesProvider>(context, listen: false);
+    final customerProvider = Provider.of<CustomersProvider>(context, listen: false);
 
     final filteredProvinces =
         selectedDepartment == null
@@ -276,7 +279,6 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               );
               return d.idProvince == province.idProvince;
             }).toList();
-
     return Form(
       key: widget.formKey,
       child: Column(
@@ -484,35 +486,35 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               child: ElevatedButton(
                 onPressed: () async {
                   if (widget.formKey.currentState!.validate()) {
-                    //Crear company
-                    final newCompany = Company(
-                      companyName: widget.companyName.text,
-                      companyRUC: widget.companyRUC.text,
-                      companyAddress: widget.companyAddress.text,
-                      companyWeb: widget.companyWeb.text,
-                    );
+                    try {
+                      //Crear company
+                      final newCompany = Company(
+                        companyName: widget.companyName.text,
+                        companyRUC: widget.companyRUC.text,
+                        companyAddress: widget.companyAddress.text,
+                        companyWeb: widget.companyWeb.text,
+                      );
 
-                    // Enviar Company al backend y obtener idCompany generado
-                    final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
-                    final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
-                    final idCompany = await companiesProvider.createCompany(newCompany);
+                      // Enviar Company al backend y obtener idCompany generado
+                      final int companyId = await companyProvider.createCompany(newCompany);
+                      int _getDepartmentIdByName(String name) {
+                        return departmentsProvider.departments
+                            .firstWhere((d) => d.department == name)
+                            .idDepartment;
+                      }
 
-                    if (idCompany != null) {
-                      final departmentId =
-                          departmentsProvider.departments
-                              .firstWhere(
-                                (d) => d.department == selectedDepartment,
-                              )
-                              .idDepartment;
-                      final provinceId =
-                          provincesProvider.provinces
-                              .firstWhere((p) => p.province == selectedProvince)
-                              .idProvince;
-                      final districtId =
-                          districtsProvider.districts
-                              .firstWhere((d) => d.district == selectedDistrict)
-                              .idDistrict;
+                      int _getProvinceIdByName(String name) {
+                        return filteredProvinces
+                            .firstWhere((p) => p.province == name)
+                            .idProvince;
+                      }
 
+                      int _getDistrictIdByName(String name) {
+                        return filteredDistricts
+                            .firstWhere((d) => d.district == name)
+                            .idDistrict;
+                      }
+                      
                       // Crear Customer
                       final newCustomer = Customer(
                         customerName: widget.customerName.text,
@@ -521,63 +523,31 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                         customerEmail: widget.customerEmail.text,
                         customerAddress: widget.customerAddress.text,
                         customerReference: widget.customerReference.text,
-                        idCompany: idCompany,
-                        idDepartment: departmentId,
-                        idProvince: provinceId,
-                        idDistrict: districtId,
+                        idCompany: companyId,
+                        idDepartment: _getDepartmentIdByName(selectedDepartment!),
+                        idProvince: _getProvinceIdByName(selectedProvince!),
+                        idDistrict: _getDistrictIdByName(selectedDistrict!),
                       );
 
-                      final success = await customersProvider.registerCustomer(newCustomer);
-
-                      if (success) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Se ha añadido exitosamente",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                              ),
-                            ),
-                            backgroundColor: Colors.green,
-                            behavior: SnackBarBehavior.floating,
-                            duration: Duration(seconds: 5),
-                            margin: EdgeInsets.all(16),
-                          ),
-                        );
-
-                        Future.delayed(const Duration(seconds: 5), () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      NewCustomerScreen(showSuccess: true),
-                            ),
-                          );
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Error al registrar",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'Montserrat',
-                              ),
-                            ),
-                            backgroundColor: Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(16),
-                          ),
-                        );
-                      }
-                    } else {
+                      await customerProvider.registerCustomer(newCustomer);
+                      
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Error al crear la empresa"),
-                          backgroundColor: Colors.red,
-                        ),
+                        const SnackBar(content: Text("Se ha añadido exitosamente")),
+                      );
+
+                      Future.delayed(const Duration(seconds: 2), () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    NewCustomerScreen(showSuccess: true),
+                          ),
+                        );
+                      });                    
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error al registrar: ${e.toString()}")),
                       );
                     }
                   }

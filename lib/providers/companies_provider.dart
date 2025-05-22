@@ -29,16 +29,15 @@ class CompaniesProvider extends ChangeNotifier{
     }
   }
 
-  Future<int?> createCompany(Company company) async {
+  Future<int> createCompany(Company company) async {
     final response = await http.post(Uri.parse('http://10.0.2.2:12346/companies'),
-    // headers: {'Content-Type': 'application/json'},
-    // body: jsonEncode(company.toJson()),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(company.toJson()),
     );
-    
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      return data['idCompany'];
+    if (response.statusCode != 201) {
+      throw Exception('Error al registrar empresa');
     }
-    return null;
+    final data = jsonDecode(response.body);
+    return data['idCompany'];
   }
 }
