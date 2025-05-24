@@ -212,7 +212,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                       SizedBox(
                         width: 30,
                         child: TextFormField(
-                          initialValue: selection.quantity == 0 ? '' : selection.quantity.toString(),
+                          controller: selection.controller,
                           enabled: selection.isSelected,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
@@ -286,7 +286,10 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                             onChanged: (val) {
                               setState(() {
                                 selection.isSelected = val ?? false;
-                                product.state = val ?? false;
+                                if (!selection.isSelected) {
+                                  selection.quantity = 0;
+                                  selection.controller.text = '';
+                                }
                               });
                             },
                           ),
@@ -329,12 +332,13 @@ class ProductSelection {
   final Product product;
   bool isSelected;
   int quantity;
+  TextEditingController controller;
 
   ProductSelection({
     required this.product,
     this.isSelected = false,
     this.quantity = 0,
-  });
+  }): controller = TextEditingController(text: '');
 }
 
 // MODELO DE DATOS

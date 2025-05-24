@@ -29,6 +29,10 @@ class CompaniesProvider extends ChangeNotifier{
     }
   }
 
+  String getCompanyNameById(int id) {
+    return companies.firstWhere((c) => c.idCompany == id, orElse: () => Company(idCompany: 0, companyRUC: '', companyName: 'Desconocido', companyAddress: '', companyWeb: '')).companyName;
+  }
+
   Future<int> createCompany(Company company) async {
     final response = await http.post(Uri.parse('http://10.0.2.2:12346/companies'),
     headers: {'Content-Type': 'application/json'},

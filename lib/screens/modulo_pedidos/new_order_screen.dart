@@ -1,6 +1,10 @@
+import 'package:balanced_foods/models/customer.dart';
+import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class NewOrderScreen extends StatefulWidget {
   const NewOrderScreen({super.key});
@@ -10,12 +14,49 @@ class NewOrderScreen extends StatefulWidget {
 }
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Customer> _filteredCustomers = [];
+  Customer? _selectedCustomer;
   bool _contado = false;
   bool _credito = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+      final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
+
+      customersProvider.fetchCustomers();
+      companiesProvider.fetchCompanies();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final customersProvider = Provider.of<CustomersProvider>(context);
+    final companiesProvider = Provider.of<CompaniesProvider>(context);
+
+    void _applySearch() {
+      final query = _searchController.text.toLowerCase();
+      setState(() {
+        if (query.isEmpty) {
+          _filteredCustomers = [];
+        } else {
+          _filteredCustomers = customersProvider.customers.where((customer) {
+            final name = customer.customerName.toLowerCase();
+            final companyName = companiesProvider.getCompanyNameById(customer.idCompany).toLowerCase();
+            return name.contains(query) || companyName.contains(query);
+          }).toList();
+        }
+      });
+    }
+
+    if (!_searchController.hasListeners) {
+      _searchController.addListener(_applySearch);
+    }
     final bool haySeleccion = _credito || _contado;
+    
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
@@ -66,15 +107,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              Text(
-                'CLIENTE', 
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                  color: Colors.black
-                ),
-              ),
+              const Text('CLIENTE'),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
@@ -83,127 +116,133 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 ),
                 child: Column(
                   children: [
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 25,
-                            child: TextField(
-                              decoration: InputDecoration(
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                                hintText: 'Buscar Cliente/Empresa',
-                                hintStyle: const TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 10,
-                                  color: Colors.black,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFECEFF1),
-                                prefixIcon: const Icon(
-                                  Icons.search,
-                                  color: Colors.black,
-                                  size: 15,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
-                              ),
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 12,
-                                color: Colors.black,
-                              ),
-                            ),
+                    const SizedBox(height: 20),
+                    Container(
+                      height: 25,
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                          hintText: 'Buscar Cliente/Empresa',
+                          hintStyle: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w300,
+                            fontSize: 10,
+                            color: Colors.black,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFECEFF1),
+                          prefixIcon: const Icon(Icons.search, size: 15, color: Colors.black),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(color: Colors.black),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'CLIENTE:',
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'EMPRESA:',
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'FACTURA:',
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black
-                                    ),
-                                  ),
-                                ], 
-                              ),
-                              const SizedBox(width: 40),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '{Alfredo Perez Santisteban}',
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '{MOLINO SANTISTEBAN SAC}',
-                                    style: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Icon(Icons.check_box),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
                       ),
-                    )
+                    ),
+                    if (_searchController.text.isNotEmpty)
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _filteredCustomers.length,
+                        itemBuilder: (context, index) {
+                          final customer = _filteredCustomers[index];
+                          return ListTile(
+                            dense: true,
+                            title: Text(
+                              customer.customerName,
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400
+                              ),
+                            ),
+                            subtitle: Text(
+                              companiesProvider.getCompanyNameById(customer.idCompany),
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _selectedCustomer = customer;
+                                _filteredCustomers = [];
+                                _searchController.clear();
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    const SizedBox(height: 10),
+                    if (_selectedCustomer != null)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'CLIENTE:',
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'EMPRESA:',
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'FACTURA:',
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 40),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedCustomer!.customerName,
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                  ),
+                                ),
+                                Text(
+                                  companiesProvider.getCompanyNameById(_selectedCustomer!.idCompany),
+                                  style: TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400
+                                  ),
+                                ),
+                                // Checkbox(
+                                //   value: false, 
+                                //   onChanged: (value) => true,
+                                // )
+                                Icon(Icons.check_box),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
