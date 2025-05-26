@@ -31,23 +31,19 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     });
   }
 
-  Map<int, ProductSelection> selectionMap = {};
+  
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProductsProvider>(context);
+    final selectionMap = provider.selectionMap;
     final selectedTipo = catalogos[selectedIndex].nombre;
+    // print('Total productos: ${provider.products.length}');
     final productosFiltrados = provider.products
       .where((p) => p.animalType.toUpperCase() == selectedTipo.toUpperCase())
       .toList();
 
-    final selections = productosFiltrados.map((product) {
-      if (selectionMap.containsKey(product.idProduct)) {
-        return selectionMap[product.idProduct]!;
-      } else {
-        final newSelection = ProductSelection(product: product);
-        selectionMap[product.idProduct] = newSelection;
-        return newSelection;
-      }
+    selections = productosFiltrados.map((product) {
+      return selectionMap[product.idProduct] ?? ProductSelection(product: product);
     }).toList();
     
     return Scaffold(
@@ -176,6 +172,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   }
 
   Widget _buildContent(List<ProductSelection> selections) {
+    final provider = Provider.of<ProductsProvider>(context);
     if (selections.isEmpty) {
       return const Center(child: Text('No hay productos disponibles.'));
     }
@@ -223,16 +220,21 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           style: TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 10,
-                            fontWeight: FontWeight.w400
+                           fontWeight: FontWeight.w400
                           ),
                           onChanged: (val) {
                             final parsed = int.tryParse(val);
                             if (parsed != null) {
                               setState(() {
                                 selection.quantity = parsed;
+                                provider.toggleSelection(
+                                  selection.product,
+                                  isSelected: selection.isSelected,
+                                  quantity: selection.quantity,
+                                );
                               });
                             }
-                          },
+                          }
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -269,7 +271,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(
+                       SizedBox(
                         width: 30,
                         child: Theme(
                           data: Theme.of(context).copyWith(
@@ -290,8 +292,13 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                                   selection.quantity = 0;
                                   selection.controller.text = '';
                                 }
+                                provider.toggleSelection(
+                                  selection.product,
+                                  isSelected: selection.isSelected,
+                                  quantity: selection.quantity,
+                                );
                               });
-                            },
+                            }
                           ),
                         ),
                       ),
@@ -310,11 +317,29 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     return Center(
       child: ElevatedButton(
         onPressed: () {
-          final selected = selections.where((s) => s.isSelected).toList();
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => NewOrderScreen()),
-          );
+          try {
+            final provider = Provider.of<ProductsProvider>(context, listen: false);
+            final selected = provider.selectedProducts;
+
+
+            if (selected.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Selecciona al menos un producto con cantidad')),
+              );
+              return;
+            }
+            
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NewOrderScreen()),
+            );
+          } catch (e, stack) {
+            print('Error al guardar selección: $e');
+            print(stack);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ocurrió un error inesperado.')),
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFF6600),

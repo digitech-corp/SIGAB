@@ -518,7 +518,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                       // Crear Customer
                       final newCustomer = Customer(
                         customerName: widget.customerName.text,
-                        customerImage: widget.customerImage.text,
+                        customerImage: _base64Image ?? '',
                         customerPhone: widget.customerPhone.text,
                         customerEmail: widget.customerEmail.text,
                         customerAddress: widget.customerAddress.text,

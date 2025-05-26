@@ -1,6 +1,7 @@
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
+import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 
 import 'package:balanced_foods/models/customer.dart';
@@ -254,31 +255,6 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                 const RecordCard(),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 282,
-                  height: 37,
-                  child: ElevatedButton(
-                    onPressed: () {
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: AppColors.orange, 
-                          width: 1, 
-                        ),
-                      ),
-                    ),
-                    child: Text('Editar Contacto', style: AppTextStyles.btn),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            )
           ],
         ),
         
@@ -302,7 +278,6 @@ class _RecordCardState extends State<RecordCard> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 180,
       child: Column(
         children: [
           // Botones de filtro
@@ -374,10 +349,10 @@ class _RecordCardState extends State<RecordCard> {
 
   Widget _recordDetail() {
     return Card(
-      color: Color(0xFFD9D9D9),
+      color: Colors.transparent,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: SizedBox(
-        height: 80,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -385,7 +360,26 @@ class _RecordCardState extends State<RecordCard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text('Historial')
+                  const SizedBox(height: 100),
+                  SizedBox(
+                    width: 282,
+                    height: 37,
+                    child: ElevatedButton(
+                      onPressed: () {
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: AppColors.orange, 
+                            width: 1, 
+                          ),
+                        ),
+                      ),
+                      child: Text('Editar Contacto', style: AppTextStyles.btn),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -396,20 +390,19 @@ class _RecordCardState extends State<RecordCard> {
   }
   Widget _ordersDetail() {
     return Card(
-      color: Color(0xFFD9D9D9),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: Colors.transparent,
+      elevation: 0,
       child: SizedBox(
-        height: 80,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text('Pedidos')
-                ],
-              ),
+              partOrder(),
+              searchProduct(),
+              resumeProduct(),
+              paymentMethod(),
+              observations(),
+              buttonRegisterOrder(),
             ],
           ),
         ),
@@ -476,8 +469,6 @@ class AppTextStyles {
   static final btn = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
   static TextStyle titleCards(bool isSelected) {
     return base.copyWith(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
       color: isSelected ? AppColors.orange : AppColors.lightGris,
     );
   }
