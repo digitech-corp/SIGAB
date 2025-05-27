@@ -1,9 +1,9 @@
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
-
 import 'package:balanced_foods/models/customer.dart';
 import 'package:provider/provider.dart';
 
@@ -40,7 +40,9 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     final provinceName = provincesProvider.getProvinceName(widget.customer.idProvince);
     final districtsProvider = Provider.of<DistrictsProvider>(context);
     final districtName = districtsProvider.getDistrictName(widget.customer.idDistrict);
-
+    
+    final products = Provider.of<ProductsProvider>(context, listen: false);
+    products.setCurrentCustomer(widget.customer.idCustomer!);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -252,7 +254,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
             SizedBox(height: 10),
             Column(
               children: [
-                const RecordCard(),
+                RecordCard(customer: widget.customer),
               ],
             ),
           ],
@@ -264,7 +266,12 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
 }
 
 class RecordCard extends StatefulWidget {
-  const RecordCard({super.key});
+  final Customer customer;
+  
+  const RecordCard({
+    Key? key,
+    required this.customer,
+  }) : super(key: key);
 
   @override
   State<RecordCard> createState() => _RecordCardState();
@@ -273,6 +280,21 @@ class RecordCard extends StatefulWidget {
 class _RecordCardState extends State<RecordCard> {
   int _selectedIndex = 0;
   final List<String> _titulos = ['Historial', 'Pedidos', 'Facturación', 'Créditos'];
+  final TextEditingController _searchController = TextEditingController();
+  bool _isChecked = false;
+
+  final _observationsKey = GlobalKey<ObservationsState>();
+  final _paymentKey = GlobalKey<PaymentMethodState>();
+
+  void _resetForm() {
+    setState(() {
+      _searchController.clear();
+      _isChecked = false;
+    });
+
+    final provider = Provider.of<ProductsProvider>(context, listen: false);
+    provider.clearSelections();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -397,12 +419,49 @@ class _RecordCardState extends State<RecordCard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Row(
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        'FACTURA:',
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 25,
+                        child: Transform.scale(
+                          scale: 0.8,
+                          child: Checkbox(
+                            value: _isChecked, 
+                            activeColor: Color(0xFF333333),
+                            checkColor: Colors.white,
+                            onChanged: (value) {
+                              setState(() {
+                                _isChecked = value ?? false;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
               partOrder(),
               searchProduct(),
               resumeProduct(),
-              paymentMethod(),
-              observations(),
-              buttonRegisterOrder(),
+              paymentMethod(key: _paymentKey),
+              observations(key: _observationsKey),
+              buttonRegisterOrder(onPressed: _registerOrder),
             ],
           ),
         ),
@@ -451,6 +510,51 @@ class _RecordCardState extends State<RecordCard> {
           ),
         ),
       ),
+    );
+  }
+
+  void _registerOrder() {
+    final idCustomer = widget.customer.idCustomer;
+    final products = Provider.of<ProductsProvider>(context, listen: false);
+    final selectedProducts = products.selectedProducts;
+    final paymentMethod = _paymentKey.currentState?.selectedPaymentMethod;
+
+    final receiptType = _isChecked ? "FACTURA" : "BOLETA";
+
+    // Validar cliente
+    if (idCustomer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No se reconoció el cliente")),
+      );
+      return;
+    }
+
+    // Validar productos
+    if (selectedProducts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selecciona al menos un producto")),
+      );
+      return;
+    }
+
+    // Validar método de pago
+    if (paymentMethod == null || paymentMethod.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selecciona un método de pago")),
+      );
+      return;
+    }
+
+    // Si todo es válido, cerrar modal y registrar
+    Navigator.pop(context);
+
+    registerOrder(
+      context: context,
+      idCustomer: idCustomer,
+      observationsKey: _observationsKey,
+      paymentKey: _paymentKey,
+      resetForm: _resetForm,
+      receiptType: receiptType,
     );
   }
 }

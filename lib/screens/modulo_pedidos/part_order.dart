@@ -1,3 +1,6 @@
+import 'package:balanced_foods/models/order.dart';
+import 'package:balanced_foods/models/orderDetail.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
@@ -389,12 +392,18 @@ class paymentMethod extends StatefulWidget {
   const paymentMethod({super.key});
 
   @override
-  State<paymentMethod> createState() => _paymentMethodState();
+  State<paymentMethod> createState() => PaymentMethodState();
 }
 
-class _paymentMethodState extends State<paymentMethod> {
+class PaymentMethodState extends State<paymentMethod> {
   bool _contado = false;
   bool _credito = false;
+  
+  String get selectedPaymentMethod {
+    if (_contado) return "CONTADO";
+    if (_credito) return "CRÉDITO";
+    return "";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -528,8 +537,27 @@ class _paymentMethodState extends State<paymentMethod> {
   }
 }
 
-class observations extends StatelessWidget {
+class observations extends StatefulWidget  {
   const observations({super.key});
+
+  @override
+  State<observations> createState() => ObservationsState();
+}
+
+class ObservationsState extends State<observations> {
+  final deliveryLocation = TextEditingController();
+  final _deliveryDate = TextEditingController();
+  final _deliveryTime = TextEditingController();
+  final _additionalInfo = TextEditingController();
+  
+  @override
+  void dispose() {
+    deliveryLocation.dispose();
+    _deliveryDate.dispose();
+    _deliveryTime.dispose();
+    _additionalInfo.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -572,6 +600,7 @@ class observations extends StatelessWidget {
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
+                        controller: deliveryLocation,
                         decoration: InputDecoration(
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
@@ -606,6 +635,7 @@ class observations extends StatelessWidget {
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
+                        controller: _deliveryDate,
                         decoration: InputDecoration(
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
@@ -640,6 +670,7 @@ class observations extends StatelessWidget {
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
+                        controller: _deliveryTime,
                         decoration: InputDecoration(
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
@@ -674,6 +705,7 @@ class observations extends StatelessWidget {
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
+                        controller: _additionalInfo,
                         maxLines: 2,
                         minLines: 2,
                         keyboardType: TextInputType.multiline,
@@ -704,10 +736,24 @@ class observations extends StatelessWidget {
       ]
     );
   }
+
+  Map<String, String> getObservations() {
+    return {
+      "place": deliveryLocation.text,
+      "date": _deliveryDate.text,
+      "time": _deliveryTime.text,
+      "info": _additionalInfo.text,
+    };
+  }
 }
 
 class buttonRegisterOrder extends StatelessWidget {
-  const buttonRegisterOrder({super.key});
+  final VoidCallback onPressed;
+
+  const buttonRegisterOrder({
+    required this.onPressed,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -718,9 +764,7 @@ class buttonRegisterOrder extends StatelessWidget {
           width: double.infinity,
           height: 40,
           child: ElevatedButton(
-            onPressed: () {
-              // Acción al presionar el botón
-            },
+            onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               elevation: 0,
               backgroundColor: Color(0xFFFF6600),
@@ -741,6 +785,90 @@ class buttonRegisterOrder extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+Future<void> registerOrder({
+  required BuildContext context,
+  int? idCustomer,
+  required GlobalKey<ObservationsState> observationsKey,
+  required GlobalKey<PaymentMethodState> paymentKey,
+  required VoidCallback resetForm,
+  required String receiptType,
+}) async {
+  final provider = Provider.of<OrdersProvider>(context, listen: false);
+  final products = Provider.of<ProductsProvider>(context, listen: false);
+  final selectedProducts = products.selectedProducts;
+
+  final obs = observationsKey.currentState!.getObservations();
+  final payment = paymentKey.currentState!.selectedPaymentMethod;
+
+  double subtotal = selectedProducts.fold(
+    0.0,
+    (total, item) => total + (item.product.price * item.quantity),
+  );
+  double igv = subtotal * 0.18;
+  double total = subtotal + igv;
+
+  final details = selectedProducts.map((item) {
+    return OrderDetail(
+      idProducto: item.product.idProduct,
+      cantidad: item.quantity,
+      precioUnitario: item.product.price,
+      precioParcial: item.quantity * item.product.price,
+      idCustomer: idCustomer!,
+    );
+  }).toList();
+
+  DateTime? _tryParseDate(dynamic date) {
+    if (date is String && date.isNotEmpty) {
+      try {
+        return DateTime.parse(date);
+      } catch (_) {
+        print('Formato de fecha inválido: $date');
+      }
+    }
+    return null;
+  }
+
+  TimeOfDay? _tryParseTimeOfDay(dynamic time) {
+    if (time is String && time.contains(":")) {
+      try {
+        final parts = time.split(":");
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return TimeOfDay(hour: hour, minute: minute);
+      } catch (_) {
+        print('Formato de hora inválido: $time');
+      }
+    }
+    return null;
+  }
+
+  final order = Order(
+    paymentMethod: payment,
+    subtotal: subtotal,
+    igv: igv,
+    total: total,
+    deliveryLocation: obs['place'] ?? '',
+    deliveryDate: _tryParseDate(obs['date']),
+    deliveryTime: _tryParseTimeOfDay(obs['time']),
+    additionalInformation: obs['info'] ?? '',
+    details: details,
+    receiptType: receiptType,
+  );
+
+  final success = await provider.registerOrder(order);
+
+  if (success) {
+    resetForm();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Pedido registrado correctamente")),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error al registrar pedido")),
     );
   }
 }

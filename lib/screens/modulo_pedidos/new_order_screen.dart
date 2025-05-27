@@ -3,7 +3,6 @@ import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
-import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +18,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Customer> _filteredCustomers = [];
   Customer? _selectedCustomer;
-  bool _contado = false;
-  bool _credito = false;
   bool _isChecked = false;
 
   @override
@@ -34,6 +31,21 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       companiesProvider.fetchCompanies();
     });
   }
+
+  void _resetForm() {
+    setState(() {
+      _selectedCustomer = null;
+      _searchController.clear();
+      _isChecked = false;
+      _filteredCustomers = [];
+    });
+
+    final provider = Provider.of<ProductsProvider>(context, listen: false);
+    provider.clearSelections();
+  }
+
+  final _observationsKey = GlobalKey<ObservationsState>();
+  final _paymentKey = GlobalKey<PaymentMethodState>();
 
   @override
   Widget build(BuildContext context) {
@@ -58,18 +70,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     if (!_searchController.hasListeners) {
       _searchController.addListener(_applySearch);
     }
-    final bool haySeleccion = _credito || _contado;
-    
-    final provider = Provider.of<ProductsProvider>(context);
-    final selectedProducts = Provider.of<ProductsProvider>(context).selectedProducts;
-    
-    //CALCULOS
-    double subtotal = selectedProducts.fold(
-      0.0, 
-      (total, item) => total + (item.product.price * item.quantity),
-    );
-    double igv = subtotal * 0.18;
-    double total = subtotal + igv;
     
     return Scaffold(
       appBar: PreferredSize(
@@ -185,6 +185,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                                 _filteredCustomers = [];
                                 _searchController.clear();
                               });
+
+                              final productProvider = Provider.of<ProductsProvider>(context, listen: false);
+                              productProvider.setCurrentCustomer(customer.idCustomer!);
                             },
                           );
                         },
@@ -342,19 +345,64 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: paymentMethod(),
+                  child: paymentMethod(key: _paymentKey),
                 ),
               ),
 
               const SizedBox(height: 20),
-              observations(),
+              observations(key: _observationsKey),
               const SizedBox(height: 30),
-              buttonRegisterOrder(),
+              buttonRegisterOrder(onPressed: _registerOrder),
               const SizedBox(height: 30),
             ],
           ),
         ),
       ),
+    );
+  }
+    
+  void _registerOrder() {
+    final idCustomer = _selectedCustomer?.idCustomer;
+    final products = Provider.of<ProductsProvider>(context, listen: false);
+    final selectedProducts = products.selectedProducts;
+    final paymentMethod = _paymentKey.currentState?.selectedPaymentMethod;
+
+    final receiptType = _isChecked ? "FACTURA" : "BOLETA";
+
+    // Validar cliente
+    if (idCustomer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selecciona un cliente")),
+      );
+      return;
+    }
+
+    // Validar productos
+    if (selectedProducts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selecciona al menos un producto")),
+      );
+      return;
+    }
+
+    // Validar método de pago
+    if (paymentMethod == null || paymentMethod.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selecciona un método de pago")),
+      );
+      return;
+    }
+
+    // Si todo es válido, cerrar modal y registrar
+    Navigator.pop(context);
+
+    registerOrder(
+      context: context,
+      idCustomer: idCustomer,
+      observationsKey: _observationsKey,
+      paymentKey: _paymentKey,
+      resetForm: _resetForm,
+      receiptType: receiptType,
     );
   }
 }

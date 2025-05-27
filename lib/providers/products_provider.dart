@@ -31,11 +31,15 @@ class ProductsProvider extends ChangeNotifier{
     }
   }
 
-  Map<int, ProductSelection> get selectionMap => _selectionMap;
+  final Map<int, Map<int, ProductSelection>> _customerSelections = {};
 
   void toggleSelection(Product product, {required bool isSelected, required int quantity}) {
-    if (_selectionMap.containsKey(product.idProduct)) {
-      final existing = _selectionMap[product.idProduct]!;
+    if (_currentCustomerId == null) return;
+
+    final customerMap = _customerSelections.putIfAbsent(_currentCustomerId!, () => {});
+
+    if (customerMap.containsKey(product.idProduct)) {
+      final existing = customerMap[product.idProduct]!;
       existing.isSelected = isSelected;
       existing.quantity = quantity;
       existing.controller.text = quantity > 0 ? quantity.toString() : '';
@@ -44,19 +48,41 @@ class ProductsProvider extends ChangeNotifier{
       sel.isSelected = isSelected;
       sel.quantity = quantity;
       sel.controller.text = quantity > 0 ? quantity.toString() : '';
-      _selectionMap[product.idProduct] = sel;
+      customerMap[product.idProduct] = sel;
     }
+
     notifyListeners();
   }
 
+  int? _currentCustomerId;
+
+  void setCurrentCustomer(int customerId) {
+    _currentCustomerId = customerId;
+    _customerSelections.putIfAbsent(customerId, () => {});
+    notifyListeners();
+  }
+
+  Map<int, ProductSelection> get selectionMap =>
+      _customerSelections[_currentCustomerId] ?? {};
+
   List<ProductSelection> get selectedProducts =>
-      _selectionMap.values.where((s) => s.isSelected && s.quantity > 0).toList();
+      selectionMap.values.where((s) => s.isSelected && s.quantity > 0).toList();
 
   void setSelectedProducts(List<ProductSelection> selections) {
-    _selectionMap.clear();
+    if (_currentCustomerId == null) return;
+
+    final customerMap = <int, ProductSelection>{};
     for (var sel in selections) {
-      _selectionMap[sel.product.idProduct] = sel;
+      customerMap[sel.product.idProduct] = sel;
     }
+    _customerSelections[_currentCustomerId!] = customerMap;
+
+    notifyListeners();
+  }
+
+  void clearSelections() {
+    _customerSelections.clear();
+    _currentCustomerId = null;
     notifyListeners();
   }
 }

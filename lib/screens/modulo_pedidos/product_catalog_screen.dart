@@ -1,8 +1,8 @@
 import 'package:balanced_foods/models/product.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
-import 'package:balanced_foods/screens/modulo_pedidos/new_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({super.key});
@@ -37,7 +37,6 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     final provider = Provider.of<ProductsProvider>(context);
     final selectionMap = provider.selectionMap;
     final selectedTipo = catalogos[selectedIndex].nombre;
-    // print('Total productos: ${provider.products.length}');
     final productosFiltrados = provider.products
       .where((p) => p.animalType.toUpperCase() == selectedTipo.toUpperCase())
       .toList();
@@ -68,10 +67,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                     size: 30,
                   ),
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => NewOrderScreen()),
-                    );
+                    Navigator.pop(context);
                   },
                 ),
                 const SizedBox(width: 1),
@@ -212,6 +208,9 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           controller: selection.controller,
                           enabled: selection.isSelected,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           decoration: const InputDecoration(
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
@@ -298,7 +297,10 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                                   quantity: selection.quantity,
                                 );
                               });
-                            }
+                            },
+                            fillColor: MaterialStateProperty.all<Color>(
+                              selection.isSelected ? const Color(0xFF333333) : Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -329,10 +331,8 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
               return;
             }
             
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NewOrderScreen()),
-            );
+            Navigator.pop(context);
+
           } catch (e, stack) {
             print('Error al guardar selección: $e');
             print(stack);

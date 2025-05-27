@@ -1,4 +1,5 @@
 class Customer{
+  int? idCustomer;
   String customerName;
   String customerImage;
   String customerPhone;
@@ -11,6 +12,7 @@ class Customer{
   int idDistrict;
 
   Customer({
+    this.idCustomer,
     required this.customerName,
     required this.customerImage,
     required this.customerPhone,
@@ -25,6 +27,7 @@ class Customer{
 
   factory Customer.fromJSON(Map<String, dynamic> json){
     return Customer(
+      idCustomer: json['idCustomer'],
       customerName: json['customerName'],
       customerImage: json['customerImage'],
       customerPhone: json['customerPhone'],
@@ -40,6 +43,7 @@ class Customer{
 
   Map<String, dynamic> toJson() {
     return {
+      'idCustomer': idCustomer,
       'customerName': customerName,
       'customerImage': customerImage,
       'customerPhone': customerPhone,
@@ -55,6 +59,6 @@ class Customer{
 
   @override
   String toString() {
-    return 'Customer{customerName: $customerName, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict}';
+    return 'Customer{idCustomer: $idCustomer, customerName: $customerName, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict}';
   }
 }
