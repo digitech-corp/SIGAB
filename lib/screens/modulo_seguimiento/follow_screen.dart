@@ -1,6 +1,21 @@
+import 'package:balanced_foods/models/company.dart';
+import 'package:balanced_foods/models/customer.dart';
+import 'package:balanced_foods/models/order.dart';
+import 'package:balanced_foods/models/orderDetail.dart';
+import 'package:balanced_foods/models/product.dart';
+import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/customers_provider.dart';
+import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
+import 'package:balanced_foods/providers/products_provider.dart';
+import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
+import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class FollowScreen extends StatefulWidget {
   const FollowScreen({super.key});
@@ -11,7 +26,24 @@ class FollowScreen extends StatefulWidget {
 
 class _FollowScreenState extends State<FollowScreen> {
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async{
+      final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+      final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
+      final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
+
+      await customersProvider.fetchCustomers();
+      await companiesProvider.fetchCompanies();
+      await ordersProvider.fetchOrders();
+      await districtsProvider.fetchDistricts();
+    });
+  }
+  
+  @override
   Widget build(BuildContext context) {
+    final orders = Provider.of<OrdersProvider>(context).orders;
     final screenWidth = MediaQuery.of(context).size.width;
     final bodyPadding = screenWidth * 0.06;
     return Scaffold(
@@ -29,7 +61,14 @@ class _FollowScreenState extends State<FollowScreen> {
               const FollowOrderHeaderRow(),
               const Divider(color: AppColors.grey, thickness: 1.0),
               const SizedBox(height: 10),
-              const OrderCard(),
+              ...orders.asMap().entries.map((entry) {
+                final index = entry.key;
+                final order = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: OrderCard(order: order, index: index),
+                );
+              }).toList(),
               const SizedBox(height: 100),
             ],
           ),
@@ -43,7 +82,7 @@ class _FollowScreenState extends State<FollowScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('Pedidos del día', style: AppTextStyles.subtitle),
-        Text('{20/05/2025}', style: AppTextStyles.date),
+        Text(DateFormat('dd/MM/yyyy').format(DateTime.now()), style: AppTextStyles.date),
       ],
     );
   }
@@ -89,21 +128,53 @@ class FollowOrderHeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Text('Item', style: AppTextStyles.itemTable),
-        Text('N° Pedido', style: AppTextStyles.itemTable),
-        Text('Estado', style: AppTextStyles.itemTable),
-        Text('F. entrega', style: AppTextStyles.itemTable),
-        Text('Lugar', style: AppTextStyles.itemTable),
-        Text('Detalle', style: AppTextStyles.itemTable),
+        Column(
+          children: [
+            Text('Item', style: AppTextStyles.itemTable),
+          ],
+        ),
+        const SizedBox(width: 15),
+        Column(
+          children: [
+            Text('N° Pedido', style: AppTextStyles.itemTable),
+          ],
+        ),
+        const SizedBox(width: 15),
+        Column(
+          children: [
+            Text('Estado', style: AppTextStyles.itemTable),
+          ],
+        ),
+        const SizedBox(width: 15),
+        Column(
+          children: [
+            Text('F. entrega', style: AppTextStyles.itemTable),
+          ],
+        ),
+        const SizedBox(width: 20),
+        Column(
+          children: [
+            Text('Lugar', style: AppTextStyles.itemTable),
+          ],
+        ),
+        const SizedBox(width: 30),
+        Column(
+          children: [
+            Text('Detalle', style: AppTextStyles.itemTable),
+          ],
+        ),
       ],
     );
   }
 }
 
 class OrderCard extends StatefulWidget {
-  const OrderCard({super.key});
+  final Order order;
+  final int index;
+
+  const OrderCard({super.key, required this.order, required this.index});
 
   @override
   State<OrderCard> createState() => _OrderCardState();
@@ -111,9 +182,27 @@ class OrderCard extends StatefulWidget {
 
 class _OrderCardState extends State<OrderCard> {
   bool _isExpanded = false;
+
+  String? getDistrictNameForOrder(Order order) {
+    final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+    final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
+
+    if (order.details.isEmpty) return null;
+
+    final customerId = order.details.first.idCustomer;
+    
+    try {
+      final customer = customersProvider.customers.firstWhere((c) => c.idCustomer == customerId);
+      return districtsProvider.getDistrictName(customer.idDistrict);
+    } catch (e) {
+      return null;
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
@@ -122,13 +211,58 @@ class _OrderCardState extends State<OrderCard> {
             height: 30,
             child: Center(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text('{01}', style: AppTextStyles.weak),
-                  Text('{P-51-2025}', style: AppTextStyles.weak),
-                  Text('{Pendiente}', style: AppTextStyles.red),
-                  Text('{20/05/25}', style: AppTextStyles.weak),
-                  Text('{Chongoyape}', style: AppTextStyles.weak),
+                  const SizedBox(width: 5),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('${(widget.index + 1).toString().padLeft(2, '0')}', style: AppTextStyles.weak),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('P-${widget.order.idOrder.toString().padLeft(2, '0')}-2025', style: AppTextStyles.weak),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${widget.order.state}',
+                        style: widget.order.state == 'Pendiente'
+                            ? AppTextStyles.red
+                            : AppTextStyles.green,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${widget.order.deliveryDate != null ? DateFormat('dd/MM/yy').format(widget.order.deliveryDate!) : "-"}',
+                        style: AppTextStyles.weak,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 80,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          getDistrictNameForOrder(widget.order) ?? "Sin distrito",
+                          style: AppTextStyles.weak,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -148,7 +282,7 @@ class _OrderCardState extends State<OrderCard> {
               ),
             ),
           ),
-          if (_isExpanded) const OrderExpandedDetail(),
+          if (_isExpanded) OrderExpandedDetail(order: widget.order),
         ],
       ),
     );
@@ -156,11 +290,34 @@ class _OrderCardState extends State<OrderCard> {
 }
 
 class OrderExpandedDetail extends StatelessWidget {
-  const OrderExpandedDetail({super.key});
+  final Order order;
+  const OrderExpandedDetail({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
+    final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+    final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
+    final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
     final screenWidth = MediaQuery.of(context).size.width;
+    
+    final selectedProducts = order.details.map((detail) {
+      final product = productsProvider.products.firstWhere(
+        (p) => p.idProduct == detail.idProducto,
+        orElse: () => Product(
+          idProduct: detail.idProducto,
+          productName: 'Desconocido',
+          animalType: 'Desconocido',
+          productType: 'Desconocido',
+          price: detail.unitPrice,
+          state: false,
+        ),
+      );
+
+      return ProductSelection(
+        product: product,
+        quantity: detail.quantity,
+      );
+    }).toList();
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.02),
       child: Column(
@@ -168,13 +325,11 @@ class OrderExpandedDetail extends StatelessWidget {
         children: [
           Text('Resumen del Pedido:', style: AppTextStyles.strong),
           const SizedBox(height: 5),
-          _buildResumenBox(),
-          const SizedBox(height: 3),
-          _buildTotalesBox(screenWidth),
+          ResumeProduct(selectedProducts: selectedProducts),
           const SizedBox(height: 5),
           _buildPagoRow(screenWidth),
           const SizedBox(height: 10),
-          _buildEntregaSection(screenWidth),
+          _buildEntregaSection(screenWidth, customersProvider, companiesProvider),
           const SizedBox(height: 10),
           Text('Ubicación Geográfica', style: AppTextStyles.strong),
           const SizedBox(height: 10),
@@ -184,38 +339,15 @@ class OrderExpandedDetail extends StatelessWidget {
     );
   }
 
-  Widget _buildResumenBox() => Container(
-    height: 80,
-    width: double.infinity,
-    color: const Color(0xFFE5E7E7),
-    child: const Center(
-      child: Text('Tabla', style: TextStyle(fontSize: 10)),
-    ),
-  );
-  
-  Widget _buildTotalesBox(double screenWidth) => Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Container(
-        height: 80,
-        width: screenWidth*0.4,
-        color: const Color(0xFFE5E7E7),
-        child: const Center(
-          child: Text('Totales', style: TextStyle(fontSize: 10)),
-        ),
-      ),
-    ],
-  );
-
   Widget _buildPagoRow(double screenWidth) => Row(
     children: [
       Text('Tipo de Pago', style: AppTextStyles.strong),
       SizedBox(width: min(screenWidth * 0.088, 350)),
-      Text('Contado', style: AppTextStyles.weak),
+      Text(order.paymentMethod, style: AppTextStyles.weak),
     ],
   );
 
-  Widget _buildEntregaSection(double screenWidth) => Row(
+  Widget _buildEntregaSection(double screenWidth, CustomersProvider customersProvider, CompaniesProvider companiesProvider) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Column(children: [Text('Datos de Entrega', style: AppTextStyles.strong)]),
@@ -237,13 +369,13 @@ class OrderExpandedDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('{Dirección fiscal}', style: AppTextStyles.weak),
+            Text(getCompanyAddressForDetail(order.details.first, customersProvider, companiesProvider) ?? 'Sin dirección fiscal', style: AppTextStyles.weak),
             SizedBox(height: 5),
-            Text('{25/05/2025}', style: AppTextStyles.weak),
+            Text('${order.deliveryDate != null ? DateFormat('dd/MM/yy').format(order.deliveryDate!) : "-"}', style: AppTextStyles.weak),
             SizedBox(height: 5),
-            Text('{11:30 am}', style: AppTextStyles.weak),
+            Text(order.deliveryTime != null ? formatTimeOfDay12h(order.deliveryTime!) : '-', style: AppTextStyles.weak),
             SizedBox(height: 5),
-            Text('{Dejar frente al grifo San Antonio}', style: AppTextStyles.weak),
+            Text(order.additionalInformation!, style: AppTextStyles.weak),
           ],
         ),
       ),
@@ -263,6 +395,29 @@ class OrderExpandedDetail extends StatelessWidget {
   );
 }
 
+String formatTimeOfDay12h(TimeOfDay time) {
+  final now = DateTime.now();
+  final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+  return DateFormat.jm().format(dt); // Ej: "1:45 PM"
+}
+
+String? getCompanyAddressForDetail(
+  OrderDetail detail,
+  CustomersProvider customersProvider,
+  CompaniesProvider companiesProvider,
+) {
+  final customer = customersProvider.customers.firstWhere(
+    (c) => c.idCustomer == detail.idCustomer,
+    orElse: () => Customer(idCustomer: 0, customerName: '', customerImage: '', customerPhone: '', customerEmail: '', customerAddress: '', customerReference: '', idCompany: 0, idDepartment: 0, idProvince: 0, idDistrict: 0),
+  );
+
+  final company = companiesProvider.companies.firstWhere(
+    (c) => c.idCompany == customer.idCompany,
+    orElse: () => Company(idCompany: 0, companyRUC: '', companyName: 'Desconocido', companyAddress: '', companyWeb: ''),
+  );
+
+  return company.companyAddress.isEmpty ? null : company.companyAddress;
+}
 
 class AppTextStyles {
   static const base = TextStyle(
@@ -278,10 +433,12 @@ class AppTextStyles {
   static final date = base.copyWith(fontSize: 12,fontWeight: FontWeight.w300);
   static final itemTable = base.copyWith(fontSize: 12);
   static final red = base.copyWith(color: AppColors.red);
+  static final green = base.copyWith(color: AppColors.green);
 }
 
 class AppColors {
   static const red = Color(0xFFE74C3C);
+  static const green = Color(0xFF2ECC71);
   static const darkGrey = Color(0xFF333333);
   static const grey = Color(0xFFBDBDBD);
   static const lightGrey = Color(0xFFECEFF1);

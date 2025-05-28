@@ -29,6 +29,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
       Provider.of<DepartmentsProvider>(context, listen: false).fetchDepartments();
       Provider.of<ProvincesProvider>(context, listen: false).fetchProvinces();
       Provider.of<DistrictsProvider>(context, listen: false).fetchDistricts();
+      Provider.of<ProductsProvider>(context, listen: false).setCurrentCustomer(widget.customer.idCustomer!);
     });
   }
 
@@ -41,8 +42,8 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     final districtsProvider = Provider.of<DistrictsProvider>(context);
     final districtName = districtsProvider.getDistrictName(widget.customer.idDistrict);
     
-    final products = Provider.of<ProductsProvider>(context, listen: false);
-    products.setCurrentCustomer(widget.customer.idCustomer!);
+    // final products = Provider.of<ProductsProvider>(context, listen: false);
+    // products.setCurrentCustomer(widget.customer.idCustomer!);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -458,7 +459,7 @@ class _RecordCardState extends State<RecordCard> {
               ),
               partOrder(),
               searchProduct(),
-              resumeProduct(),
+              ResumeProduct(selectedProducts: Provider.of<ProductsProvider>(context).selectedProducts,),
               paymentMethod(key: _paymentKey),
               observations(key: _observationsKey),
               buttonRegisterOrder(onPressed: _registerOrder),

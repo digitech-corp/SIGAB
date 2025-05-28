@@ -112,281 +112,406 @@ class searchProduct extends StatelessWidget {
   }
 }
 
-class resumeProduct extends StatelessWidget {
-  const resumeProduct({super.key});
+// class resumeProduct extends StatelessWidget {
+//   const resumeProduct({super.key});
   
+//   @override
+//   Widget build(BuildContext context) {
+//     final provider = Provider.of<ProductsProvider>(context);
+//     final selectedProducts = Provider.of<ProductsProvider>(context).selectedProducts;
+//     double subtotal = selectedProducts.fold(
+//       0.0, 
+//       (total, item) => total + (item.product.price * item.quantity),
+//     );
+//     double igv = subtotal * 0.18;
+//     double total = subtotal + igv;
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         if (provider.isLoading)
+//           const LinearProgressIndicator(),
+
+//         if (!provider.isLoading && selectedProducts.isEmpty)
+//           const Padding(
+//             padding: EdgeInsets.symmetric(vertical: 10),
+//             // child: Text('No hay productos seleccionados.'),
+//           ),
+
+//         if (!provider.isLoading && selectedProducts.isNotEmpty)
+//           const SizedBox(height: 20),
+//           Column(
+//             crossAxisAlignment: CrossAxisAlignment.end,
+//             children: [
+//               // Encabezado
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                 children: const [
+//                   Expanded(
+//                     flex: 1,
+//                     child: Text('Cant.',
+//                       style: TextStyle(
+//                         fontFamily: 'Montserrat',
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.w400,
+//                         color: Color(0xFF333333),
+//                       ),
+//                     ),
+//                   ),
+//                   Expanded(
+//                     flex: 3,
+//                     child: Text('Nombre del Producto',
+//                       style: TextStyle(
+//                         fontFamily: 'Montserrat',
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.w400,
+//                         color: Color(0xFF333333),
+//                       ),
+//                     ),
+//                   ),
+//                   Expanded(
+//                     flex: 1,
+//                     child: Text('Pres',
+//                       style: TextStyle(
+//                         fontFamily: 'Montserrat',
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.w400,
+//                         color: Color(0xFF333333),
+//                       ),
+//                     ),
+//                   ),
+//                   Expanded(
+//                     flex: 1,
+//                     child: Text('Tipo',
+//                       style: TextStyle(
+//                         fontFamily: 'Montserrat',
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.w400,
+//                         color: Color(0xFF333333),
+//                       ),
+//                     ),
+//                   ),
+//                   Expanded(
+//                     flex: 1,
+//                     child: Text('Precio',
+//                       style: TextStyle(
+//                         fontFamily: 'Montserrat',
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.w400,
+//                         color: Color(0xFF333333),
+//                       ),
+//                       textAlign: TextAlign.right,
+//                     ),
+//                   ),
+//                   Expanded(
+//                     flex: 1,
+//                     child: Text('Parcial',
+//                       style: TextStyle(
+//                         fontFamily: 'Montserrat',
+//                         fontSize: 11,
+//                         fontWeight: FontWeight.w400,
+//                         color: Color(0xFF333333),
+//                       ),
+//                       textAlign: TextAlign.right,
+//                     ),
+//                   ),
+//                 ],
+//               ),
+              
+//               const Divider(color: Colors.black, thickness: 1, height: 5),
+
+//               // Lista de productos
+//               ListView.builder(
+//                 itemCount: selectedProducts.length,
+//                 shrinkWrap: true,
+//                 physics: const NeverScrollableScrollPhysics(),
+//                 itemBuilder: (context, index) {
+//                   final selection = selectedProducts[index];
+//                   return Row(
+//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                     children: [
+//                       Expanded(
+//                         flex: 1,
+//                         child: Text(
+//                           '${selection.quantity.toString().padLeft(2, '0')}',
+//                           style: const TextStyle(
+//                             fontFamily: 'Montserrat',
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.w300,
+//                             color: Color(0xFF333333),
+//                           ),
+//                         ),
+//                       ),
+//                       Expanded(
+//                         flex: 3,
+//                         child: Text(
+//                           selection.product.productName,
+//                           style: const TextStyle(
+//                             fontFamily: 'Montserrat',
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.w300,
+//                             color: Color(0xFF333333),
+//                           ),
+//                         ),
+//                       ),
+//                       Expanded(
+//                         flex: 1,
+//                         child: Text(
+//                           'S50',
+//                           style: const TextStyle(
+//                             fontFamily: 'Montserrat',
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.w300,
+//                             color: Color(0xFF333333),
+//                           ),
+//                         ),
+//                       ),
+//                       Expanded(
+//                         flex: 1,
+//                         child: Text(
+//                           selection.product.productType,
+//                           style: const TextStyle(
+//                             fontFamily: 'Montserrat',
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.w300,
+//                             color: Color(0xFF333333),
+//                           ),
+//                         ),
+//                       ),
+//                       Expanded(
+//                         flex: 1,
+//                         child: Text(
+//                           '${selection.product.price.toStringAsFixed(2)}',
+//                           style: const TextStyle(
+//                             fontFamily: 'Montserrat',
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.w300,
+//                             color: Color(0xFF333333),
+//                           ),
+//                           textAlign: TextAlign.right,
+//                         ),
+//                       ),
+//                       Expanded(
+//                         flex: 1,
+//                         child: Text(
+//                           '${(selection.product.price * selection.quantity).toStringAsFixed(2)}',
+//                           style: const TextStyle(
+//                             fontFamily: 'Montserrat',
+//                             fontSize: 11,
+//                             fontWeight: FontWeight.w300,
+//                             color: Color(0xFF333333),
+//                           ),
+//                           textAlign: TextAlign.right,
+//                         ),
+//                       ),
+//                     ],
+//                   );
+//                 },
+//               ),
+
+//               SizedBox(width: 100, child: const Divider(color: Colors.black, thickness: 0.5, height: 5)),
+
+//               // Totales
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.end,
+//                 children: [
+//                   Column(
+//                     crossAxisAlignment: CrossAxisAlignment.end,
+//                     children: const [
+//                       Text(
+//                         'SubTotal',
+//                         style: TextStyle(
+//                           fontFamily: 'Montserrat',
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.w300,
+//                           color: Color(0xFF333333),
+//                         ),
+//                       ),
+//                       Text(
+//                         'I.G.V.',
+//                         style: TextStyle(
+//                           fontFamily: 'Montserrat',
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.w300,
+//                           color: Color(0xFF333333),
+//                         ),
+//                       ),
+//                       Text(
+//                         'TOTAL',
+//                         style: TextStyle(
+//                           fontFamily: 'Montserrat',
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.w500,
+//                           color: Color(0xFF333333),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(width: 10),
+//                   Column(
+//                     crossAxisAlignment: CrossAxisAlignment.end,
+//                     children: [
+//                       Text(
+//                         subtotal.toStringAsFixed(2),
+//                         style: const TextStyle(
+//                           fontFamily: 'Montserrat',
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.w300,
+//                           color: Color(0xFF333333),
+//                         ),
+//                       ),
+//                       Text(
+//                         igv.toStringAsFixed(2),
+//                         style: const TextStyle(
+//                           fontFamily: 'Montserrat',
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.w300,
+//                           color: Color(0xFF333333),
+//                         ),
+//                       ),
+//                       Text(
+//                         total.toStringAsFixed(2),
+//                         style: const TextStyle(
+//                           fontFamily: 'Montserrat',
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.w500,
+//                           color: Color(0xFF333333),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//       ],
+//     );
+//   }
+// }
+
+class ResumeProduct extends StatelessWidget {
+  final List<ProductSelection> selectedProducts;
+
+  const ResumeProduct({
+    super.key,
+    required this.selectedProducts,
+  });
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ProductsProvider>(context);
-    final selectedProducts = Provider.of<ProductsProvider>(context).selectedProducts;
     double subtotal = selectedProducts.fold(
-      0.0, 
+      0.0,
       (total, item) => total + (item.product.price * item.quantity),
     );
     double igv = subtotal * 0.18;
     double total = subtotal + igv;
+
+    if (selectedProducts.isEmpty) return const SizedBox();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (provider.isLoading)
-          const LinearProgressIndicator(),
+        const SizedBox(height: 20),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _buildHeader(),
+            const Divider(color: Colors.black, thickness: 1, height: 5),
+            _buildProductList(),
+            SizedBox(width: 100, child: const Divider(color: Colors.black, thickness: 0.5, height: 5)),
+            _buildTotalSection(subtotal, igv, total),
+          ],
+        ),
+      ],
+    );
+  }
 
-        if (!provider.isLoading && selectedProducts.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            // child: Text('No hay productos seleccionados.'),
-          ),
+  Widget _buildHeader() {
+    const style = TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
+      color: Color(0xFF333333),
+    );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+        Expanded(flex: 1, child: Text('Cant.', style: style)),
+        Expanded(flex: 3, child: Text('Nombre del Producto', style: style)),
+        Expanded(flex: 1, child: Text('Pres', style: style)),
+        Expanded(flex: 1, child: Text('Tipo', style: style)),
+        Expanded(flex: 1, child: Text('Precio', style: style, textAlign: TextAlign.right)),
+        Expanded(flex: 1, child: Text('Parcial', style: style, textAlign: TextAlign.right)),
+      ],
+    );
+  }
 
-        if (!provider.isLoading && selectedProducts.isNotEmpty)
-          const SizedBox(height: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Encabezado
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Expanded(
-                    flex: 1,
-                    child: Text('Cant.',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text('Nombre del Producto',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text('Pres',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text('Tipo',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text('Precio',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text('Parcial',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                ],
-              ),
-              
-              const Divider(color: Colors.black, thickness: 1, height: 5),
+  Widget _buildProductList() {
+    const style = TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: 11,
+      fontWeight: FontWeight.w300,
+      color: Color(0xFF333333),
+    );
+    return ListView.builder(
+      itemCount: selectedProducts.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final selection = selectedProducts[index];
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(flex: 1, child: Text('${selection.quantity.toString().padLeft(2, '0')}', style: style)),
+            Expanded(flex: 3, child: Text(selection.product.productName, style: style)),
+            Expanded(flex: 1, child: Text('S50', style: style)), // Aquí puedes ajustar 'Pres' si tienes ese dato
+            Expanded(flex: 1, child: Text(selection.product.productType, style: style)),
+            Expanded(flex: 1, child: Text('${selection.product.price.toStringAsFixed(2)}', style: style, textAlign: TextAlign.right)),
+            Expanded(flex: 1, child: Text('${(selection.product.price * selection.quantity).toStringAsFixed(2)}', style: style, textAlign: TextAlign.right)),
+          ],
+        );
+      },
+    );
+  }
 
-              // Lista de productos
-              ListView.builder(
-                itemCount: selectedProducts.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final selection = selectedProducts[index];
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '${selection.quantity.toString().padLeft(2, '0')}',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          selection.product.productName,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          'S50',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          selection.product.productType,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '${selection.product.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '${(selection.product.price * selection.quantity).toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+  Widget _buildTotalSection(double subtotal, double igv, double total) {
+    const labelStyle = TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: 11,
+      fontWeight: FontWeight.w300,
+      color: Color(0xFF333333),
+    );
+    const totalStyle = TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      color: Color(0xFF333333),
+    );
 
-              SizedBox(width: 100, child: const Divider(color: Colors.black, thickness: 0.5, height: 5)),
-
-              // Totales
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      Text(
-                        'SubTotal',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                      Text(
-                        'I.G.V.',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                      Text(
-                        'TOTAL',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        subtotal.toStringAsFixed(2),
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                      Text(
-                        igv.toStringAsFixed(2),
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                      Text(
-                        total.toStringAsFixed(2),
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: const [
+            Text('SubTotal', style: labelStyle),
+            Text('I.G.V.', style: labelStyle),
+            Text('TOTAL', style: totalStyle),
+          ],
+        ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(subtotal.toStringAsFixed(2), style: labelStyle),
+            Text(igv.toStringAsFixed(2), style: labelStyle),
+            Text(total.toStringAsFixed(2), style: totalStyle),
+          ],
+        ),
       ],
     );
   }
 }
+
 
 class paymentMethod extends StatefulWidget {
   const paymentMethod({super.key});
@@ -814,9 +939,9 @@ Future<void> registerOrder({
   final details = selectedProducts.map((item) {
     return OrderDetail(
       idProducto: item.product.idProduct,
-      cantidad: item.quantity,
-      precioUnitario: item.product.price,
-      precioParcial: item.quantity * item.product.price,
+      quantity: item.quantity,
+      unitPrice: item.product.price,
+      partialPrice: item.quantity * item.product.price,
       idCustomer: idCustomer!,
     );
   }).toList();

@@ -1,12 +1,47 @@
+import 'package:balanced_foods/models/customer.dart';
+import 'package:balanced_foods/models/order.dart';
+import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/customers_provider.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/new_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class OrderScreen extends StatelessWidget {
+class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
 
   @override
+  State<OrderScreen> createState() => _OrderScreenState();
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async{
+      final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+      final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
+
+      await customersProvider.fetchCustomers();
+      await companiesProvider.fetchCompanies();
+      await ordersProvider.fetchOrders();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final orders = ordersProvider.orders;
+    final customersProvider = Provider.of<CustomersProvider>(context);
+    final companiesProvider = Provider.of<CompaniesProvider>(context);
+    final customers = customersProvider.customers;
+    final isLoading = ordersProvider.isLoading ||
+                  customersProvider.isLoading ||
+                  companiesProvider.isLoading;
+
     return Scaffold(
       backgroundColor: const Color(0xFFECEFF1),
       appBar: PreferredSize(
@@ -52,145 +87,204 @@ class OrderScreen extends StatelessWidget {
       ),
 
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Resumen del día',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF333333),
-                        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sección fija superior
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Título y fecha
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Resumen del día',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF333333),
                       ),
-                      Text(
-                        '{20/05/2025}',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Total de Pedidos del día:',
-                              style: TextStyle(
-                                color: Color(0xFF333333),
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              '{5}',
-                              style: TextStyle(
-                                color: Color(0xFF333333),
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Monto facturado:',
-                              style: TextStyle(
-                                color: Color(0xFF333333),
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              '{S/.3,290.00}',
-                              style: TextStyle(
-                                color: Color(0xFF333333),
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Detalles de Pedidos',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
-                  const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _detailOrder(
-                          'MOLINOS PERUANOS SA', 
-                          'Beto del Castillo Limo',
-                          'PEDIDO N° 78-2025'
-                        )
+                    Text(
+                      DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF333333),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.add_circle,
-                    color: Color(0xFFFF6600),
-                    size: 45,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => NewOrderScreen()),
-                      );
-                  },
+                    ),
+                  ],
                 ),
+                const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
+                const SizedBox(height: 10),
+
+                // Resumen de pedidos
+                _buildOrderSummary(orders),
+                const SizedBox(height: 20),
+
+                // Título detalles
+                const Text(
+                  'Detalles de Pedidos',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+                const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+
+          // Contenido con scroll
+          Expanded(
+            child: isLoading 
+                ? const Center(child: CircularProgressIndicator())
+                : orders.isEmpty
+                    ? const Center(child: Text('No hay pedidos disponibles'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 25),
+                        itemCount: orders.length,
+                        itemBuilder: (context, index) {
+                          final order = orders[index];
+                          
+                          final firstDetail = order.details.isNotEmpty ? order.details.first : null;
+                          Customer? customer;
+                          if (firstDetail != null) {
+                            try {
+                              customer = customers.firstWhere((c) => c.idCustomer == firstDetail.idCustomer);
+                            } catch (_) {
+                              customer = null;
+                            }
+                          }
+
+                          String persona = '--';
+                          String empresa = '--';
+
+                          if (customer != null) {
+                            persona = customer.customerName;
+                            empresa = companiesProvider.getCompanyNameById(customer.idCompany);
+                          }
+                          
+                          final codPedido = 'PEDIDO N° ${order.idOrder.toString().padLeft(2, '0')}-2025';
+                          final hora = order.deliveryTime != null
+                              ? '${order.deliveryTime!.hour.toString().padLeft(2, '0')}:${order.deliveryTime!.minute.toString().padLeft(2, '0')}'
+                              : '--:--';
+                          final total = order.total;
+
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: _detailOrder(
+                                  empresa,
+                                  persona,
+                                  codPedido,
+                                  hora,
+                                  total,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+          ),
+
+          // Botón flotante
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12, right: 16),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.add_circle,
+                  color: Color(0xFFFF6600),
+                  size: 45,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NewOrderScreen()),
+                  );
+                },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    ),
+
 
     );
   }
 
-  Widget _detailOrder(String company, String person, String codOrder) {
+  Widget _buildOrderSummary(List<Order> orders) {
+    final totalPedidos = orders.length;
+    final montoTotal = orders.fold<double>(0, (sum, order) => sum + order.total);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total de Pedidos del día:',
+                style: TextStyle(
+                  color: Color(0xFF333333),
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                '$totalPedidos',
+                style: const TextStyle(
+                  color: Color(0xFF333333),
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Monto facturado:',
+                style: TextStyle(
+                  color: Color(0xFF333333),
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                'S/. ${montoTotal.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Color(0xFF333333),
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+
+  Widget _detailOrder(String company, String person, String codOrder, String hour, double total) {
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -203,15 +297,12 @@ class OrderScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundImage: NetworkImage('https://img.freepik.com/foto-gratis/joven-barbudo-camisa-rayas_273609-5677.jpg'),
-                        ),
-                      ],
+                    const CircleAvatar(
+                      radius: 18,
+                      backgroundImage: NetworkImage(
+                        'https://img.freepik.com/foto-gratis/joven-barbudo-camisa-rayas_273609-5677.jpg',
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Column(
@@ -248,34 +339,29 @@ class OrderScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(width: 15),
+                    const Spacer(),
                     Column(
                       children: [
                         Text(
-                          '8:46 am',
-                          style: TextStyle(
+                          hour,
+                          style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 10,
                             fontWeight: FontWeight.w300,
                             color: Color(0xFF333333),
                           ),
-                        )
-                      ],
-                    ),
-                    Spacer(),
-                    Column(
-                      children: [
+                        ),
                         Text(
-                          'S/. 460.80',
-                          style: TextStyle(
+                          'S/. ${total.toStringAsFixed(2)}',
+                          style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
                             color: Color(0xFF333333),
                           ),
-                        )
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ],

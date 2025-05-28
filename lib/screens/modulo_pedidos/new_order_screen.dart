@@ -92,10 +92,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     size: 30,
                   ),
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => SalesModuleScreen()),
-                    );
+                    Navigator.pop(context);
                   },
                 ),
                 const SizedBox(width: 1),
@@ -323,7 +320,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                   color: Color(0xFFECEFF1),
                 ),
-                child: resumeProduct()
+                child: ResumeProduct(selectedProducts: Provider.of<ProductsProvider>(context).selectedProducts,)
               ),
               
               const SizedBox(height: 20),

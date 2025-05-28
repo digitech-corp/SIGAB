@@ -15,7 +15,9 @@ class OrdersProvider extends ChangeNotifier{
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print('Datos obtenidos: $data');
         orders = List<Order>.from(data['orders'].map((order) => Order.fromJSON(order)));
+        print('Total pedidos obtenidos: ${orders.length}');
       } else {
         print('Error ${response.statusCode}');
         orders = [];

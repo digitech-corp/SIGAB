@@ -222,7 +222,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           Text(c.customerName, style: AppTextStyles.orange),
                           const SizedBox(height: 2),
                           Text(
-                            companies.firstWhere((comp) => comp.idCompany == c.idCompany).companyName,
+                            //companies.firstWhere((comp) => comp.idCompany == c.idCompany).companyName,
+                            Provider.of<CompaniesProvider>(context).getCompanyNameById(c.idCompany),
                             style: AppTextStyles.company
                           ),
                         ],
