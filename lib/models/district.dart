@@ -19,14 +19,14 @@ class District{
 
   Map<String, dynamic> toJson() {
     return {
-      'idCompany': idDistrict,
-      'companyName': district,
+      'idDistrict': idDistrict,
+      'district': district,
       'idProvince': idProvince
     };
   }
 
   @override
   String toString() {
-    return 'district{idDistrict: $idDistrict, district: $district, idProvince: $idProvince}';
+    return 'District{idDistrict: $idDistrict, district: $district, idProvince: $idProvince}';
   }
 }

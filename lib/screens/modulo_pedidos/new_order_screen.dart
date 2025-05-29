@@ -3,7 +3,6 @@ import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
-import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

@@ -1,3 +1,5 @@
+import 'package:balanced_foods/models/product.dart';
+
 class ProductSelection {
   final Product product;
   final int quantity;

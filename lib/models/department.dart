@@ -16,8 +16,8 @@ class Department{
 
   Map<String, dynamic> toJson() {
     return {
-      'idCompany': idDepartment,
-      'companyName': department
+      'idDepartment': idDepartment,
+      'department': department
     };
   }
 

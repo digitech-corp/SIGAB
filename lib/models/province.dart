@@ -19,8 +19,8 @@ class Province{
 
   Map<String, dynamic> toJson() {
     return {
-      'idCompany': idProvince,
-      'companyName': province,
+      'idProvince': idProvince,
+      'province': province,
       'idDepartment': idDepartment
     };
   }

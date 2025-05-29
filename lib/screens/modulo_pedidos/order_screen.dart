@@ -41,6 +41,14 @@ class _OrderScreenState extends State<OrderScreen> {
     final isLoading = ordersProvider.isLoading ||
                   customersProvider.isLoading ||
                   companiesProvider.isLoading;
+    final today = DateTime.now();
+    final filteredOrders = orders.where((order) {
+      final delivery = order.dateCreated;
+      return delivery != null &&
+            delivery.year == today.year &&
+            delivery.month == today.month &&
+            delivery.day == today.day;
+    }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFECEFF1),
@@ -110,7 +118,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       ),
                     ),
                     Text(
-                      DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                      DateFormat('dd/MM/yyyy').format(today),
                       style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 12,
@@ -124,7 +132,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 const SizedBox(height: 10),
 
                 // Resumen de pedidos
-                _buildOrderSummary(orders),
+                _buildOrderSummary(filteredOrders),
                 const SizedBox(height: 20),
 
                 // Título detalles
@@ -143,17 +151,16 @@ class _OrderScreenState extends State<OrderScreen> {
             ),
           ),
 
-          // Contenido con scroll
           Expanded(
             child: isLoading 
                 ? const Center(child: CircularProgressIndicator())
-                : orders.isEmpty
+                : filteredOrders.isEmpty
                     ? const Center(child: Text('No hay pedidos disponibles'))
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 25),
-                        itemCount: orders.length,
+                        itemCount: filteredOrders.length,
                         itemBuilder: (context, index) {
-                          final order = orders[index];
+                          final order = filteredOrders[index];
                           
                           final firstDetail = order.details.isNotEmpty ? order.details.first : null;
                           Customer? customer;
@@ -174,8 +181,8 @@ class _OrderScreenState extends State<OrderScreen> {
                           }
                           
                           final codPedido = 'PEDIDO N° ${order.idOrder.toString().padLeft(2, '0')}-2025';
-                          final hora = order.deliveryTime != null
-                              ? '${order.deliveryTime!.hour.toString().padLeft(2, '0')}:${order.deliveryTime!.minute.toString().padLeft(2, '0')}'
+                          final hora = order.timeCreated != null
+                              ? '${order.timeCreated!.hour.toString().padLeft(2, '0')}:${order.timeCreated!.minute.toString().padLeft(2, '0')}'
                               : '--:--';
                           final total = order.total;
 
@@ -224,9 +231,9 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Widget _buildOrderSummary(List<Order> orders) {
-    final totalPedidos = orders.length;
-    final montoTotal = orders.fold<double>(0, (sum, order) => sum + order.total);
+  Widget _buildOrderSummary(List<Order> filteredOrders) {
+    final totalPedidos = filteredOrders.length;
+    final montoTotal = filteredOrders.fold<double>(0, (sum, order) => sum + order.total);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -340,7 +347,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       ],
                     ),
                     const Spacer(),
-                    Column(
+                    Row(
                       children: [
                         Text(
                           hour,
@@ -351,6 +358,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             color: Color(0xFF333333),
                           ),
                         ),
+                        const SizedBox(width: 20),
                         Text(
                           'S/. ${total.toStringAsFixed(2)}',
                           style: const TextStyle(

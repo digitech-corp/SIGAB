@@ -12,6 +12,8 @@ import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
 
 import 'package:intl/intl.dart';
@@ -33,11 +35,13 @@ class _FollowScreenState extends State<FollowScreen> {
       final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
       final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
       final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
+      final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
 
       await customersProvider.fetchCustomers();
       await companiesProvider.fetchCompanies();
       await ordersProvider.fetchOrders();
       await districtsProvider.fetchDistricts();
+      await productsProvider.fetchProducts();
     });
   }
   
@@ -46,6 +50,14 @@ class _FollowScreenState extends State<FollowScreen> {
     final orders = Provider.of<OrdersProvider>(context).orders;
     final screenWidth = MediaQuery.of(context).size.width;
     final bodyPadding = screenWidth * 0.06;
+    final today = DateTime.now();
+    final filteredOrders = orders.where((order) {
+      final delivery = order.dateCreated;
+      return delivery != null &&
+            delivery.year == today.year &&
+            delivery.month == today.month &&
+            delivery.day == today.day;
+    }).toList();
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
       appBar: const FollowScreenHeader(),
@@ -61,7 +73,7 @@ class _FollowScreenState extends State<FollowScreen> {
               const FollowOrderHeaderRow(),
               const Divider(color: AppColors.grey, thickness: 1.0),
               const SizedBox(height: 10),
-              ...orders.asMap().entries.map((entry) {
+              ...filteredOrders.asMap().entries.map((entry) {
                 final index = entry.key;
                 final order = entry.value;
                 return Padding(
@@ -198,7 +210,7 @@ class _OrderCardState extends State<OrderCard> {
       return null;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -298,26 +310,44 @@ class OrderExpandedDetail extends StatelessWidget {
     final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
     final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
     final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
+    final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
+    final customer = customersProvider.customers.firstWhere(
+    (c) => c.idCustomer == order.details.first.idCustomer,
+    orElse: () => Customer(customerName: '', customerImage: '', customerPhone: '', customerEmail: '', customerAddress: '', customerReference: '', idCustomer: 0, idCompany: 0, idDepartment: 0, idProvince: 0, idDistrict: 0),
+  );
+
+  final district = districtsProvider.getDistrictName(customer.idDistrict);
+  final address = '$district, Perú';
+
     final selectedProducts = order.details.map((detail) {
-      final product = productsProvider.products.firstWhere(
-        (p) => p.idProduct == detail.idProducto,
-        orElse: () => Product(
-          idProduct: detail.idProducto,
-          productName: 'Desconocido',
-          animalType: 'Desconocido',
-          productType: 'Desconocido',
-          price: detail.unitPrice,
-          state: false,
-        ),
-      );
+      Product? productFound;
+
+      try {
+        productFound = productsProvider.products.firstWhere(
+          (p) => p.idProduct == detail.idProducto,
+        );
+      } catch (e) {
+        productFound = null;
+      }
+
+      final product = productFound ??
+          Product(
+            idProduct: detail.idProducto,
+            productName: 'Producto no encontrado',
+            animalType: '',
+            productType: '',
+            price: detail.unitPrice,
+            state: false,
+          );
 
       return ProductSelection(
         product: product,
         quantity: detail.quantity,
       );
     }).toList();
+
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.02),
       child: Column(
@@ -333,7 +363,7 @@ class OrderExpandedDetail extends StatelessWidget {
           const SizedBox(height: 10),
           Text('Ubicación Geográfica', style: AppTextStyles.strong),
           const SizedBox(height: 10),
-          _buildMapBox(),
+          _buildMapBox(address),
         ],
       ),
     );
@@ -382,17 +412,62 @@ class OrderExpandedDetail extends StatelessWidget {
     ],
   );
 
-  Widget _buildMapBox() => Container(
-    height: 150,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: Colors.grey.shade300),
-    ),
-    child: SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Image.asset('assets/images/map.png', fit: BoxFit.cover),
-    ),
-  );
+  Widget _buildMapBox(String address) {
+    return FutureBuilder<LatLng?>(
+      future: getLatLngFromAddress(address),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 150,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final coords = snapshot.data;
+
+        if (coords == null) {
+          return const SizedBox(
+            height: 150,
+            child: Center(child: Text('No se pudo obtener la ubicación')),
+          );
+        }
+
+        return SizedBox(
+          height: 150,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: coords,
+                zoom: 14,
+              ),
+              markers: {
+                Marker(
+                  markerId: const MarkerId('destino'),
+                  position: coords,
+                ),
+              },
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              onMapCreated: (controller) {},
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<LatLng?> getLatLngFromAddress(String address) async {
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        return LatLng(locations.first.latitude, locations.first.longitude);
+      }
+    } catch (e) {
+      debugPrint('Error obteniendo coordenadas: $e');
+    }
+    return null;
+  }
 }
 
 String formatTimeOfDay12h(TimeOfDay time) {

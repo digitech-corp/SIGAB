@@ -58,10 +58,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      Provider.of<DepartmentsProvider>(
-        context,
-        listen: false,
-      ).fetchDepartments();
+      Provider.of<DepartmentsProvider>(context, listen: false).fetchDepartments();
       Provider.of<ProvincesProvider>(context, listen: false).fetchProvinces();
       Provider.of<DistrictsProvider>(context, listen: false).fetchDistricts();
     });
@@ -91,12 +88,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                     size: 30,
                   ),
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SalesModuleScreen(),
-                      ),
-                    );
+                    Navigator.pop(context);
                   },
                 ),
                 const SizedBox(width: 1),

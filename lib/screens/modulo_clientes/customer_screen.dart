@@ -126,21 +126,25 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     customersProvider.isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : () {
-                            final listaFiltrada = customersProvider.customers
-                                .where((c) =>
-                                    c.customerName.toLowerCase().contains(query.toLowerCase()) ||
-                                    c.idCompany.toString().contains(query))
-                                .toList();
-                            final agrupado = agruparPorInicial(listaFiltrada);
+                            final listaFiltrada = customersProvider.customers.where((c) {
+                            final nombreCliente = c.customerName.toLowerCase();
+                            final nombreEmpresa = companiesProvider
+                                .getCompanyNameById(c.idCompany)
+                                .toLowerCase();
+                            return nombreCliente.contains(query.toLowerCase()) ||
+                                nombreEmpresa.contains(query.toLowerCase());
+                          }).toList();
 
-                            if (agrupado.isEmpty) {
-                              return Center(
-                                child: Text('No se encontraron clientes', style: AppTextStyles.msj),
-                              );
-                            }
+                          final agrupado = agruparPorInicial(listaFiltrada);
 
-                            return _CustomersList(context, agrupado, companies);
-                          }(),
+                          if (agrupado.isEmpty) {
+                            return Center(
+                              child: Text('No se encontraron clientes', style: AppTextStyles.msj),
+                            );
+                          }
+
+                          return _CustomersList(context, agrupado, companies);
+                        }(),
 
                     Positioned(
                       bottom: 20,
@@ -152,7 +156,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           size: 45,
                         ),
                         onPressed: () {
-                          Navigator.pushReplacement(
+                          Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => NewCustomerScreen()),
                           );

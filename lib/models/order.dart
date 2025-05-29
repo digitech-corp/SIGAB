@@ -13,6 +13,8 @@ class Order{
   TimeOfDay? deliveryTime;
   String? additionalInformation;
   String? state;
+  TimeOfDay? timeCreated;
+  DateTime? dateCreated;
   final List<OrderDetail> details;
 
   Order({
@@ -27,6 +29,8 @@ class Order{
     this.deliveryTime,
     this.additionalInformation,
     this.state,
+    this.timeCreated,
+    this.dateCreated,
     required this.details,
   });
 
@@ -47,6 +51,12 @@ class Order{
         : null,
       additionalInformation: json['additionalInformation'],
       state: json['state'],
+      timeCreated: json['timeCreated'] != null
+        ? Order._parseTimeOfDay(json['timeCreated'])
+        : null,
+      dateCreated: json['dateCreated'] != null
+        ? DateTime.tryParse(json['dateCreated'])
+        : null,
       details: (json['details'] as List<dynamic>)
           .map((d) => OrderDetail.fromJSON(d))
           .toList(),
@@ -68,13 +78,17 @@ class Order{
           : null,
       'additionalInformation': additionalInformation,
       'state': state,
+      'timeCreated': timeCreated != null
+          ? '${timeCreated!.hour.toString().padLeft(2, '0')}:${timeCreated!.minute.toString().padLeft(2, '0')}:00'
+          : null,
+      'dateCreated': dateCreated?.toIso8601String().split('T').first,
       "details": details.map((d) => d.toJson()).toList(),
     };
   }
 
   @override
   String toString() {
-    return 'Order{idOrder: $idOrder, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, details: $details}';
+    return 'Order{idOrder: $idOrder, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, dateCreated: $dateCreated, timeCreated: $timeCreated, details: $details}';
   }
 
   static TimeOfDay _parseTimeOfDay(String timeString) {
