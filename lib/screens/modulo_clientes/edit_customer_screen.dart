@@ -488,7 +488,7 @@ class _RecordCardState extends State<RecordCard> {
               receiptType(key: _receiptKey),
               const SizedBox(height: 10),
               partOrder(),
-              searchProduct(),
+              SearchProduct(),
               const SizedBox(height: 10),
               ResumeProduct(selectedProducts: Provider.of<ProductsProvider>(context).selectedProducts,),
               paymentMethod(key: _paymentKey),

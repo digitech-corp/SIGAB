@@ -17,8 +17,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Customer> _filteredCustomers = [];
   Customer? _selectedCustomer;
-  bool _boletaChecked = false;
-  bool _facturaChecked = false;
 
   @override
   void initState() {
@@ -36,8 +34,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     setState(() {
       _selectedCustomer = null;
       _searchController.clear();
-      _boletaChecked = false;
-      _facturaChecked = false;
       _filteredCustomers = [];
     });
 
@@ -53,7 +49,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   Widget build(BuildContext context) {
     final customersProvider = Provider.of<CustomersProvider>(context);
     final companiesProvider = Provider.of<CompaniesProvider>(context);
-
+    
     void _applySearch() {
       final query = _searchController.text.toLowerCase();
       setState(() {
@@ -279,7 +275,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     ),
 
                     const SizedBox(height: 10),
-                    searchProduct(),
+                    SearchProduct(),
                     SizedBox(height: 20),
                   ],
                 ),

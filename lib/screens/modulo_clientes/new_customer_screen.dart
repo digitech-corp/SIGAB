@@ -6,7 +6,6 @@ import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
-import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';

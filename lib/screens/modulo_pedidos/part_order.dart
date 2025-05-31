@@ -4,6 +4,7 @@ import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class partOrder extends StatelessWidget {
@@ -58,55 +59,204 @@ class partOrder extends StatelessWidget {
   }
 }
 
-class searchProduct extends StatelessWidget {
-  const searchProduct({super.key});
+class SearchProduct extends StatefulWidget {
+  const SearchProduct({super.key});
+
+  @override
+  State<SearchProduct> createState() => _SearchProductState();
+}
+
+class _SearchProductState extends State<SearchProduct> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchText = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final provider = Provider.of<ProductsProvider>(context);
+    final allProducts = provider.products;
+    final selectionMap = provider.selectionMap;
+    
+    // Asegúrate de tener un ProductSelection por cada producto
+    final filteredSelections = allProducts.where((product) {
+      return product.productName.toLowerCase().contains(_searchText.toLowerCase()) ||
+            product.idProduct.toString().contains(_searchText);
+    }).map((product) {
+      // Si no está en el mapa, lo creas en ese momento (sin seleccionarlo aún)
+      return selectionMap[product.idProduct] ??
+          ProductSelection(product: product);
+    }).toList();
+
+    return Column(
       children: [
-        Expanded(
-          child: Container(
-            height: 25,
-            child: TextField(
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                hintText: 'Buscar Producto/Código',
-                hintStyle: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w300,
-                  fontSize: 10,
-                  color: Colors.black,
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 25,
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                    hintText: 'Buscar Producto/Código',
+                    hintStyle: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w300,
+                      fontSize: 10,
+                      color: Colors.black,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFECEFF1),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Colors.black,
+                      size: 15,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.black),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.black),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: const BorderSide(color: Colors.black),
+                    ),
+                  ),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 12,
+                    color: Colors.black,
+                  ),
                 ),
-                filled: true,
-                fillColor: const Color(0xFFECEFF1),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: Colors.black,
-                  size: 15,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: BorderSide(color: Colors.black),
-                ),
-              ),
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 12,
-                color: Colors.black,
               ),
             ),
-          ),
+          ],
         ),
+        const SizedBox(height: 8),
+        if (_searchText.isNotEmpty)
+          SizedBox(
+            height: 200, // puedes ajustar esto
+            child: ListView.builder(
+              itemCount: filteredSelections.length,
+              itemBuilder: (context, index) {
+                final selection = filteredSelections[index];
+                final product = selection.product;
+                return SizedBox(
+                  height: 25,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        child: TextFormField(
+                          controller: selection.controller,
+                          enabled: selection.isSelected,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                            border: UnderlineInputBorder(),
+                          ),
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          onChanged: (val) {
+                            final parsed = int.tryParse(val);
+                            if (parsed != null) {
+                              setState(() {
+                                selection.quantity = parsed;
+                                provider.toggleSelection(
+                                  selection.product,
+                                  isSelected: selection.isSelected,
+                                  quantity: selection.quantity,
+                                );
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 200,
+                        child: Text(
+                          product.productName,
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          '${product.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 30,
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            checkboxTheme: CheckboxThemeData(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              visualDensity: VisualDensity.compact,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                          child: Checkbox(
+                            value: selection.isSelected,
+                            onChanged: (val) {
+                              setState(() {
+                                selection.isSelected = val ?? false;
+                                if (!selection.isSelected) {
+                                  selection.quantity = 0;
+                                  selection.controller.text = '';
+                                }
+                                provider.toggleSelection(
+                                  selection.product,
+                                  isSelected: selection.isSelected,
+                                  quantity: selection.quantity,
+                                );
+                              });
+                            },
+                            fillColor: MaterialStateProperty.all<Color>(
+                              selection.isSelected ? const Color(0xFF333333) : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
       ],
     );
   }

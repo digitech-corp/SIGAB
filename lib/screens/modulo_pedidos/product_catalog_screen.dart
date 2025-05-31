@@ -259,18 +259,41 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           ),
                         ),
                       ),
+                      // SizedBox(
+                      //   width: 50,
+                      //   child: Text(
+                      //     '${product.price.toStringAsFixed(2)}',
+                      //     style: TextStyle(
+                      //       fontFamily: 'Montserrat',
+                      //       fontSize: 11,
+                      //       fontWeight: FontWeight.w400
+                      //     ),
+                      //   ),
+                      // ),
+
+                      // NUEVO
                       SizedBox(
                         width: 50,
-                        child: Text(
-                          '${product.price.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400
+                        child: InkWell(
+                          onTap: () {
+                            final history = provider.getPriceHistory(product.idProduct);
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (_) => _buildPriceHistoryModal(context, history),
+                            );
+                          },
+                          child: Text(
+                            '${product.price.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              decoration: TextDecoration.none,
+                            ),
                           ),
                         ),
                       ),
-                       SizedBox(
+                      SizedBox(
                         width: 30,
                         child: Theme(
                           data: Theme.of(context).copyWith(
@@ -314,6 +337,34 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
       ),
     );
   }
+
+  // NUEVO
+  Widget _buildPriceHistoryModal(BuildContext context, List<double> history) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Historial de Precios',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (history.isEmpty)
+            const Text('No hay historial disponible.')
+          else
+            ...history.map((price) => ListTile(
+              leading: const Icon(Icons.history),
+              title: Text('S/ ${price.toStringAsFixed(2)}'),
+            )),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildGuardarButton() {
     return Center(

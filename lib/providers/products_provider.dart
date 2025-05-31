@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/product.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
@@ -68,6 +69,11 @@ class ProductsProvider extends ChangeNotifier{
   List<ProductSelection> get selectedProducts =>
       selectionMap.values.where((s) => s.isSelected && s.quantity > 0).toList();
 
+  List<ProductSelection> get allSelections =>
+      _customerSelections[_currentCustomerId] != null
+          ? _customerSelections[_currentCustomerId]!.values.toList()
+          : [];
+
   void setSelectedProducts(List<ProductSelection> selections) {
     if (_currentCustomerId == null) return;
 
@@ -78,6 +84,29 @@ class ProductsProvider extends ChangeNotifier{
     _customerSelections[_currentCustomerId!] = customerMap;
 
     notifyListeners();
+  }
+
+  // final Map<int, Map<int, double>> _customerProductPrices = {};
+
+  // void registerPurchasedProducts(int customerId, List<OrderDetail> orderDetails) {
+  //   final productMap = _customerProductPrices.putIfAbsent(customerId, () => {});
+  //   for (final detail in orderDetails) {
+  //     productMap[detail.idProduct] = detail.unitPrice;
+  //   }
+  // }
+  Map<int, List<double>> _priceHistoryPerCustomer = {}; // key = productId
+
+  Future<void> fetchPriceHistoryForCustomer(int customerId) async {
+    // datos de ejemplo
+    _priceHistoryPerCustomer = {
+      1: [15.0, 14.5, 14.0],
+      2: [10.0, 9.5],
+      3: [20.0]
+    };
+  }
+
+  List<double> getPriceHistory(int productId) {
+    return _priceHistoryPerCustomer[productId] ?? [];
   }
 
   void clearSelections() {
