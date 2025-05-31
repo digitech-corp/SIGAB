@@ -17,6 +17,7 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  DateTime selectedDate = DateTime.now();
   @override
   void initState() {
     super.initState();
@@ -31,6 +32,22 @@ class _OrderScreenState extends State<OrderScreen> {
     });
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  
+
   @override
   Widget build(BuildContext context) {
     final ordersProvider = Provider.of<OrdersProvider>(context);
@@ -41,14 +58,14 @@ class _OrderScreenState extends State<OrderScreen> {
     final isLoading = ordersProvider.isLoading ||
                   customersProvider.isLoading ||
                   companiesProvider.isLoading;
-    final today = DateTime.now();
     final filteredOrders = orders.where((order) {
       final delivery = order.dateCreated;
       return delivery != null &&
-            delivery.year == today.year &&
-            delivery.month == today.month &&
-            delivery.day == today.day;
+          delivery.year == selectedDate.year &&
+          delivery.month == selectedDate.month &&
+          delivery.day == selectedDate.day;
     }).toList();
+    
 
     return Scaffold(
       backgroundColor: const Color(0xFFECEFF1),
@@ -117,13 +134,16 @@ class _OrderScreenState extends State<OrderScreen> {
                         color: Color(0xFF333333),
                       ),
                     ),
-                    Text(
-                      DateFormat('dd/MM/yyyy').format(today),
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w300,
-                        color: Color(0xFF333333),
+                    GestureDetector(
+                      onTap: () => _selectDate(context),
+                      child: Text(
+                        DateFormat('dd/MM/yyyy').format(selectedDate),
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300,
+                          color: Color(0xFF333333),
+                        ),
                       ),
                     ),
                   ],
@@ -162,11 +182,11 @@ class _OrderScreenState extends State<OrderScreen> {
                         itemBuilder: (context, index) {
                           final order = filteredOrders[index];
                           
-                          final firstDetail = order.details.isNotEmpty ? order.details.first : null;
+                          final firstDetail = order.idCustomer;
                           Customer? customer;
                           if (firstDetail != null) {
                             try {
-                              customer = customers.firstWhere((c) => c.idCustomer == firstDetail.idCustomer);
+                              customer = customers.firstWhere((c) => c.idCustomer == firstDetail);
                             } catch (_) {
                               customer = null;
                             }

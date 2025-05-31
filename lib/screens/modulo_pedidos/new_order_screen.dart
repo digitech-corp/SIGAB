@@ -17,7 +17,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Customer> _filteredCustomers = [];
   Customer? _selectedCustomer;
-  bool _isChecked = false;
+  bool _boletaChecked = false;
+  bool _facturaChecked = false;
 
   @override
   void initState() {
@@ -35,7 +36,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     setState(() {
       _selectedCustomer = null;
       _searchController.clear();
-      _isChecked = false;
+      _boletaChecked = false;
+      _facturaChecked = false;
       _filteredCustomers = [];
     });
 
@@ -45,6 +47,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
 
   final _observationsKey = GlobalKey<ObservationsState>();
   final _paymentKey = GlobalKey<PaymentMethodState>();
+  final _receiptKey = GlobalKey<ReceiptTypeState>();
 
   @override
   Widget build(BuildContext context) {
@@ -192,79 +195,59 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     if (_selectedCustomer != null)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'CLIENTE:',
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'EMPRESA:',
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'FACTURA:',
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 40),
-                            Column(
+                            Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _selectedCustomer!.customerName,
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500
-                                  ),
-                                ),
-                                Text(
-                                  companiesProvider.getCompanyNameById(_selectedCustomer!.idCompany),
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 20,
-                                  height: 25,
-                                  child: Transform.scale(
-                                    scale: 0.8,
-                                    child: Checkbox(
-                                      value: _isChecked, 
-                                      activeColor: Color(0xFF333333),
-                                      checkColor: Colors.white,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _isChecked = value ?? false;
-                                        });
-                                      },
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'CLIENTE:',
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400
+                                      ),
                                     ),
-                                  ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'EMPRESA:',
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 40),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedCustomer!.customerName,
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500
+                                      ),
+                                    ),
+                                    Text(
+                                      companiesProvider.getCompanyNameById(_selectedCustomer!.idCompany),
+                                      style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 10),
+                            receiptType(key: _receiptKey)
                           ],
                         ),
                       ),
@@ -362,13 +345,20 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     final products = Provider.of<ProductsProvider>(context, listen: false);
     final selectedProducts = products.selectedProducts;
     final paymentMethod = _paymentKey.currentState?.selectedPaymentMethod;
-
-    final receiptType = _isChecked ? "FACTURA" : "BOLETA";
+    final receiptType = _receiptKey.currentState?.selectedReceiptType;
 
     // Validar cliente
     if (idCustomer == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Selecciona un cliente")),
+      );
+      return;
+    }
+
+    // Validar tipo de recibo
+    if (receiptType == null || receiptType.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selecciona un tipo de recibo")),
       );
       return;
     }
@@ -395,10 +385,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     registerOrder(
       context: context,
       idCustomer: idCustomer,
+      receiptKey: _receiptKey,
       observationsKey: _observationsKey,
       paymentKey: _paymentKey,
       resetForm: _resetForm,
-      receiptType: receiptType,
     );
   }
 }

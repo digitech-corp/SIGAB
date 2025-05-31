@@ -3,14 +3,12 @@ class OrderDetail {
   int quantity;
   double unitPrice;
   double partialPrice;
-  int idCustomer;
 
   OrderDetail ({
     required this.idProducto,
     required this.quantity,
     required this.unitPrice,
-    required this.partialPrice,
-    required this.idCustomer
+    required this.partialPrice
   });
 
   factory OrderDetail.fromJSON(Map<String, dynamic> json){
@@ -18,8 +16,7 @@ class OrderDetail {
       idProducto: json['idProducto'],
       quantity: json['quantity']?? 0,
       unitPrice: json['unitPrice']?? 0.0,
-      partialPrice: json['partialPrice']?? 0.0,
-      idCustomer: json['idCustomer']
+      partialPrice: json['partialPrice']?? 0.0
     );
   }
 
@@ -28,13 +25,12 @@ class OrderDetail {
       'idProducto': idProducto,
       'quantity': quantity,
       'unitPrice': unitPrice,
-      'partialPrice': partialPrice,
-      'idCustomer': idCustomer
+      'partialPrice': partialPrice
     };
   }
 
   @override
   String toString() {
-    return 'OrderDetail{idProducto: $idProducto, quantity: $quantity, unitPrice: $unitPrice, partialPrice: $partialPrice, idCustomer: $idCustomer}';
+    return 'OrderDetail{idProducto: $idProducto, quantity: $quantity, unitPrice: $unitPrice, partialPrice: $partialPrice}';
   }
 }

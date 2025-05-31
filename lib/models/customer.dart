@@ -1,6 +1,7 @@
 class Customer{
   int? idCustomer;
   String customerName;
+  String dni;
   String customerImage;
   String customerPhone;
   String customerEmail ;
@@ -14,6 +15,7 @@ class Customer{
   Customer({
     this.idCustomer,
     required this.customerName,
+    required this.dni,
     required this.customerImage,
     required this.customerPhone,
     required this.customerEmail,
@@ -29,6 +31,7 @@ class Customer{
     return Customer(
       idCustomer: json['idCustomer'],
       customerName: json['customerName'],
+      dni: json['dni'] ?? '',
       customerImage: json['customerImage'],
       customerPhone: json['customerPhone'],
       customerEmail: json['customerEmail'],
@@ -45,6 +48,7 @@ class Customer{
     return {
       'idCustomer': idCustomer,
       'customerName': customerName,
+      'dni': dni,
       'customerImage': customerImage,
       'customerPhone': customerPhone,
       'customerEmail': customerEmail,
@@ -59,6 +63,6 @@ class Customer{
 
   @override
   String toString() {
-    return 'Customer{idCustomer: $idCustomer, customerName: $customerName, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict}';
+    return 'Customer{idCustomer: $idCustomer, customerName: $customerName, dni: $dni, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict}';
   }
 }

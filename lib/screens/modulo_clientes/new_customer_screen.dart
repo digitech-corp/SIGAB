@@ -25,6 +25,7 @@ class NewCustomerScreen extends StatefulWidget {
 class _NewCustomerScreenState extends State<NewCustomerScreen> {
   final _formKey = GlobalKey<FormState>();
   final _customerName = TextEditingController();
+  final _dni = TextEditingController();
   final _customerImage = TextEditingController();
   final _customerPhone = TextEditingController();
   final _customerEmail = TextEditingController();
@@ -42,6 +43,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   @override
   void dispose() {
     _customerName.dispose();
+    _dni.dispose();
     _customerImage.dispose();
     _customerPhone.dispose();
     _customerEmail.dispose();
@@ -126,6 +128,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
               NewCustomerForm(
                 formKey: _formKey,
                 customerName: _customerName,
+                dni: _dni,
                 customerImage: _customerImage,
                 customerPhone: _customerPhone,
                 customerEmail: _customerEmail,
@@ -151,6 +154,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
 class NewCustomerForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController customerName;
+  final TextEditingController dni;
   final TextEditingController customerImage;
   final TextEditingController customerPhone;
   final TextEditingController customerEmail;
@@ -169,6 +173,7 @@ class NewCustomerForm extends StatefulWidget {
     super.key,
     required this.formKey,
     required this.customerName,
+    required this.dni,
     required this.customerImage,
     required this.customerPhone,
     required this.customerEmail,
@@ -258,7 +263,6 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                   .firstWhere((d) => d.department == selectedDepartment)
                   .idDepartment,
             );
-
     final filteredDistricts =
         selectedProvince == null
             ? []
@@ -299,6 +303,17 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               ),
               _buildImagePicker()
             ],
+          ),
+          const SizedBox(height: 07),
+          _buildTextField(
+            controller: widget.dni,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, ingresa el número de DNI';
+              }
+              return null;
+            },
+            hintText: 'DNI',
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -510,6 +525,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                       // Crear Customer
                       final newCustomer = Customer(
                         customerName: widget.customerName.text,
+                        dni: widget.dni.text,
                         customerImage: _base64Image ?? '',
                         customerPhone: widget.customerPhone.text,
                         customerEmail: widget.customerEmail.text,

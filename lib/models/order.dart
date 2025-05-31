@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class Order{
   int? idOrder;
+  int idCustomer;
   String paymentMethod;
   String receiptType;
   double subtotal;
@@ -13,12 +14,14 @@ class Order{
   TimeOfDay? deliveryTime;
   String? additionalInformation;
   String? state;
+  String? paymentState;
   TimeOfDay? timeCreated;
   DateTime? dateCreated;
   final List<OrderDetail> details;
 
   Order({
     this.idOrder,
+    required this.idCustomer,
     required this.paymentMethod,
     required this.receiptType,
     required this.subtotal,
@@ -29,6 +32,7 @@ class Order{
     this.deliveryTime,
     this.additionalInformation,
     this.state,
+    this.paymentState,
     this.timeCreated,
     this.dateCreated,
     required this.details,
@@ -37,6 +41,7 @@ class Order{
   factory Order.fromJSON(Map<String, dynamic> json){
      return Order(
       idOrder: json['idOrder'],
+      idCustomer: json['idCustomer'] ?? 0, // Assuming idCustomer is required
       paymentMethod: json['paymentMethod'],
       receiptType: json['receiptType'],
       subtotal: json['subtotal']?? 0,
@@ -51,6 +56,7 @@ class Order{
         : null,
       additionalInformation: json['additionalInformation'],
       state: json['state'],
+      paymentState: json['paymentState'],
       timeCreated: json['timeCreated'] != null
         ? Order._parseTimeOfDay(json['timeCreated'])
         : null,
@@ -66,6 +72,7 @@ class Order{
   Map<String, dynamic> toJson() {
     return {
       'idOrder': idOrder,
+      'idCustomer': idCustomer,
       'paymentMethod': paymentMethod,
       'receiptType': receiptType,
       'subtotal': subtotal,
@@ -78,6 +85,7 @@ class Order{
           : null,
       'additionalInformation': additionalInformation,
       'state': state,
+      'paymentState': paymentState,
       'timeCreated': timeCreated != null
           ? '${timeCreated!.hour.toString().padLeft(2, '0')}:${timeCreated!.minute.toString().padLeft(2, '0')}:00'
           : null,
@@ -88,7 +96,7 @@ class Order{
 
   @override
   String toString() {
-    return 'Order{idOrder: $idOrder, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, dateCreated: $dateCreated, timeCreated: $timeCreated, details: $details}';
+    return 'Order{idOrder: $idOrder, idCustomer: $idCustomer, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, paymentState: $paymentState, timeCreated: $timeCreated, dateCreated: $dateCreated, details: $details}';
   }
 
   static TimeOfDay _parseTimeOfDay(String timeString) {

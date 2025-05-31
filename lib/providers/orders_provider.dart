@@ -54,4 +54,9 @@ class OrdersProvider extends ChangeNotifier{
       return false;
     }
   }
+
+  List<Order> getOrdersByCustomer(int customerId) {
+    return orders.where((order) => order.idCustomer == customerId).toList();
+  }
+
 }

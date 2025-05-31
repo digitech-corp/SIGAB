@@ -27,6 +27,7 @@ class FollowScreen extends StatefulWidget {
 }
 
 class _FollowScreenState extends State<FollowScreen> {
+  DateTime selectedDate = DateTime.now();
   @override
   void initState() {
     super.initState();
@@ -44,20 +45,34 @@ class _FollowScreenState extends State<FollowScreen> {
       await productsProvider.fetchProducts();
     });
   }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
     final orders = Provider.of<OrdersProvider>(context).orders;
     final screenWidth = MediaQuery.of(context).size.width;
     final bodyPadding = screenWidth * 0.06;
-    final today = DateTime.now();
     final filteredOrders = orders.where((order) {
       final delivery = order.dateCreated;
       return delivery != null &&
-            delivery.year == today.year &&
-            delivery.month == today.month &&
-            delivery.day == today.day;
+          delivery.year == selectedDate.year &&
+          delivery.month == selectedDate.month &&
+          delivery.day == selectedDate.day;
     }).toList();
+
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
       appBar: const FollowScreenHeader(),
@@ -94,7 +109,18 @@ class _FollowScreenState extends State<FollowScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('Pedidos del día', style: AppTextStyles.subtitle),
-        Text(DateFormat('dd/MM/yyyy').format(DateTime.now()), style: AppTextStyles.date),
+        GestureDetector(
+          onTap: () => _selectDate(context),
+          child: Text(
+            DateFormat('dd/MM/yyyy').format(selectedDate),
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 12,
+              fontWeight: FontWeight.w300,
+              color: Color(0xFF333333),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -201,7 +227,7 @@ class _OrderCardState extends State<OrderCard> {
 
     if (order.details.isEmpty) return null;
 
-    final customerId = order.details.first.idCustomer;
+    final customerId = order.idCustomer;
     
     try {
       final customer = customersProvider.customers.firstWhere((c) => c.idCustomer == customerId);
@@ -314,8 +340,8 @@ class OrderExpandedDetail extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     final customer = customersProvider.customers.firstWhere(
-    (c) => c.idCustomer == order.details.first.idCustomer,
-    orElse: () => Customer(customerName: '', customerImage: '', customerPhone: '', customerEmail: '', customerAddress: '', customerReference: '', idCustomer: 0, idCompany: 0, idDepartment: 0, idProvince: 0, idDistrict: 0),
+    (c) => c.idCustomer == order.idCustomer,
+    orElse: () => Customer(customerName: '', dni: '', customerImage: '', customerPhone: '', customerEmail: '', customerAddress: '', customerReference: '', idCustomer: 0, idCompany: 0, idDepartment: 0, idProvince: 0, idDistrict: 0),
   );
 
   final district = districtsProvider.getDistrictName(customer.idDistrict);
@@ -399,7 +425,7 @@ class OrderExpandedDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(getCompanyAddressForDetail(order.details.first, customersProvider, companiesProvider) ?? 'Sin dirección fiscal', style: AppTextStyles.weak),
+            Text(getCompanyAddressForDetail(order.details.first, order, customersProvider, companiesProvider) ?? 'Sin dirección fiscal', style: AppTextStyles.weak),
             SizedBox(height: 5),
             Text('${order.deliveryDate != null ? DateFormat('dd/MM/yy').format(order.deliveryDate!) : "-"}', style: AppTextStyles.weak),
             SizedBox(height: 5),
@@ -478,12 +504,13 @@ String formatTimeOfDay12h(TimeOfDay time) {
 
 String? getCompanyAddressForDetail(
   OrderDetail detail,
+  Order order,
   CustomersProvider customersProvider,
   CompaniesProvider companiesProvider,
 ) {
   final customer = customersProvider.customers.firstWhere(
-    (c) => c.idCustomer == detail.idCustomer,
-    orElse: () => Customer(idCustomer: 0, customerName: '', customerImage: '', customerPhone: '', customerEmail: '', customerAddress: '', customerReference: '', idCompany: 0, idDepartment: 0, idProvince: 0, idDistrict: 0),
+    (c) => c.idCustomer == order.idCustomer,
+    orElse: () => Customer(idCustomer: 0, customerName: '', dni: '', customerImage: '', customerPhone: '', customerEmail: '', customerAddress: '', customerReference: '', idCompany: 0, idDepartment: 0, idProvince: 0, idDistrict: 0),
   );
 
   final company = companiesProvider.companies.firstWhere(

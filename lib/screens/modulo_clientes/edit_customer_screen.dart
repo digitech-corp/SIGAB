@@ -1,10 +1,12 @@
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class EditCustomerScreen extends StatefulWidget {
@@ -29,6 +31,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
       Provider.of<DepartmentsProvider>(context, listen: false).fetchDepartments();
       Provider.of<ProvincesProvider>(context, listen: false).fetchProvinces();
       Provider.of<DistrictsProvider>(context, listen: false).fetchDistricts();
+      Provider.of<OrdersProvider>(context, listen: false).fetchOrders();
       Provider.of<ProductsProvider>(context, listen: false).setCurrentCustomer(widget.customer.idCustomer!);
     });
   }
@@ -42,8 +45,6 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
     final districtsProvider = Provider.of<DistrictsProvider>(context);
     final districtName = districtsProvider.getDistrictName(widget.customer.idDistrict);
     
-    // final products = Provider.of<ProductsProvider>(context, listen: false);
-    // products.setCurrentCustomer(widget.customer.idCustomer!);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -282,15 +283,14 @@ class _RecordCardState extends State<RecordCard> {
   int _selectedIndex = 0;
   final List<String> _titulos = ['Historial', 'Pedidos', 'Facturación', 'Créditos'];
   final TextEditingController _searchController = TextEditingController();
-  bool _isChecked = false;
-
+  
   final _observationsKey = GlobalKey<ObservationsState>();
   final _paymentKey = GlobalKey<PaymentMethodState>();
+  final _receiptKey = GlobalKey<ReceiptTypeState>();
 
   void _resetForm() {
     setState(() {
       _searchController.clear();
-      _isChecked = false;
     });
 
     final provider = Provider.of<ProductsProvider>(context, listen: false);
@@ -313,7 +313,7 @@ class _RecordCardState extends State<RecordCard> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedIndex = index),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected 
                         ? null
@@ -371,6 +371,8 @@ class _RecordCardState extends State<RecordCard> {
   }
 
   Widget _recordDetail() {
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final customerOrders = ordersProvider.getOrdersByCustomer(widget.customer.idCustomer!);
     return Card(
       color: Colors.transparent,
       elevation: 0,
@@ -381,7 +383,70 @@ class _RecordCardState extends State<RecordCard> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text('Fecha', style: AppTextStyles.headerTable),
+                  const SizedBox(width: 45),
+                  Text('Pedido', style: AppTextStyles.headerTable),
+                  const SizedBox(width: 50),
+                  Text('Monto', style: AppTextStyles.headerTable),
+                  const SizedBox(width: 18),
+                  Text('T. Pago', style: AppTextStyles.headerTable),
+                  const SizedBox(width: 25),
+                  Text('Estado', style: AppTextStyles.headerTable)
+                ],
+              ),
+              Divider(color: AppColors.lightGris, thickness: 1.0, height: 1,),
+              const SizedBox(height: 8),
+              customerOrders.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('No hay pedidos registrados', style: AppTextStyles.bodyTable),
+                  )
+                : ListView.builder(
+                    itemCount: customerOrders.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final order = customerOrders[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              order.dateCreated != null
+                                ? DateFormat('dd/MM/yyyy').format(order.dateCreated!)
+                                : 'Sin fecha',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            const SizedBox(width: 15),
+                            Text(
+                              'Pedido ${order.idOrder ?? "-"}-2025',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            const SizedBox(width: 15),
+                            Text(
+                              '${order.total.toStringAsFixed(2)}',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            const SizedBox(width: 15),
+                            Text(
+                              order.paymentMethod,
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            const SizedBox(width: 20),
+                            Text(
+                              order.paymentState ?? '-',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 100),
                   SizedBox(
@@ -420,49 +485,17 @@ class _RecordCardState extends State<RecordCard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        'FACTURA:',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: 20,
-                        height: 25,
-                        child: Transform.scale(
-                          scale: 0.8,
-                          child: Checkbox(
-                            value: _isChecked, 
-                            activeColor: Color(0xFF333333),
-                            checkColor: Colors.white,
-                            onChanged: (value) {
-                              setState(() {
-                                _isChecked = value ?? false;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
+              receiptType(key: _receiptKey),
+              const SizedBox(height: 10),
               partOrder(),
               searchProduct(),
+              const SizedBox(height: 10),
               ResumeProduct(selectedProducts: Provider.of<ProductsProvider>(context).selectedProducts,),
               paymentMethod(key: _paymentKey),
               observations(key: _observationsKey),
+              const SizedBox(height: 20),
               buttonRegisterOrder(onPressed: _registerOrder),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -519,13 +552,12 @@ class _RecordCardState extends State<RecordCard> {
     final products = Provider.of<ProductsProvider>(context, listen: false);
     final selectedProducts = products.selectedProducts;
     final paymentMethod = _paymentKey.currentState?.selectedPaymentMethod;
+    final receiptType = _receiptKey.currentState?.selectedReceiptType;
 
-    final receiptType = _isChecked ? "FACTURA" : "BOLETA";
-
-    // Validar cliente
-    if (idCustomer == null) {
+    // Validar tipo de recibo
+    if (receiptType == null || receiptType.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No se reconoció el cliente")),
+        SnackBar(content: Text("Selecciona un tipo de recibo")),
       );
       return;
     }
@@ -552,10 +584,10 @@ class _RecordCardState extends State<RecordCard> {
     registerOrder(
       context: context,
       idCustomer: idCustomer,
+      receiptKey: _receiptKey,
       observationsKey: _observationsKey,
       paymentKey: _paymentKey,
       resetForm: _resetForm,
-      receiptType: receiptType,
     );
   }
 }
@@ -572,6 +604,8 @@ class AppTextStyles {
   static final customerData = base.copyWith();
   static final subtitle = base.copyWith(fontSize: 10, color: AppColors.lightGris);
   static final btn = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
+  static final headerTable = base.copyWith(fontSize: 11, fontWeight: FontWeight.w400);
+  static final bodyTable = base.copyWith(fontSize: 11, fontWeight: FontWeight.w300);
   static TextStyle titleCards(bool isSelected) {
     return base.copyWith(
       color: isSelected ? AppColors.orange : AppColors.lightGris,
@@ -584,3 +618,5 @@ class AppColors {
   static const gris = Color(0xFF333333);
   static const lightGris = Color(0xFFBDBDBD);
 }
+
+

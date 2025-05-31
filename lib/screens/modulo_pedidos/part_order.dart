@@ -236,6 +236,120 @@ class ResumeProduct extends StatelessWidget {
   }
 }
 
+class receiptType extends StatefulWidget {
+  const receiptType({super.key});
+
+  @override
+  State<receiptType> createState() => ReceiptTypeState();
+}
+
+class ReceiptTypeState extends State<receiptType> {
+  bool _otros = false;
+  bool _factura = false;
+  bool _boleta = false;
+
+  String get selectedReceiptType {
+    if (_otros) return "OTROS/N.V.";
+    if (_factura) return "FACTURA";
+    if (_boleta) return "BOLETA";
+    return "";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 20,
+          height: 25,
+          child: Transform.scale(
+            scale: 0.8,
+            child: Checkbox(
+              value: _otros, 
+              activeColor: Color(0xFF333333),
+              checkColor: Colors.white,
+              onChanged: (value) {
+                setState(() {
+                  _otros = value!;
+                  if (_otros) 
+                    _factura = false; 
+                    _boleta = false;
+                });
+              },
+            ),
+          ),
+        ),
+        Text(
+          'OTROS/N.V.',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            fontWeight: FontWeight.w400
+          ),
+        ),
+        const SizedBox(width: 15),
+        SizedBox(
+          width: 20,
+          height: 25,
+          child: Transform.scale(
+            scale: 0.8,
+            child: Checkbox(
+              value: _factura, 
+              activeColor: Color(0xFF333333),
+              checkColor: Colors.white,
+              onChanged: (value) {
+                setState(() {
+                  _factura = value!;
+                  if (_factura) 
+                    _otros = false; 
+                    _boleta = false;
+                });
+              },
+            ),
+          ),
+        ),
+        Text(
+          'FACTURA',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            fontWeight: FontWeight.w400
+          ),
+        ),
+        const SizedBox(width: 15),
+        SizedBox(
+          width: 20,
+          height: 25,
+          child: Transform.scale(
+            scale: 0.8,
+            child: Checkbox(
+              value: _boleta, 
+              activeColor: Color(0xFF333333),
+              checkColor: Colors.white,
+              onChanged: (value) {
+                setState(() {
+                  _boleta = value!;
+                  if (_boleta) 
+                    _otros = false;
+                    _factura = false;
+                });
+              },
+            ),
+          ),
+        ),
+        Text(
+          'BOLETA DE VENTA',
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            fontWeight: FontWeight.w400
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 
 class paymentMethod extends StatefulWidget {
   const paymentMethod({super.key});
@@ -643,8 +757,8 @@ Future<void> registerOrder({
   int? idCustomer,
   required GlobalKey<ObservationsState> observationsKey,
   required GlobalKey<PaymentMethodState> paymentKey,
+  required GlobalKey<ReceiptTypeState> receiptKey,
   required VoidCallback resetForm,
-  required String receiptType,
 }) async {
   final provider = Provider.of<OrdersProvider>(context, listen: false);
   final products = Provider.of<ProductsProvider>(context, listen: false);
@@ -652,6 +766,7 @@ Future<void> registerOrder({
 
   final obs = observationsKey.currentState!.getObservations();
   final payment = paymentKey.currentState!.selectedPaymentMethod;
+  final receipt = receiptKey.currentState!.selectedReceiptType;
 
   double subtotal = selectedProducts.fold(
     0.0,
@@ -666,7 +781,6 @@ Future<void> registerOrder({
       quantity: item.quantity,
       unitPrice: item.product.price,
       partialPrice: item.quantity * item.product.price,
-      idCustomer: idCustomer!,
     );
   }).toList();
 
@@ -696,7 +810,9 @@ Future<void> registerOrder({
   }
 
   final order = Order(
+    idCustomer: idCustomer!,
     paymentMethod: payment,
+    receiptType: receipt,
     subtotal: subtotal,
     igv: igv,
     total: total,
@@ -705,7 +821,6 @@ Future<void> registerOrder({
     deliveryTime: _tryParseTimeOfDay(obs['time']),
     additionalInformation: obs['info'] ?? '',
     details: details,
-    receiptType: receiptType,
     dateCreated: DateTime.now(),
     timeCreated: TimeOfDay.now(),
   );
