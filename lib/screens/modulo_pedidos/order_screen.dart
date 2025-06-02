@@ -194,9 +194,11 @@ class _OrderScreenState extends State<OrderScreen> {
 
                           String persona = '--';
                           String empresa = '--';
+                          String imagen = '--';
 
                           if (customer != null) {
                             persona = customer.customerName;
+                            imagen = customer.customerImage;
                             empresa = companiesProvider.getCompanyNameById(customer.idCompany);
                           }
                           
@@ -212,6 +214,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 child: _detailOrder(
                                   empresa,
                                   persona,
+                                  imagen,
                                   codPedido,
                                   hora,
                                   total,
@@ -311,7 +314,7 @@ class _OrderScreenState extends State<OrderScreen> {
   }
   
 
-  Widget _detailOrder(String company, String person, String codOrder, String hour, double total) {
+  Widget _detailOrder(String company, String person, String imagen, String codOrder, String hour, double total) {
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -325,10 +328,10 @@ class _OrderScreenState extends State<OrderScreen> {
               children: [
                 Row(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 18,
                       backgroundImage: NetworkImage(
-                        'https://img.freepik.com/foto-gratis/joven-barbudo-camisa-rayas_273609-5677.jpg',
+                        imagen,
                       ),
                     ),
                     const SizedBox(width: 10),

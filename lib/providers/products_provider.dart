@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/product.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -86,29 +87,26 @@ class ProductsProvider extends ChangeNotifier{
     notifyListeners();
   }
 
-  // final Map<int, Map<int, double>> _customerProductPrices = {};
-
-  // void registerPurchasedProducts(int customerId, List<OrderDetail> orderDetails) {
-  //   final productMap = _customerProductPrices.putIfAbsent(customerId, () => {});
-  //   for (final detail in orderDetails) {
-  //     productMap[detail.idProduct] = detail.unitPrice;
-  //   }
-  // }
-  Map<int, List<double>> _priceHistoryPerCustomer = {}; // key = productId
-
-  Future<void> fetchPriceHistoryForCustomer(int customerId) async {
-    // datos de ejemplo
-    _priceHistoryPerCustomer = {
-      1: [15.0, 14.5, 14.0],
-      2: [10.0, 9.5],
-      3: [20.0]
-    };
+  late Map<int, List<Map<String, dynamic>>> _priceHistory;
+  
+  Future<void> loadPriceHistory(int customerId, OrdersProvider ordersProvider) async {
+    _priceHistory = ordersProvider.getPriceHistoryForCustomer(customerId);
   }
 
-  List<double> getPriceHistory(int productId) {
-    return _priceHistoryPerCustomer[productId] ?? [];
+  List<Map<String, dynamic>> getPriceHistory(int productId) {
+    return _priceHistory[productId] ?? [];
   }
 
+  void updatePrice(int productId, double newPrice) {
+    if (_currentCustomerId == null) return;
+
+    final selectionMap = _customerSelections[_currentCustomerId];
+    if (selectionMap != null && selectionMap.containsKey(productId)) {
+      selectionMap[productId]!.product.price = newPrice;
+      notifyListeners();
+    }
+  }
+  
   void clearSelections() {
     _customerSelections.clear();
     _currentCustomerId = null;

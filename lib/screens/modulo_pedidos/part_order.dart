@@ -8,7 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class partOrder extends StatelessWidget {
-  const partOrder({super.key});
+  final int idCustomer;
+  const partOrder({Key? key, required this.idCustomer}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class partOrder extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ProductCatalogScreen()),
+                      MaterialPageRoute(builder: (context) => ProductCatalogScreen(idCustomer: idCustomer)),
                     );
                   },
                   child: Text(
@@ -272,26 +273,26 @@ class ResumeProduct extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double subtotal = selectedProducts.fold(
+    double total = selectedProducts.fold(
       0.0,
       (total, item) => total + (item.product.price * item.quantity),
     );
-    double igv = subtotal * 0.18;
-    double total = subtotal + igv;
+
+    double subtotal = total / 1.18;
+    double igv = total - subtotal;
 
     if (selectedProducts.isEmpty) return const SizedBox();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 20),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             _buildHeader(),
             const Divider(color: Colors.black, thickness: 1, height: 5),
             _buildProductList(),
-            SizedBox(width: 100, child: const Divider(color: Colors.black, thickness: 0.5, height: 5)),
+            SizedBox(width: 100, child: const Divider(color: Colors.black, thickness: 0.5, height: 6)),
             _buildTotalSection(subtotal, igv, total),
           ],
         ),
@@ -918,12 +919,13 @@ Future<void> registerOrder({
   final payment = paymentKey.currentState!.selectedPaymentMethod;
   final receipt = receiptKey.currentState!.selectedReceiptType;
 
-  double subtotal = selectedProducts.fold(
+  double total = selectedProducts.fold(
     0.0,
     (total, item) => total + (item.product.price * item.quantity),
   );
-  double igv = subtotal * 0.18;
-  double total = subtotal + igv;
+
+  double subtotal = total / 1.18;
+  double igv = total - subtotal;
 
   final details = selectedProducts.map((item) {
     return OrderDetail(

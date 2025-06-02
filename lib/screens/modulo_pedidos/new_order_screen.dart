@@ -271,7 +271,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: partOrder(),
+                      child: _selectedCustomer != null
+                      ? partOrder(idCustomer: _selectedCustomer!.idCustomer!)
+                      // : Center(child: Text('Selecciona un cliente')),
+                      : partOrder(idCustomer: 0),
                     ),
 
                     const SizedBox(height: 10),

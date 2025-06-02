@@ -1,11 +1,14 @@
 import 'package:balanced_foods/models/product.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
 class ProductCatalogScreen extends StatefulWidget {
-  const ProductCatalogScreen({super.key});
+  final int idCustomer;
+  const ProductCatalogScreen({Key? key, required this.idCustomer}) : super(key: key);
 
   @override
   State<ProductCatalogScreen> createState() => _ProductCatalogScreenState();
@@ -26,8 +29,15 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      final provider = Provider.of<ProductsProvider>(context, listen: false);
-      provider.fetchProducts();
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
+      final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
+
+      ordersProvider.fetchOrders().then((_) {
+        productsProvider.loadPriceHistory(widget.idCustomer, ordersProvider);
+      });
+
+      productsProvider.fetchProducts();
+      productsProvider.setCurrentCustomer(widget.idCustomer);
     });
   }
 
@@ -44,6 +54,23 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     selections = productosFiltrados.map((product) {
       return selectionMap[product.idProduct] ?? ProductSelection(product: product);
     }).toList();
+
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final customerOrders = ordersProvider.orders
+        .where((order) => order.idCustomer == widget.idCustomer)
+        .toList();
+
+    final Map<int, List<Map<String, dynamic>>> productHistory = {};
+
+    for (var order in customerOrders) {
+      for (var detail in order.details) {
+        productHistory.putIfAbsent(detail.idProducto, () => []);
+        productHistory[detail.idProducto]!.add({
+          'unitPrice': detail.unitPrice,
+          'dateCreated': order.dateCreated,
+        });
+      }
+    }
     
     return Scaffold(
       backgroundColor: Colors.white,
@@ -259,28 +286,17 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           ),
                         ),
                       ),
-                      // SizedBox(
-                      //   width: 50,
-                      //   child: Text(
-                      //     '${product.price.toStringAsFixed(2)}',
-                      //     style: TextStyle(
-                      //       fontFamily: 'Montserrat',
-                      //       fontSize: 11,
-                      //       fontWeight: FontWeight.w400
-                      //     ),
-                      //   ),
-                      // ),
 
-                      // NUEVO
                       SizedBox(
                         width: 50,
                         child: InkWell(
-                          onTap: () {
+                          onTap: () async {
                             final history = provider.getPriceHistory(product.idProduct);
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (_) => _buildPriceHistoryModal(context, history),
-                            );
+                            final selectedPrice = await _buildPriceHistoryModal(context, history);
+
+                            if (selectedPrice != null) {
+                              provider.updatePrice(product.idProduct, selectedPrice);
+                            }
                           },
                           child: Text(
                             '${product.price.toStringAsFixed(2)}',
@@ -307,23 +323,28 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           ),
                           child: Checkbox(
                             value: selection.isSelected,
-                            onChanged: (val) {
-                              setState(() {
-                                selection.isSelected = val ?? false;
-                                if (!selection.isSelected) {
-                                  selection.quantity = 0;
-                                  selection.controller.text = '';
-                                }
-                                provider.toggleSelection(
-                                  selection.product,
-                                  isSelected: selection.isSelected,
-                                  quantity: selection.quantity,
-                                );
-                              });
-                            },
-                            fillColor: MaterialStateProperty.all<Color>(
-                              selection.isSelected ? const Color(0xFF333333) : Colors.white,
-                            ),
+                            onChanged: (widget.idCustomer != null && widget.idCustomer! >= 1)
+                                ? (val) {
+                                    setState(() {
+                                      selection.isSelected = val ?? false;
+                                      if (!selection.isSelected) {
+                                        selection.quantity = 0;
+                                        selection.controller.text = '';
+                                      }
+                                      provider.toggleSelection(
+                                        selection.product,
+                                        isSelected: selection.isSelected,
+                                        quantity: selection.quantity,
+                                      );
+                                    });
+                                  }
+                                : null, // deshabilita si el cliente no está seleccionado
+                            fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+                              if (states.contains(MaterialState.disabled)) {
+                                return Colors.grey.shade300; // gris si está deshabilitado
+                              }
+                              return selection.isSelected ? const Color(0xFF333333) : Colors.white;
+                            }),
                           ),
                         ),
                       ),
@@ -338,33 +359,63 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     );
   }
 
-  // NUEVO
-  Widget _buildPriceHistoryModal(BuildContext context, List<double> history) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Historial de Precios',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          if (history.isEmpty)
-            const Text('No hay historial disponible.')
-          else
-            ...history.map((price) => ListTile(
-              leading: const Icon(Icons.history),
-              title: Text('S/ ${price.toStringAsFixed(2)}'),
-            )),
-        ],
-      ),
+  Future<double?> _buildPriceHistoryModal(BuildContext context, List<Map<String, dynamic>> history) async {
+    double? selectedPrice;
+
+    return await showModalBottomSheet<double>(
+      context: context,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Historial de Precios',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (history.isEmpty)
+                    const Text('No hay historial disponible.')
+                  else
+                    ...history.map((item) {
+                      final price = item['unitPrice'] as double;
+                      final date = item['dateCreated'];
+                      final formattedDate = date is String
+                          ? date
+                          : DateFormat('dd/MM/yyyy').format(date as DateTime);
+                      return RadioListTile<double>(
+                        value: price,
+                        groupValue: selectedPrice,
+                        title: Text('S/ ${price.toStringAsFixed(2)}'),
+                        subtitle: Text('Fecha: $formattedDate'),
+                        onChanged: (val) {
+                          setState(() {
+                            selectedPrice = val;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, selectedPrice);
+                    },
+                    child: const Text('Usar este precio'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
-
 
   Widget _buildGuardarButton() {
     return Center(

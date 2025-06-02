@@ -59,4 +59,20 @@ class OrdersProvider extends ChangeNotifier{
     return orders.where((order) => order.idCustomer == customerId).toList();
   }
 
+  Map<int, List<Map<String, dynamic>>> getPriceHistoryForCustomer(int customerId) {
+    final Map<int, List<Map<String, dynamic>>> priceHistory = {};
+
+    for (var order in orders.where((o) => o.idCustomer == customerId)) {
+      for (var detail in order.details) {
+        priceHistory.putIfAbsent(detail.idProducto, () => []);
+        priceHistory[detail.idProducto]!.add({
+          'unitPrice': detail.unitPrice,
+          'dateCreated': order.dateCreated,
+        });
+      }
+    }
+
+    return priceHistory;
+  }
+
 }
