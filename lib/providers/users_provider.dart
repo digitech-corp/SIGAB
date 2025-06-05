@@ -2,26 +2,35 @@ import 'dart:convert';
 import 'package:balanced_foods/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart' show rootBundle;
 
 class UsersProvider extends ChangeNotifier{
   bool isLoading = false;
+  bool useLocalData = true;
   List<User> users= [];
+  
 
   User? _loggedUser;
   User? get loggedUser => _loggedUser;
   
   Future<void> fetchUsers() async {
-    isLoading = true;
+    isLoading = true; 
     notifyListeners();
-    final url = Uri.parse('http://10.0.2.2:12346/users');
+
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        users = List<User>.from(data.map((user) => User.fromJSON(user)));
+      if (useLocalData) {
+        final data = await loadJsonFromAssets('assets/datos/users.json');
+        users = List<User>.from(data['users'].map((user) => User.fromJSON(user)));
       } else {
-        print('Error ${response.statusCode}');
-        users = [];
+        final url = Uri.parse('http://10.0.2.2:12346/users');
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          users = List<User>.from(data['users'].map((user) => User.fromJSON(user)));
+        } else {
+          print('Error ${response.statusCode}');
+          users = [];
+        }
       }
     } catch (e) {
       print('Error: $e');
@@ -33,19 +42,28 @@ class UsersProvider extends ChangeNotifier{
   }
 
   Future<User?> validateUser(String email, String password) async {
-    final url = Uri.parse('http://10.0.2.2:12346/users');
-    final response = await http.get(url);
+    try {
+      Map<String, dynamic> data;
+      if (useLocalData) {
+        data = await loadJsonFromAssets('assets/datos/users.json');
+      } else {
+        final url = Uri.parse('http://10.0.2.2:12346/users');
+        final response = await http.get(url);
+        if (response.statusCode != 200) return null;
+        data = jsonDecode(response.body);
+      }
 
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      final List<dynamic> users = decoded['users'];
-      for (final user in users) {
+      final List<dynamic> jsonUsers = data['users'];
+
+      for (final user in jsonUsers) {
         if (user['email'] == email && user['password'] == password) {
           _loggedUser = User.fromJSON(user);
           notifyListeners();
           return _loggedUser;
         }
       }
+    } catch (e) {
+      print('Error validando usuario: $e');
     }
     return null;
   }
@@ -56,6 +74,10 @@ class UsersProvider extends ChangeNotifier{
   }
   
   Future<bool> registerUser(User user) async {
+    if (useLocalData) {
+      print('Modo de prueba: No se puede registrar un usuario en un archivo local.');
+      return false;
+    }
     final url = Uri.parse('http://10.0.2.2:12346/users');
     
     try {
@@ -77,5 +99,11 @@ class UsersProvider extends ChangeNotifier{
       print('Error: $e');
       return false;
     }
+  }
+
+  // CARGAR DATOS
+  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
+    final jsonString = await rootBundle.loadString(path);
+    return json.decode(jsonString);
   }
 }

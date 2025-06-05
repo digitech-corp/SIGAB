@@ -85,16 +85,27 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
   Widget _buildMainPanel() {
     final screenWidth = MediaQuery.of(context).size.width;
     final bodyPadding = screenWidth * 0.06;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: bodyPadding),
-      child: Column(
-        children: [
-          const SizedBox(height: 40),
-          SalesModuleHeader(),
-          const SizedBox(height: 35),
-          SalesModuleCards(onCardTap: _onItemTapped),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Container(
+              alignment: Alignment.topCenter,
+              padding: EdgeInsets.symmetric(horizontal: bodyPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  SalesModuleHeader(),
+                  const SizedBox(height: 35),
+                  SalesModuleCards(onCardTap: _onItemTapped),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
   

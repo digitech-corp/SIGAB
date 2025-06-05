@@ -1,0 +1,14 @@
+{
+  "departments": [
+    { "idDepartment": 1, "department": "Lima" },
+    { "idDepartment": 2, "department": "Cusco" },
+    { "idDepartment": 3, "department": "Arequipa" },
+    { "idDepartment": 4, "department": "La Libertad" },
+    { "idDepartment": 5, "department": "Piura" },
+    { "idDepartment": 6, "department": "Loreto" },
+    { "idDepartment": 7, "department": "Ayacucho" },
+    { "idDepartment": 8, "department": "Junín" },
+    { "idDepartment": 9, "department": "Ancash" },
+    { "idDepartment": 10, "department": "Tacna" }
+  ]
+}

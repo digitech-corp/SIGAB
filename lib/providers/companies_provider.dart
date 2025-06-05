@@ -2,23 +2,30 @@ import 'dart:convert';
 import 'package:balanced_foods/models/company.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart' show rootBundle;
 
 class CompaniesProvider extends ChangeNotifier{
   bool isLoading = false;
+  bool useLocalData = true;
   List<Company> companies = [];
   
   Future<void> fetchCompanies() async {
     isLoading = true;
     notifyListeners();
-    final url = Uri.parse('http://10.0.2.2:12346/companies');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      if (useLocalData) {
+        final data = await loadJsonFromAssets('assets/datos/companies.json');
         companies = List<Company>.from(data['companies'].map((company) => Company.fromJSON(company)));
       } else {
-        print('Error ${response.statusCode}');
-        companies = [];
+        final url = Uri.parse('http://10.0.2.2:12346/companies');
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          companies = List<Company>.from(data['companies'].map((company) => Company.fromJSON(company)));
+        } else {
+          print('Error ${response.statusCode}');
+          companies = [];
+        }
       }
     } catch (e) {
       print('Error: $e');
@@ -43,5 +50,11 @@ class CompaniesProvider extends ChangeNotifier{
     }
     final data = jsonDecode(response.body);
     return data['idCompany'];
+  }
+
+  // CARGAR DATOS
+  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
+    final jsonString = await rootBundle.loadString(path);
+    return json.decode(jsonString);
   }
 }

@@ -1,0 +1,47 @@
+{
+  "products": [
+    { "idProduct": 1, "productName": "ADYAves Crecimiento", "animalType": "AVES", "productType": "H", "price": 120.90, "state": false },
+    { "idProduct": 2, "productName": "ADYAves Engorde", "animalType": "AVES", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 3, "productName": "ADYAves Postura", "animalType": "AVES", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 4, "productName": "ADYAves Plus", "animalType": "AVES", "productType": "H", "price": 95.00, "state": false },
+    { "idProduct": 5, "productName": "FORTEPICO Plus", "animalType": "AVES", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 6, "productName": "CAMPERO AVES Crecimiento", "animalType": "AVES", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 7, "productName": "CAMPERO AVES Engorde", "animalType": "AVES", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 8, "productName": "ADYMICIN + A PREInicio x 20 kg", "animalType": "AVES", "productType": "C", "price": 98.90, "state": false },
+    { "idProduct": 9, "productName": "ADYMICIN + A Inicio x 20 kg", "animalType": "AVES", "productType": "P", "price": 98.90, "state": false },
+    { "idProduct": 10, "productName": "ADYAves PREInicio", "animalType": "AVES", "productType": "P", "price": 110.90, "state": false },
+    { "idProduct": 11, "productName": "ADYAves Inicio", "animalType": "AVES", "productType": "P", "price": 98.10, "state": false },
+    { "idProduct": 12, "productName": "ADYAves Crecimiento", "animalType": "AVES", "productType": "P", "price": 88.50, "state": false },
+    { "idProduct": 13, "productName": "ADYAves Engorde", "animalType": "AVES", "productType": "P", "price": 109.90, "state": false },
+    { "idProduct": 14, "productName": "ADYAves Postura", "animalType": "AVES", "productType": "P", "price": 98.90, "state": false },
+    { "idProduct": 15, "productName": "FORTEPICO Inicio", "animalType": "AVES", "productType": "P", "price": 78.20, "state": false },
+    { "idProduct": 16, "productName": "FORTEPICO Crecimiento", "animalType": "AVES", "productType": "P", "price": 84.60, "state": false },
+    { "idProduct": 17, "productName": "FORTEPICO Entrenamiento", "animalType": "AVES", "productType": "P", "price": 98.90, "state": false },
+    { "idProduct": 18, "productName": "CAMPERO Aves PREInicio", "animalType": "AVES", "productType": "P", "price": 98.90, "state": false },
+    { "idProduct": 19, "productName": "CAMPERO Aves Inicio", "animalType": "AVES", "productType": "P", "price": 68.90, "state": false },
+    { "idProduct": 20, "productName": "CAMPERO Aves Crecimiento", "animalType": "AVES", "productType": "P", "price": 99.90, "state": false },
+    { "idProduct": 21, "productName": "CAMPERO Aves Engorde", "animalType": "AVES", "productType": "P", "price": 102.90, "state": false },
+    
+    { "idProduct": 22, "productName": "ADYCerdos INICIO", "animalType": "CERDOS", "productType": "H", "price": 120.90, "state": false },
+    { "idProduct": 23, "productName": "ADYCerdos CRECIMIENTO I", "animalType": "CERDOS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 24, "productName": "ADYCerdos CRECIMIENTO II", "animalType": "CERDOS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 25, "productName": "ADYCerdos Engorde", "animalType": "CERDOS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 26, "productName": "ADYCerdos Gestante", "animalType": "CERDOS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 27, "productName": "ADYCerdos Lactante", "animalType": "CERDOS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 28, "productName": "CAMPERO Cerdos Crecimiento", "animalType": "CERDOS", "productType": "C", "price": 105.00, "state": false },
+    { "idProduct": 29, "productName": "CAMPERO Cerdos Engorde", "animalType": "CERDOS", "productType": "P", "price": 98.90, "state": false },
+    { "idProduct": 30, "productName": "ADYCerdos Inicio", "animalType": "CERDOS", "productType": "P", "price": 110.90, "state": false },
+    { "idProduct": 31, "productName": "ADYCerdos Crecimiento", "animalType": "CERDOS", "productType": "P", "price": 98.10, "state": false },
+    { "idProduct": 32, "productName": "ADYCerdos Engorde", "animalType": "CERDOS", "productType": "P", "price": 88.50, "state": false },
+
+    { "idProduct": 33, "productName": "ADYVacuno Ternero", "animalType": "VACAS", "productType": "H", "price": 120.90, "state": false },
+    { "idProduct": 34, "productName": "ADYVacuno Media", "animalType": "VACAS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 35, "productName": "ADYVacuno Alta", "animalType": "VACAS", "productType": "H", "price": 125.00, "state": false },
+    { "idProduct": 36, "productName": "ADYVacuno Engorde", "animalType": "VACAS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 37, "productName": "ADYVacuno PreParto", "animalType": "VACAS", "productType": "H", "price": 98.90, "state": false },
+    { "idProduct": 38, "productName": "ADYVacuno Ternero", "animalType": "VACAS", "productType": "H", "price": 98.90, "state": false },
+
+    { "idProduct": 39, "productName": "ADYCUY 3 mm", "animalType": "CUY", "productType": "H", "price": 120.90, "state": false },
+    { "idProduct": 40, "productName": "ADYCUY 4 mm", "animalType": "CUY", "productType": "H", "price": 98.90, "state": false }
+  ]
+}

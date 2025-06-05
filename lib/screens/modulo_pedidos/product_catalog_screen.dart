@@ -152,47 +152,58 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
   }
 
   Widget _buildAnimalSelector() {
-    return SizedBox(
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: SizedBox(
       height: 36,
       width: double.infinity,
-      child: Center(
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          shrinkWrap: true,
-          itemCount: catalogos.length,
-          itemBuilder: (context, index) {
-            final item = catalogos[index];
-            final isSelected = selectedIndex == index;
-
-            return GestureDetector(
+      child: Row(
+        children: List.generate(catalogos.length, (index) {
+          final item = catalogos[index];
+          final isSelected = selectedIndex == index;
+          return Expanded(
+            child: GestureDetector(
               onTap: () => setState(() => selectedIndex = index),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
-                  border: Border.all(color: isSelected ? const Color(0xFFFF6600) : Color(0xffBDBDBD)),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFFFF6600) : const Color(0xffBDBDBD),
+                  ),
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(item.imagenUrl, width: 20, height: 20, color: isSelected ? const Color(0xFFFF6600) : Colors.black),
-                    const SizedBox(width: 6),
-                    Text(
-                      item.nombre,
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w300,
-                        color: isSelected ? const Color(0xFFFF6600) : const Color(0xffBDBDBD)
+                    Image.asset(
+                      item.imagenUrl,
+                      width: 18,
+                      height: 18,
+                      color: isSelected ? const Color(0xFFFF6600) : Colors.black,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        item.nombre,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w300,
+                          color: isSelected ? const Color(0xFFFF6600) : const Color(0xffBDBDBD),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        }),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildContent(List<ProductSelection> selections) {
     final provider = Provider.of<ProductsProvider>(context);
@@ -201,20 +212,20 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.only(top: 10, bottom: 2),
-            child: Row(
-              children: const [
-                SizedBox(width: 40, child: Text('Cant.', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-                SizedBox(width: 200, child: Text('Nombre del Producto', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-                SizedBox(width: 30, child: Text('Tipo', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-                SizedBox(width: 50, child: Text('Precio', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-                SizedBox(width: 30, child: Text('Selec', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-              ],
-            ),
+          Row(
+            children: [
+              Expanded(flex: 1, child: Text('Cant.', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+              const SizedBox(width: 10),
+              Expanded(flex: 5, child: Text('Nombre del Producto', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+              Expanded(flex: 1, child: Text('Tipo', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+              const SizedBox(width: 20),
+              Expanded(flex: 2, child: Text('Precio', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+              Expanded(flex: 1, child: Text('Selec', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+            ],
           ),
           const Divider(height: 1),
           const SizedBox(height: 10),
@@ -225,28 +236,27 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
               itemBuilder: (context, index) {
                 final selection = selections[index];
                 final product = selection.product;
-                return SizedBox(
-                  height: 25,
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 0),
                   child: Row(
                     children: [
-                      SizedBox(
-                        width: 30,
+                      Expanded(
+                        flex: 1,
                         child: TextFormField(
                           controller: selection.controller,
                           enabled: selection.isSelected,
                           keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           decoration: const InputDecoration(
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                            border: UnderlineInputBorder()
+                            contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                            border: UnderlineInputBorder(),
                           ),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 10,
-                           fontWeight: FontWeight.w400
+                            fontWeight: FontWeight.w400,
                           ),
                           onChanged: (val) {
                             final parsed = int.tryParse(val);
@@ -260,47 +270,47 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                                 );
                               });
                             }
-                          }
+                          },
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      SizedBox(
-                        width: 200,
+                      const SizedBox(width: 6), // reducido
+                      Expanded(
+                        flex: 5,
                         child: Text(
                           product.productName,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 11,
-                            fontWeight: FontWeight.w400
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 30,
+                      const SizedBox(width: 6), // reducido
+                      Expanded(
+                        flex: 1,
                         child: Text(
                           product.productType,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'Montserrat',
                             fontSize: 11,
-                            fontWeight: FontWeight.w400
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
-
-                      SizedBox(
-                        width: 50,
+                      Expanded(
+                        flex: 2,
                         child: InkWell(
                           onTap: () async {
                             final history = provider.getPriceHistory(product.idProduct);
                             final selectedPrice = await _buildPriceHistoryModal(context, history);
-
                             if (selectedPrice != null) {
                               provider.updatePrice(product.idProduct, selectedPrice);
                             }
                           },
                           child: Text(
                             '${product.price.toStringAsFixed(2)}',
-                            style: TextStyle(
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
                               fontFamily: 'Montserrat',
                               fontSize: 11,
                               fontWeight: FontWeight.w400,
@@ -309,43 +319,34 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8), // más compacto
                       SizedBox(
-                        width: 30,
-                        child: Theme(
-                          data: Theme.of(context).copyWith(
-                            checkboxTheme: CheckboxThemeData(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                          ),
-                          child: Checkbox(
-                            value: selection.isSelected,
-                            onChanged: (widget.idCustomer != null && widget.idCustomer! >= 1)
-                                ? (val) {
-                                    setState(() {
-                                      selection.isSelected = val ?? false;
-                                      if (!selection.isSelected) {
-                                        selection.quantity = 0;
-                                        selection.controller.text = '';
-                                      }
-                                      provider.toggleSelection(
-                                        selection.product,
-                                        isSelected: selection.isSelected,
-                                        quantity: selection.quantity,
-                                      );
-                                    });
-                                  }
-                                : null, // deshabilita si el cliente no está seleccionado
-                            fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-                              if (states.contains(MaterialState.disabled)) {
-                                return Colors.grey.shade300; // gris si está deshabilitado
-                              }
-                              return selection.isSelected ? const Color(0xFF333333) : Colors.white;
-                            }),
-                          ),
+                        width: 28,
+                        child: Checkbox(
+                          value: selection.isSelected,
+                          onChanged: (widget.idCustomer != null && widget.idCustomer! >= 1)
+                              ? (val) {
+                                  setState(() {
+                                    selection.isSelected = val ?? false;
+                                    if (!selection.isSelected) {
+                                      selection.quantity = 0;
+                                      selection.controller.text = '';
+                                    }
+                                    Provider.of<ProductsProvider>(context, listen: false)
+                                        .toggleSelection(selection.product,
+                                            isSelected: selection.isSelected,
+                                            quantity: selection.quantity);
+                                  });
+                                }
+                              : null,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
+                          fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+                            if (states.contains(MaterialState.disabled)) {
+                              return Colors.grey.shade300;
+                            }
+                            return selection.isSelected ? const Color(0xFF333333) : Colors.white;
+                          }),
                         ),
                       ),
                     ],
@@ -354,6 +355,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
               },
             ),
           ),
+
         ],
       ),
     );
@@ -383,31 +385,70 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                   if (history.isEmpty)
                     const Text('No hay historial disponible.')
                   else
-                    ...history.map((item) {
-                      final price = item['unitPrice'] as double;
-                      final date = item['dateCreated'];
-                      final formattedDate = date is String
-                          ? date
-                          : DateFormat('dd/MM/yyyy').format(date as DateTime);
-                      return RadioListTile<double>(
-                        value: price,
-                        groupValue: selectedPrice,
-                        title: Text('S/ ${price.toStringAsFixed(2)}'),
-                        subtitle: Text('Fecha: $formattedDate'),
-                        onChanged: (val) {
-                          setState(() {
-                            selectedPrice = val;
-                          });
-                        },
-                      );
-                    }).toList(),
-                  const SizedBox(height: 10),
+                    ListTileTheme(
+                      dense: true,
+                      minVerticalPadding: 0,
+                      horizontalTitleGap: 0,
+                      child: Column(
+                        children: history.map((item) {
+                          final price = item['unitPrice'] as double;
+                          final date = item['dateCreated'];
+                          final formattedDate = date is String
+                              ? date
+                              : DateFormat('dd/MM/yyyy').format(date as DateTime);
+                          return RadioListTile<double>(
+                            value: price,
+                            groupValue: selectedPrice,
+                            contentPadding: EdgeInsets.zero,
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'S/ ${price.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xFF333333),
+                                  ),
+                                ),
+                                Text(
+                                  formattedDate,
+                                  style: const TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w300,
+                                    color: Color(0xFF333333),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onChanged: (val) {
+                              setState(() {
+                                selectedPrice = val;
+                              });
+                            },
+                            activeColor: const Color(0xFFFF6600),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  const SizedBox(height: 5),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context, selectedPrice);
                     },
-                    child: const Text('Usar este precio'),
+                    child: const Text(
+                      'Usar este precio',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFF6600),
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 10),
                 ],
               ),
             );

@@ -7,6 +7,7 @@ import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -306,6 +307,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
           const SizedBox(height: 07),
           _buildTextField(
             controller: widget.dni,
+            keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Por favor, ingresa el número de DNI';
@@ -313,10 +315,15 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'DNI',
+            inputFormatters: [ // 👈 Este es el nuevo parámetro
+              FilteringTextInputFormatter.digitsOnly, // Solo números
+              LengthLimitingTextInputFormatter(8), // Máximo 8 dígitos
+            ],
           ),
           const SizedBox(height: 07),
           _buildTextField(
             controller: widget.customerPhone,
+            keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Por favor, ingresa el número de celular';
@@ -324,6 +331,10 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Celular',
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(9),
+            ],
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -443,6 +454,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
           const SizedBox(height: 07),
           _buildTextField(
             controller: widget.companyRUC,
+            keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Por favor, ingresa el RUC';
@@ -450,6 +462,10 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'RUC',
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(11),
+            ],
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -590,9 +606,13 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
     bool obscureText = false,
     String? hintText,
     TextStyle? hintStyle,
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: const TextStyle(
         fontFamily: 'Montserrat',
         fontSize: 16,

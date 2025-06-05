@@ -1,0 +1,447 @@
+{
+  "orders": [
+    {
+      "idOrder": 1,
+      "idCustomer": 4,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 340.70,
+      "igv": 61.33,
+      "total": 402.03,
+      "deliveryLocation": "Av. Lima 123",
+      "deliveryDate": "2025-06-07",
+      "deliveryTime": "13:45:00",
+      "additionalInformation": "Entregar con cuidado",
+      "state": "Entregado",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-05",
+      "timeCreated": "07:00:00",
+      "details": [
+        {
+          "idProducto": 1,
+          "quantity": 2,
+          "unitPrice": 120.90,
+          "partialPrice": 241.80
+        },
+        {
+          "idProducto": 3,
+          "quantity": 1,
+          "unitPrice": 98.90,
+          "partialPrice": 98.90
+        }
+      ]
+    },
+    {
+      "idOrder": 2,
+      "idCustomer": 2,
+      "paymentMethod": "Contado",
+      "receiptType": "BOLETA",
+      "subtotal": 593.40,
+      "igv": 0.00,
+      "total": 593.40,
+      "deliveryLocation": "Jr. Arequipa 456",
+      "deliveryDate": "2025-06-08",
+      "deliveryTime": "10:30:00",
+      "additionalInformation": "Llamar antes de llegar",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-02",
+      "timeCreated": "09:45:00",
+      "details": [
+        {
+          "idProducto": 2,
+          "quantity": 4,
+          "unitPrice": 98.90,
+          "partialPrice": 395.60
+        },
+        {
+          "idProducto": 4,
+          "quantity": 2,
+          "unitPrice": 98.90,
+          "partialPrice": 197.80
+        }
+      ]
+    },
+    {
+      "idOrder": 3,
+      "idCustomer": 5,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 296.70,
+      "igv": 53.41,
+      "total": 350.11,
+      "deliveryLocation": "Calle Falsa 789",
+      "deliveryDate": "2025-06-07",
+      "deliveryTime": "15:00:00",
+      "additionalInformation": "Dejar en la recepción",
+      "state": "Pendiente",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-01",
+      "timeCreated": "09:50:00",
+      "details": [
+        {
+          "idProducto": 5,
+          "quantity": 3,
+          "unitPrice": 98.90,
+          "partialPrice": 296.70
+        }
+      ]
+    },
+    {
+      "idOrder": 4,
+      "idCustomer": 7,
+      "paymentMethod": "Crédito",
+      "receiptType": "BOLETA",
+      "subtotal": 593.40,
+      "igv": 0.00,
+      "total": 593.40,
+      "deliveryLocation": "Av. Brasil 321",
+      "deliveryDate": "2025-06-03",
+      "deliveryTime": "09:00:00",
+      "additionalInformation": "Entregar en horario de oficina",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-02",
+      "timeCreated": "11:00:00",
+      "details": [
+        {
+          "idProducto": 6,
+          "quantity": 6,
+          "unitPrice": 98.90,
+          "partialPrice": 593.40
+        }
+      ]
+    },
+    {
+      "idOrder": 5,
+      "idCustomer": 8,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 494.50,
+      "igv": 89.01,
+      "total": 583.51,
+      "deliveryLocation": "Pasaje Luna 11",
+      "deliveryDate": "2025-06-08",
+      "deliveryTime": "11:15:00",
+      "additionalInformation": "Tocar timbre dos veces",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-04",
+      "timeCreated": "11:45:00",
+      "details": [
+        {
+          "idProducto": 1,
+          "quantity": 5,
+          "unitPrice": 98.90,
+          "partialPrice": 494.50
+        }
+      ]
+    },
+    {
+      "idOrder": 6,
+      "idCustomer": 8,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 494.50,
+      "igv": 89.01,
+      "total": 583.51,
+      "deliveryLocation": "Pasaje Luna 11",
+      "deliveryDate": "2025-06-03",
+      "deliveryTime": "11:15:00",
+      "additionalInformation": "Tocar timbre dos veces",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-01",
+      "timeCreated": "17:43:00",
+      "details": [
+        {
+          "idProducto": 1,
+          "quantity": 5,
+          "unitPrice": 100.90,
+          "partialPrice": 494.50
+        }
+      ]
+    },
+    {
+      "idOrder": 7,
+      "idCustomer": 7,
+      "paymentMethod": "Crédito",
+      "receiptType": "BOLETA",
+      "subtotal": 494.50,
+      "igv": 89.01,
+      "total": 583.51,
+      "deliveryLocation": "Pasaje Sebastian",
+      "deliveryDate": "2025-06-01",
+      "deliveryTime": "11:15:00",
+      "additionalInformation": "Tocar timbre dos veces",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-05-31",
+      "timeCreated": "17:43:00",
+      "details": [
+        {
+          "idProducto": 1,
+          "quantity": 5,
+          "unitPrice": 98.90,
+          "partialPrice": 494.50
+        },
+        {
+          "idProducto": 2,
+          "quantity": 2,
+          "unitPrice": 98.90,
+          "partialPrice": 197.80
+        }
+      ]
+    },
+    {
+      "idOrder": 8,
+      "idCustomer": 3,
+      "paymentMethod": "Crédito",
+      "receiptType": "FACTURA",
+      "subtotal": 296.70,
+      "igv": 53.41,
+      "total": 350.11,
+      "deliveryLocation": "Av. Los Pinos 456",
+      "deliveryDate": "2025-06-06",
+      "deliveryTime": "14:30:00",
+      "additionalInformation": "Entregar en horario de oficina",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-04",
+      "timeCreated": "10:15:00",
+      "details": [
+        {
+          "idProducto": 5,
+          "quantity": 3,
+          "unitPrice": 98.90,
+          "partialPrice": 296.70
+        }
+      ]
+    },
+    {
+      "idOrder": 9,
+      "idCustomer": 6,
+      "paymentMethod": "Contado",
+      "receiptType": "BOLETA",
+      "subtotal": 395.60,
+      "igv": 24.30,
+      "total": 395.60,
+      "deliveryLocation": "Calle Las Flores 789",
+      "deliveryDate": "2025-06-07",
+      "deliveryTime": "09:00:00",
+      "additionalInformation": "Llamar antes de llegar",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-05",
+      "timeCreated": "08:45:00",
+      "details": [
+        {
+          "idProducto": 2,
+          "quantity": 4,
+          "unitPrice": 98.90,
+          "partialPrice": 395.60
+        }
+      ]
+    },
+    {
+      "idOrder": 10,
+      "idCustomer": 9,
+      "paymentMethod": "Crédito",
+      "receiptType": "OTROS",
+      "subtotal": 197.80,
+      "igv": 35.60,
+      "total": 233.40,
+      "deliveryLocation": "Jr. Amazonas 123",
+      "deliveryDate": "2025-06-08",
+      "deliveryTime": "16:00:00",
+      "additionalInformation": "Dejar en la recepción",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-06",
+      "timeCreated": "12:30:00",
+      "details": [
+        {
+          "idProducto": 4,
+          "quantity": 2,
+          "unitPrice": 98.90,
+          "partialPrice": 197.80
+        }
+      ]
+    },
+    {
+      "idOrder": 11,
+      "idCustomer": 2,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 494.50,
+      "igv": 89.01,
+      "total": 583.51,
+      "deliveryLocation": "Pasaje Luna 11",
+      "deliveryDate": "2025-06-08",
+      "deliveryTime": "11:15:00",
+      "additionalInformation": "Tocar timbre dos veces",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-04",
+      "timeCreated": "11:45:00",
+      "details": [
+        {
+          "idProducto": 1,
+          "quantity": 5,
+          "unitPrice": 98.90,
+          "partialPrice": 494.50
+        }
+      ]
+    },
+    {
+      "idOrder": 12,
+      "idCustomer": 10,
+      "paymentMethod": "Crédito",
+      "receiptType": "BOLETA",
+      "subtotal": 296.70,
+      "igv": 68.26,
+      "total": 296.70,
+      "deliveryLocation": "Av. Brasil 321",
+      "deliveryDate": "2025-06-07",
+      "deliveryTime": "10:00:00",
+      "additionalInformation": "Entregar en horario de oficina",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-05",
+      "timeCreated": "09:30:00",
+      "details": [
+        {
+          "idProducto": 6,
+          "quantity": 3,
+          "unitPrice": 98.90,
+          "partialPrice": 296.70
+        }
+      ]
+    },
+    {
+      "idOrder": 13,
+      "idCustomer": 4,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 197.80,
+      "igv": 35.60,
+      "total": 233.40,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-04",
+      "deliveryTime": "10:00:00",
+      "additionalInformation": "",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-03",
+      "timeCreated": "09:20:00",
+      "details": [
+        {
+          "idProducto": 3,
+          "quantity": 2,
+          "unitPrice": 98.90,
+          "partialPrice": 197.80
+        }
+      ]
+    },
+    {
+      "idOrder": 14,
+      "idCustomer": 4,
+      "paymentMethod": "Crédito",
+      "receiptType": "BOLETA",
+      "subtotal": 211.60,
+      "igv": 44.83,
+      "total": 211.60,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-06",
+      "deliveryTime": "15:00:00",
+      "additionalInformation": "",
+      "state": "Entregado",
+      "paymentState": "Pagado",
+      "dateCreated": "2025-06-05",
+      "timeCreated": "11:45:00",
+      "details": [
+        {
+          "idProducto": 3,
+          "quantity": 2,
+          "unitPrice": 105.80,
+          "partialPrice": 211.60
+        }
+      ]
+    },
+    {
+      "idOrder": 15,
+      "idCustomer": 4,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 284.40,
+      "igv": 51.19,
+      "total": 335.59,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-08",
+      "deliveryTime": "12:00:00",
+      "additionalInformation": "Revisar antes de recibir",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-07",
+      "timeCreated": "08:30:00",
+      "details": [
+        {
+          "idProducto": 3,
+          "quantity": 3,
+          "unitPrice": 94.80,
+          "partialPrice": 284.40
+        }
+      ]
+    },
+    {
+      "idOrder": 16,
+      "idCustomer": 4,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 98.90,
+      "igv": 17.80,
+      "total": 116.70,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-09",
+      "deliveryTime": "11:00:00",
+      "additionalInformation": "Pedido urgente",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-08",
+      "timeCreated": "10:20:00",
+      "details": [
+        {
+          "idProducto": 3,
+          "quantity": 1,
+          "unitPrice": 98.90,
+          "partialPrice": 98.90
+        }
+      ]
+    },
+    {
+      "idOrder": 17,
+      "idCustomer": 4,
+      "paymentMethod": "Crédito",
+      "receiptType": "OTROS",
+      "subtotal": 208.00,
+      "igv": 37.44,
+      "total": 245.44,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-10",
+      "deliveryTime": "17:00:00",
+      "additionalInformation": "Revisar precio por lote",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-09",
+      "timeCreated": "14:45:00",
+      "details": [
+        {
+          "idProducto": 3,
+          "quantity": 2,
+          "unitPrice": 104.00,
+          "partialPrice": 208.00
+        }
+      ]
+    }
+  ]
+}

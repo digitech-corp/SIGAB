@@ -1,28 +1,33 @@
 import 'dart:convert';
-import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/product.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart' show rootBundle;
 
 class ProductsProvider extends ChangeNotifier{
   bool isLoading = false;
+  bool useLocalData = true;
   List<Product> products = [];
-  final Map<int, ProductSelection> _selectionMap = {};
-  
+
   Future<void> fetchProducts() async {
     isLoading = true;
     notifyListeners();
-    final url = Uri.parse('http://10.0.2.2:12346/products');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      if (useLocalData) {
+        final data = await loadJsonFromAssets('assets/datos/products.json');
         products = List<Product>.from(data['products'].map((product) => Product.fromJSON(product)));
       } else {
-        print('Error ${response.statusCode}');
-        products = [];
+        final url = Uri.parse('http://10.0.2.2:12346/products');
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          products = List<Product>.from(data['products'].map((product) => Product.fromJSON(product)));
+        } else {
+          print('Error ${response.statusCode}');
+          products = [];
+        }
       }
     } catch (e) {
       print('Error: $e');
@@ -111,5 +116,11 @@ class ProductsProvider extends ChangeNotifier{
     _customerSelections.clear();
     _currentCustomerId = null;
     notifyListeners();
+  }
+
+  // CARGAR DATOS
+  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
+    final jsonString = await rootBundle.loadString(path);
+    return json.decode(jsonString);
   }
 }

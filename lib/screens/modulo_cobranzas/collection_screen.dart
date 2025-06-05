@@ -88,7 +88,7 @@ class _CreditosCardState extends State<CreditosCard> {
                 onTap: () => setState(() => _selectedIndex = index),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 26,
+                    horizontal: 14,
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
@@ -117,52 +117,54 @@ class _CreditosCardState extends State<CreditosCard> {
           const Divider(color: Color(0xFFBDBDBD), thickness: 1.0, height: 0,),
 
           // Ordenar por Dropdown
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Text(
-                  'Ordenar por: ',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300,
-                    color: Color(0xFF333333)
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Container(
-                  height: 20,
-                  width: 130,
-                  child: DropdownButtonFormField<String>(
-                    value: _sortBy,
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text(
+                    'Ordenar por: ',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.w300,
-                      color: Color(0xFF333333),
+                      color: Color(0xFF333333)
                     ),
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 5),
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _sortOptions.map((option) {
-                      return DropdownMenuItem(
-                        value: option,
-                        child: Text(option),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _sortBy = value);
-                      }
-                    },
                   ),
-                )
-
-              ],
+                  const SizedBox(width: 5),
+                  Container(
+                    height: 20,
+                    width: 130,
+                    child: DropdownButtonFormField<String>(
+                      value: _sortBy,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w300,
+                        color: Color(0xFF333333),
+                      ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 5),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: _sortOptions.map((option) {
+                        return DropdownMenuItem(
+                          value: option,
+                          child: Text(option),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _sortBy = value);
+                        }
+                      },
+                    ),
+                  )
+            
+                ],
+              ),
             ),
           ),
           // Tarjetas scrollables
@@ -244,239 +246,150 @@ class _CreditosCardState extends State<CreditosCard> {
     return Card(
       color: Color(0xFFD9D9D9),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Container(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Cliente:',
-                      style: _strongStyle
-                    ),
+                    Text('Cliente:', style: _strongStyle),
                     const SizedBox(height: 5),
-                    Text(
-                      'Contacto:',
-                      style: _strongStyle,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 60),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      cliente,
-                      style: _customerStyle
-                    ),
+                    Text('Contacto:', style: _strongStyle),
                     const SizedBox(height: 5),
-                    Text(
-                      contacto,
-                      style: _weakStyle
-                    )
-                  ],
-                )
-              ],
-            ),
-            const SizedBox(height: 5),
-            Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'N° de Pedido:',
-                      style: _strongStyle,
-                    )
-                  ],
-                ),
-                const SizedBox(width: 42),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PEDIDO N° $pedido',
-                      style: _weakStyle,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 20),
-                Column(
-                  children: [
-                    Icon(
-                      Icons.attach_file,
-                      color: Colors.black,
-                      size: 20
-                    )
-                  ],
-                )
-              ],
-            ),
-            Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Estado del Crédito:',
-                      style: _strongStyle,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 17),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      estadoVencimiento,
-                      style: _estadoStyle,
-                    )
-                  ],
-                ),
-                const SizedBox(width: 15),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Fecha Vencimiento:',
-                      style: _strongStyle
-                    ),
-                  ],
-                ),
-                Spacer(),
-                Column(
-                  children: [
-                    Text(
-                      fechaVencimiento,
-                      style: _weakStyle
-                    )
-                  ],
-                )
-              ],
-            ),
-            Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'N° días Vencido:',
-                      style: _strongStyle,
-                    ),
+                    Text('N° de Pedido:', style: _strongStyle),
                     const SizedBox(height: 5),
-                    Text(
-                      'Monto TOTAL:',
-                      style: _strongStyle,
-                    ),
+                    Text('Estado Crédito:', style: _strongStyle),
                     const SizedBox(height: 5),
-                    Text(
-                      'Saldo:',
-                      style: _strongStyle
-                    )
+                    Text('N° días Vencido:', style: _strongStyle),
+                    const SizedBox(height: 5),
+                    Text('Monto Total:', style: _strongStyle),
+                    const SizedBox(height: 5),
+                    Text('Saldo:', style: _strongStyle),
                   ],
                 ),
-                const SizedBox(width: 28),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vencidoDias,
-                      style: _estadoStyle,
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      monto,
-                      style: _estadoStyle,
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      saldo,
-                      style: _saldoStyle,
-                    )
-                  ],
-                ),
-                Spacer(),
-                Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 25,
-                      width: 113,
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Color(0xFFFF6600),
-                          side: BorderSide(color: Color(0xFFFF6600), width: 1),
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              'Llamar',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFFF6600),
-                              ),
-                            ),
-                            Image.asset(
-                              'assets/images/phone.png',
-                              color: Color(0xFFFF6600),
-                              scale: 15,
-                            )
-                          ],
-                        ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(cliente, style: _customerStyle),
+                      const SizedBox(height: 5),
+                      Text(contacto, style: _weakStyle),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Text('PEDIDO N° $pedido', style: _weakStyle),
+                          const SizedBox(width: 10),
+                          Icon(Icons.attach_file, color: Colors.black, size: 20),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 25,
-                      width: 113,
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Color(0xFFFF6600),
-                          side: BorderSide(color: Color(0xFFFF6600), width: 1),
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              'Whatsapp',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFFF6600),
-                              ),
-                            ),
-                            Image.asset(
-                              'assets/images/whatsapp.png',
-                              color: Color(0xFFFF6600),
-                              scale: 15,
-                            )
-                          ],
-                        ),
+                      Row(
+                        children: [
+                          Text(estadoVencimiento, style: _estadoStyle),
+                          Spacer(),
+                          Text('Fecha Vencimiento:', style: _strongStyle),
+                          const SizedBox(width: 10),
+                          Text(fechaVencimiento, style: _weakStyle),
+                        ],
                       ),
-                    ),
-                  ],
-                )
+                      const SizedBox(height: 5),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(vencidoDias, style: _estadoStyle),
+                              Text(monto, style: _estadoStyle),
+                              Text(saldo, style: _saldoStyle),
+                            ],
+                          ),
+                          Spacer(),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                height: 25,
+                                width: 113,
+                                child: OutlinedButton(
+                                  onPressed: () {},
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Color(0xFFFF6600),
+                                    side: BorderSide(color: Color(0xFFFF6600), width: 1),
+                                    padding: EdgeInsets.symmetric(horizontal: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Text(
+                                        'Llamar',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xFFFF6600),
+                                        ),
+                                      ),
+                                      Image.asset(
+                                        'assets/images/phone.png',
+                                        color: Color(0xFFFF6600),
+                                        scale: 15,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              SizedBox(
+                                height: 25,
+                                width: 113,
+                                child: OutlinedButton(
+                                  onPressed: () {},
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Color(0xFFFF6600),
+                                    side: BorderSide(color: Color(0xFFFF6600), width: 1),
+                                    padding: EdgeInsets.symmetric(horizontal: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Text(
+                                        'Whatsapp',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xFFFF6600),
+                                        ),
+                                      ),
+                                      Image.asset(
+                                        'assets/images/whatsapp.png',
+                                        color: Color(0xFFFF6600),
+                                        scale: 15,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ],
         ),
       ),
     );

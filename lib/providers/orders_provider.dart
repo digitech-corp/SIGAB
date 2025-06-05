@@ -2,25 +2,30 @@ import 'dart:convert';
 import 'package:balanced_foods/models/order.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart' show rootBundle;
 
 class OrdersProvider extends ChangeNotifier{
   bool isLoading = false;
+  bool useLocalData = true;
   List<Order> orders = [];
   
   Future<void> fetchOrders() async {
     isLoading = true;
     notifyListeners();
-    final url = Uri.parse('http://10.0.2.2:12346/orders');
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('Datos obtenidos: $data');
+      if (useLocalData) {
+        final data = await loadJsonFromAssets('assets/datos/orders.json');
         orders = List<Order>.from(data['orders'].map((order) => Order.fromJSON(order)));
-        print('Total pedidos obtenidos: ${orders.length}');
       } else {
-        print('Error ${response.statusCode}');
-        orders = [];
+        final url = Uri.parse('http://10.0.2.2:12346/orders');
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          orders = List<Order>.from(data['orders'].map((order) => Order.fromJSON(order)));
+        } else {
+          print('Error ${response.statusCode}');
+          orders = [];
+        }
       }
     } catch (e) {
       print('Error: $e');
@@ -73,6 +78,12 @@ class OrdersProvider extends ChangeNotifier{
     }
 
     return priceHistory;
+  }
+
+  // CARGAR DATOS
+  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
+    final jsonString = await rootBundle.loadString(path);
+    return json.decode(jsonString);
   }
 
 }

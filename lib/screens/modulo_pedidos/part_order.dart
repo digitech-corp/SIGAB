@@ -409,92 +409,103 @@ class ReceiptTypeState extends State<receiptType> {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SizedBox(
-          width: 20,
-          height: 25,
-          child: Transform.scale(
-            scale: 0.8,
-            child: Checkbox(
-              value: _otros, 
-              activeColor: Color(0xFF333333),
-              checkColor: Colors.white,
-              onChanged: (value) {
-                setState(() {
-                  _otros = value!;
-                  if (_otros) 
-                    _factura = false; 
-                    _boleta = false;
-                });
-              },
+        Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 25,
+              child: Transform.scale(
+                scale: 0.8,
+                child: Checkbox(
+                  value: _otros, 
+                  activeColor: Color(0xFF333333),
+                  checkColor: Colors.white,
+                  onChanged: (value) {
+                    setState(() {
+                      _otros = value!;
+                      if (_otros) 
+                        _factura = false; 
+                        _boleta = false;
+                    });
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
-        Text(
-          'OTROS/N.V.',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 12,
-            fontWeight: FontWeight.w400
-          ),
-        ),
-        const SizedBox(width: 15),
-        SizedBox(
-          width: 20,
-          height: 25,
-          child: Transform.scale(
-            scale: 0.8,
-            child: Checkbox(
-              value: _factura, 
-              activeColor: Color(0xFF333333),
-              checkColor: Colors.white,
-              onChanged: (value) {
-                setState(() {
-                  _factura = value!;
-                  if (_factura) 
-                    _otros = false; 
-                    _boleta = false;
-                });
-              },
+            Text(
+              'OTROS/N.V.',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w400
+              ),
             ),
-          ),
+          ],
         ),
-        Text(
-          'FACTURA',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 12,
-            fontWeight: FontWeight.w400
-          ),
-        ),
-        const SizedBox(width: 15),
-        SizedBox(
-          width: 20,
-          height: 25,
-          child: Transform.scale(
-            scale: 0.8,
-            child: Checkbox(
-              value: _boleta, 
-              activeColor: Color(0xFF333333),
-              checkColor: Colors.white,
-              onChanged: (value) {
-                setState(() {
-                  _boleta = value!;
-                  if (_boleta) 
-                    _otros = false;
-                    _factura = false;
-                });
-              },
+        Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 25,
+              child: Transform.scale(
+                scale: 0.8,
+                child: Checkbox(
+                  value: _factura, 
+                  activeColor: Color(0xFF333333),
+                  checkColor: Colors.white,
+                  onChanged: (value) {
+                    setState(() {
+                      _factura = value!;
+                      if (_factura) 
+                        _otros = false; 
+                        _boleta = false;
+                    });
+                  },
+                ),
+              ),
             ),
-          ),
+            Text(
+              'FACTURA',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w400
+              ),
+            ),
+          ],
         ),
-        Text(
-          'BOLETA DE VENTA',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 12,
-            fontWeight: FontWeight.w400
-          ),
+        Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 25,
+              child: Transform.scale(
+                scale: 0.8,
+                child: Checkbox(
+                  value: _boleta, 
+                  activeColor: Color(0xFF333333),
+                  checkColor: Colors.white,
+                  onChanged: (value) {
+                    setState(() {
+                      _boleta = value!;
+                      if (_boleta) 
+                        _otros = false;
+                        _factura = false;
+                    });
+                  },
+                ),
+              ),
+            ),
+            Text(
+              'BOLETA DE VENTA',
+              style: TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 12,
+                fontWeight: FontWeight.w400
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -612,8 +623,20 @@ class PaymentMethodState extends State<paymentMethod> {
                 SizedBox(
                   height: 30,
                   child: ElevatedButton(
-                    onPressed: haySeleccion 
-                      ? () {}
+                    onPressed: haySeleccion
+                      ? () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return RegistrarPagoFormDialog(
+                                onGuardar: () {
+                                  // lógica al guardar
+                                  print('Pago guardado');
+                                },
+                              );
+                            },
+                          );
+                        }
                       : null,
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
@@ -647,6 +670,130 @@ class PaymentMethodState extends State<paymentMethod> {
           ],
         ),
       ],
+    );
+  }
+}
+
+class RegistrarPagoFormDialog extends StatefulWidget {
+  final VoidCallback onGuardar;
+
+  const RegistrarPagoFormDialog({super.key, required this.onGuardar});
+
+  @override
+  State<RegistrarPagoFormDialog> createState() => _RegistrarPagoFormDialogState();
+}
+
+class _RegistrarPagoFormDialogState extends State<RegistrarPagoFormDialog> {
+  final _importeController = TextEditingController();
+  final _saldoController = TextEditingController();
+
+  @override
+  void dispose() {
+    _importeController.dispose();
+    _saldoController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Center(
+              child: Text(
+                'Registro de Pago',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Text('Importe:'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _importeController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFD9D9D9),
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    ),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('Saldo:'),
+                const SizedBox(width: 26),
+                Expanded(
+                  child: TextField(
+                    controller: _saldoController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFD9D9D9),
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    ),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.onGuardar();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF6600),
+                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Guardar',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:balanced_foods/screens/modulo_dashboard/paymentMethodG.raphic.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 
@@ -73,7 +74,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 20),
               const VentasTotalesCard(),
-
+              const SizedBox(height: 15),
+              BarraDivididaConTooltip(contado: 60, credito: 20),
               const SizedBox(height: 20),
               const Text(
                 'Cuota de Ventas y Progreso',
@@ -262,15 +264,6 @@ class _VentasTotalesCardState extends State<VentasTotalesCard> {
   int _selectedIndex = 0;
   final List<String> _titulos = ['Diario', 'Semanal', 'Mensual'];
 
-  TextStyle _textStyle() {
-    return const TextStyle(
-      fontFamily: 'Montserrat',
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: Color(0xFF333333),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -319,15 +312,69 @@ class _VentasTotalesCardState extends State<VentasTotalesCard> {
               child: IndexedStack(
                 index: _selectedIndex,
                 children: [
-                  Text('Gráfico Diario', style: _textStyle()),
-                  Text('Gráfico Semanal', style: _textStyle()),
-                  Text('Gráfico Mensual', style: _textStyle()),
+                  DashboardDaily(),
+                  DashboardWeekly(),
+                  DashboardMonthly(),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class DashboardDaily extends StatefulWidget {
+  const DashboardDaily({super.key});
+
+  @override
+  State<DashboardDaily> createState() => _DashboardDailyState();
+}
+
+class _DashboardDailyState extends State<DashboardDaily> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      margin: EdgeInsets.all(20),
+      child: Image.asset('assets/images/dashboard_daily.jpeg', fit: BoxFit.cover),
+    );
+  }
+}
+
+class DashboardWeekly extends StatefulWidget {
+  const DashboardWeekly({super.key});
+
+  @override
+  State<DashboardWeekly> createState() => _DashboardWeeklyState();
+}
+
+class _DashboardWeeklyState extends State<DashboardWeekly> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      margin: EdgeInsets.all(10),
+      child: Image.asset('assets/images/dashboard_weekly.png', fit: BoxFit.cover),
+    );
+  }
+}
+
+class DashboardMonthly extends StatefulWidget {
+  const DashboardMonthly({super.key});
+
+  @override
+  State<DashboardMonthly> createState() => _DashboardMonthlyState();
+}
+
+class _DashboardMonthlyState extends State<DashboardMonthly> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      margin: EdgeInsets.all(10),
+      child: Image.asset('assets/images/dashboard_weekly.png', fit: BoxFit.cover),
     );
   }
 }

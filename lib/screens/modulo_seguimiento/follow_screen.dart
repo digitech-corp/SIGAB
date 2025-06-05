@@ -166,43 +166,14 @@ class FollowOrderHeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          children: [
-            Text('Item', style: AppTextStyles.itemTable),
-          ],
-        ),
-        const SizedBox(width: 15),
-        Column(
-          children: [
-            Text('N° Pedido', style: AppTextStyles.itemTable),
-          ],
-        ),
-        const SizedBox(width: 15),
-        Column(
-          children: [
-            Text('Estado', style: AppTextStyles.itemTable),
-          ],
-        ),
-        const SizedBox(width: 15),
-        Column(
-          children: [
-            Text('F. entrega', style: AppTextStyles.itemTable),
-          ],
-        ),
-        const SizedBox(width: 20),
-        Column(
-          children: [
-            Text('Lugar', style: AppTextStyles.itemTable),
-          ],
-        ),
-        const SizedBox(width: 30),
-        Column(
-          children: [
-            Text('Detalle', style: AppTextStyles.itemTable),
-          ],
-        ),
+        Text('Item', style: AppTextStyles.itemTable),
+        Text('N° Pedido', style: AppTextStyles.itemTable),
+        Text('Estado', style: AppTextStyles.itemTable),
+        Text('F. entrega', style: AppTextStyles.itemTable),
+        Text('Lugar', style: AppTextStyles.itemTable),
+        Text('Detalle', style: AppTextStyles.itemTable),
       ],
     );
   }
@@ -247,77 +218,58 @@ class _OrderCardState extends State<OrderCard> {
         children: [
           SizedBox(
             height: 30,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(width: 5),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('${(widget.index + 1).toString().padLeft(2, '0')}', style: AppTextStyles.weak),
-                    ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(width: 0.5),
+                Expanded(flex: 1, child: Text('${(widget.index + 1).toString().padLeft(2, '0')}', style: AppTextStyles.weak)),
+                Expanded(flex: 2, child: Text('P-${widget.order.idOrder.toString().padLeft(2, '0')}-2025', style: AppTextStyles.weak)),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    '${widget.order.state}',
+                    style: widget.order.state == 'Pendiente'
+                        ? AppTextStyles.red
+                        : AppTextStyles.green,
                   ),
-                  const SizedBox(width: 14),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('P-${widget.order.idOrder.toString().padLeft(2, '0')}-2025', style: AppTextStyles.weak),
-                    ],
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    '${widget.order.deliveryDate != null ? DateFormat('dd/MM/yy').format(widget.order.deliveryDate!) : "-"}',
+                    style: AppTextStyles.weak,
                   ),
-                  const SizedBox(width: 14),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${widget.order.state}',
-                        style: widget.order.state == 'Pendiente'
-                            ? AppTextStyles.red
-                            : AppTextStyles.green,
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    getDistrictNameForOrder(widget.order) ?? "Sin distrito",
+                    style: AppTextStyles.weak,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    width: 20,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Image.asset(
+                        _isExpanded 
+                          ? 'assets/images/eyeOpen.png' 
+                          : 'assets/images/eyeClose.png',
+                        width: 15,
+                        height: 15,
+                        color: Colors.black,
                       ),
-                    ],
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${widget.order.deliveryDate != null ? DateFormat('dd/MM/yy').format(widget.order.deliveryDate!) : "-"}',
-                        style: AppTextStyles.weak,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 80,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          getDistrictNameForOrder(widget.order) ?? "Sin distrito",
-                          style: AppTextStyles.weak,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                      onPressed: () {
+                        setState(() => _isExpanded = !_isExpanded);
+                      },
                     ),
                   ),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: Image.asset(
-                      _isExpanded 
-                        ? 'assets/images/eyeOpen.png' 
-                        : 'assets/images/eyeClose.png',
-                      width: 15,
-                      height: 15,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      setState(() => _isExpanded = !_isExpanded);
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           if (_isExpanded) OrderExpandedDetail(order: widget.order),

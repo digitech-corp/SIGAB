@@ -2,6 +2,7 @@ import 'package:balanced_foods/models/user.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -159,12 +160,17 @@ class NewUserForm extends StatelessWidget {
           Text('N° Documento de Identidad - DNI', style: AppTextStyles.orange),
           _buildTextField(
             controller: dni,
+            keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Por favor, ingresa tu DNI';
               }
               return null;
             },
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(8),
+            ],
           ),
           const SizedBox(height: 30),
           Text('Correo Corporativo', style: AppTextStyles.orange),
@@ -214,10 +220,14 @@ class NewUserForm extends StatelessWidget {
     required TextEditingController controller,
     required String? Function(String?) validator,
     bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller, style: AppTextStyles.controller,
       obscureText: obscureText,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       decoration: const InputDecoration(
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 5.0),
@@ -283,7 +293,7 @@ class RegisterButton extends StatelessWidget {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Error al registrar")),
+                      const SnackBar(content: Text("Verisión de prueba, no se puede registrar un nuevo usuario")),
                     );
                   }
                 }

@@ -116,7 +116,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                           widget.customer.customerPhone.length == 9
                           ? '${widget.customer.customerPhone.substring(0, 3)} ${widget.customer.customerPhone.substring(3, 6)} ${widget.customer.customerPhone.substring(6)}'
                           : widget.customer.customerPhone,
-                          style: AppTextStyles.customerData
+                          style: AppTextStyles.base
                         ),
                         Text('Celular', style: AppTextStyles.subtitle),
                       ],
@@ -167,7 +167,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
-                        Text(widget.customer.customerEmail, style: AppTextStyles.customerData),
+                        Text(widget.customer.customerEmail, style: AppTextStyles.base),
                         Text('Particular', style: AppTextStyles.subtitle),
                       ],
                     ),
@@ -222,12 +222,12 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                         const SizedBox(height: 10),
                         Text(
                           '${widget.customer.customerAddress} (${widget.customer.customerReference})',
-                          style: AppTextStyles.customerData,
+                          style: AppTextStyles.base,
                           softWrap: true,
                         ),
                         Text(
                           '$districtName, $provinceName, $departmentName',
-                          style: AppTextStyles.customerData
+                          style: AppTextStyles.base
                         ),
                         Text('Dirección Fiscal', style: AppTextStyles.subtitle),
                       ],
@@ -303,9 +303,8 @@ class _RecordCardState extends State<RecordCard> {
       width: double.infinity,
       child: Column(
         children: [
-          // Botones de filtro
           Padding(
-            padding: const EdgeInsets.only(top: 15),
+            padding: const EdgeInsets.only(top: 15, right: 18, left: 18),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(_titulos.length, (index) {
@@ -313,7 +312,7 @@ class _RecordCardState extends State<RecordCard> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedIndex = index),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected 
                         ? null
@@ -383,16 +382,12 @@ class _RecordCardState extends State<RecordCard> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Fecha', style: AppTextStyles.headerTable),
-                  const SizedBox(width: 45),
                   Text('Pedido', style: AppTextStyles.headerTable),
-                  const SizedBox(width: 50),
                   Text('Monto', style: AppTextStyles.headerTable),
-                  const SizedBox(width: 18),
                   Text('T. Pago', style: AppTextStyles.headerTable),
-                  const SizedBox(width: 25),
                   Text('Estado', style: AppTextStyles.headerTable)
                 ],
               ),
@@ -412,33 +407,45 @@ class _RecordCardState extends State<RecordCard> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text(
-                              order.dateCreated != null
-                                ? DateFormat('dd/MM/yyyy').format(order.dateCreated!)
-                                : 'Sin fecha',
-                              style: AppTextStyles.bodyTable,
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                order.dateCreated != null
+                                  ? DateFormat('dd/MM/yy').format(order.dateCreated!)
+                                  : 'Sin fecha',
+                                style: AppTextStyles.bodyTable,
+                              ),
                             ),
-                            const SizedBox(width: 15),
-                            Text(
-                              'Pedido ${order.idOrder ?? "-"}-2025',
-                              style: AppTextStyles.bodyTable,
+                            const SizedBox(width: 5),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                '${order.idOrder ?? "-"}-2025',
+                                style: AppTextStyles.bodyTable,
+                              ),
                             ),
-                            const SizedBox(width: 15),
-                            Text(
-                              '${order.total.toStringAsFixed(2)}',
-                              style: AppTextStyles.bodyTable,
+                            const SizedBox(width: 5),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                '${order.total.toStringAsFixed(2)}',
+                                style: AppTextStyles.bodyTable,
+                              ),
                             ),
-                            const SizedBox(width: 15),
-                            Text(
-                              order.paymentMethod,
-                              style: AppTextStyles.bodyTable,
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                order.paymentMethod,
+                                style: AppTextStyles.bodyTable,
+                              ),
                             ),
-                            const SizedBox(width: 20),
-                            Text(
-                              order.paymentState ?? '-',
-                              style: AppTextStyles.bodyTable,
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                order.paymentState ?? '-',
+                                style: AppTextStyles.bodyTable,
+                              ),
                             ),
                           ],
                         ),
@@ -506,44 +513,116 @@ class _RecordCardState extends State<RecordCard> {
   }
   Widget _collectionsDetail() {
     return Card(
-      color: Color(0xFFD9D9D9),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: Colors.transparent,
+      elevation: 0,
       child: SizedBox(
-        height: 80,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text('Facturación')
-                ],
-              ),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('RELACIÓN DE FACTURAS', style: AppTextStyles.cardTitle),
+            Divider(color: AppColors.lightGris, thickness: 1.0, height: 25),
+            Row(
+              children: [
+                Text('Pedido 19-2025', style: AppTextStyles.base),
+                Spacer(),
+                Icon(
+                  Icons.attach_file,
+                  color: Colors.black,
+                  size: 20
+                ),
+                const SizedBox(width: 20),
+                IconButton(
+                  icon: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                  ),
+                  onPressed: () {
+                    debugPrint('Abriendo WhatsApp');
+                  },
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text('Pedido 35-2025', style: AppTextStyles.base),
+                Spacer(),
+                Icon(
+                  Icons.attach_file,
+                  color: Colors.black,
+                  size: 20
+                ),
+                const SizedBox(width: 20),
+                IconButton(
+                  icon: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                  ),
+                  onPressed: () {
+                    debugPrint('Abriendo WhatsApp');
+                  },
+                ),
+              ],
+            )
+          ],
         ),
       ),
     );
   }
   Widget _creditsDetail() {
     return Card(
-      color: Color(0xFFD9D9D9),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: Colors.transparent,
+      elevation: 0,
       child: SizedBox(
-        height: 80,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text('Créditos')
-                ],
-              ),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('RELACIÓN DE CRÉDITOS', style: AppTextStyles.cardTitle),
+            Divider(color: AppColors.lightGris, thickness: 1.0, height: 5),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Fecha  ', style: AppTextStyles.bodyTable),
+                Text('  Número Pedido', style: AppTextStyles.base),
+                Text('F. Venc', style: AppTextStyles.bodyTable),
+                Text('Monto', style: AppTextStyles.bodyTable),
+                Text('Estado', style: AppTextStyles.bodyTable),
+              ],
+            ),
+            Divider(color: AppColors.lightGris, thickness: 1.0, height: 2),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('15/03/25', style: AppTextStyles.bodyTable),
+                Text('Pedido 19-2025', style: AppTextStyles.bodyTable),
+                Text('22/03/25', style: AppTextStyles.bodyTable),
+                Text('S/. 357.90', style: AppTextStyles.bodyTable),
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 20
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('18/03/25', style: AppTextStyles.bodyTable),
+                Text('Pedido 45-2025', style: AppTextStyles.bodyTable),
+                Text('25/03/25', style: AppTextStyles.bodyTable),
+                Text('S/. 357.90', style: AppTextStyles.bodyTable),
+                Icon(
+                  Icons.cancel,
+                  color: Colors.red,
+                  size: 20
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -603,11 +682,11 @@ class AppTextStyles {
   );
   static final name = base.copyWith(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white);
   static final company = base.copyWith(fontSize: 12,color: Colors.black);
-  static final customerData = base.copyWith();
+  static final cardTitle = base.copyWith();
   static final subtitle = base.copyWith(fontSize: 10, color: AppColors.lightGris);
   static final btn = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
   static final headerTable = base.copyWith(fontSize: 11, fontWeight: FontWeight.w400);
-  static final bodyTable = base.copyWith(fontSize: 11, fontWeight: FontWeight.w300);
+  static final bodyTable = base.copyWith(fontSize: 11);
   static TextStyle titleCards(bool isSelected) {
     return base.copyWith(
       color: isSelected ? AppColors.orange : AppColors.lightGris,

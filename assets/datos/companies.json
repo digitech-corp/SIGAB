@@ -1,0 +1,42 @@
+{
+  "companies": [
+    {
+      "idCompany": 1,
+      "companyName": "TechCorp",
+      "companyRUC": "20123456789",
+      "companyAddress": "Av. Los Olivos 123",
+      "companyWeb": "www.TechCorp.com"
+    },
+    {
+      "idCompany": 2,
+      "companyName": "InnovaSoft",
+      "companyRUC": "20987654321",
+      "companyAddress": "Calle Innovación 456",
+      "companyWeb": "www.InnovaSoft.com"
+      
+    },
+    {
+      "idCompany": 3,
+      "companyName": "AgroPeru",
+      "companyRUC": "20345678901",
+      "companyAddress": "Carretera Central Km 15",
+      "companyWeb": "www.AgroPeru.com"
+      
+    },
+    {
+      "idCompany": 4,
+      "companyName": "EduTech",
+      "companyRUC": "20456789012",
+      "companyAddress": "Jr. Conocimiento 101",
+      "companyWeb": "www.EduTech.com"
+      
+    },
+    {
+      "idCompany": 5,
+      "companyName": "HealthLife",
+      "companyRUC": "20567890123",
+      "companyAddress": "Av. Salud 321",
+      "companyWeb": "www.HealthLife.com"
+      }
+  ]
+}

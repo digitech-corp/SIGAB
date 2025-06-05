@@ -1,0 +1,20 @@
+{
+  "provinces": [
+    { "idProvince": 1, "province": "Lima", "idDepartment": 1 },
+    { "idProvince": 2, "province": "Huaral", "idDepartment": 1 },
+    { "idProvince": 3, "province": "Barranca", "idDepartment": 1 },
+    { "idProvince": 4, "province": "Cusco", "idDepartment": 2 },
+    { "idProvince": 5, "province": "La Convención", "idDepartment": 2 },
+    { "idProvince": 6, "province": "Canchis", "idDepartment": 2 },
+    { "idProvince": 7, "province": "Arequipa", "idDepartment": 3 },
+    { "idProvince": 8, "province": "Camaná", "idDepartment": 3 },
+    { "idProvince": 9, "province": "Islay", "idDepartment": 3 },
+    { "idProvince": 10, "province": "Trujillo", "idDepartment": 4 },
+    { "idProvince": 11, "province": "Piura", "idDepartment": 5 },
+    { "idProvince": 12, "province": "Iquitos", "idDepartment": 6 },
+    { "idProvince": 13, "province": "Huamanga", "idDepartment": 7 },
+    { "idProvince": 14, "province": "Huancayo", "idDepartment": 8 },
+    { "idProvince": 15, "province": "Huaraz", "idDepartment": 9 },
+    { "idProvince": 16, "province": "Tacna", "idDepartment": 10 }
+  ]
+}
