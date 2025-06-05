@@ -15,6 +15,14 @@
         "password": "47978672",
         "image": "",
         "role": "Vendedor"
+    },
+    {
+        "name": "Moises Marin",
+        "dni": "71697023",
+        "email": "marin.mmoises.456@gmail.com",
+        "password": "1234",
+        "image": "",
+        "role": "Vendedor"
     }
   ]
 }

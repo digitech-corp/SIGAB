@@ -1,13 +1,12 @@
 import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
-
 import 'package:balanced_foods/screens/modulo_clientes/edit_customer_screen.dart';
 import 'package:balanced_foods/screens/modulo_clientes/new_customer_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -239,8 +238,14 @@ class _CustomerScreenState extends State<CustomerScreen> {
                         height: 18,
                         child: Image.asset('assets/images/phone.png', color: Colors.black),
                       ),
-                      onPressed: () {
-                        debugPrint('Llamando a ${c.customerName}');
+                      onPressed: () async {
+                        final String phone = '+51${c.customerPhone}';
+                        final Uri callUri = Uri(scheme: 'tel', path: phone);
+                        if (await canLaunchUrl(callUri)) {
+                          await launchUrl(callUri);
+                        } else {
+                          debugPrint('No se pudo lanzar $callUri');
+                        }
                       },
                     ),
                     const SizedBox(width: 8),
@@ -250,8 +255,14 @@ class _CustomerScreenState extends State<CustomerScreen> {
                         height: 18,
                         child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                       ),
-                      onPressed: () {
-                        debugPrint('Chateando con ${c.customerName}');
+                      onPressed: () async {
+                        final String phone = '51${c.customerPhone}';
+                        final Uri whatsappUri = Uri.parse("https://wa.me/$phone");
+                        if (await canLaunchUrl(whatsappUri)) {
+                          await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                        } else {
+                          debugPrint('No se pudo abrir WhatsApp para $phone');
+                        }
                       },
                     ),
                   ],

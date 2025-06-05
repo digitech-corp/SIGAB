@@ -61,7 +61,8 @@ class partOrder extends StatelessWidget {
 }
 
 class SearchProduct extends StatefulWidget {
-  const SearchProduct({super.key});
+  final int? idCustomer;
+  const SearchProduct({super.key, required this.idCustomer});
 
   @override
   State<SearchProduct> createState() => _SearchProductState();
@@ -112,6 +113,7 @@ class _SearchProductState extends State<SearchProduct> {
                 height: 25,
                 child: TextField(
                   controller: _searchController,
+                  enabled: widget.idCustomer != null && widget.idCustomer! > 0,
                   decoration: InputDecoration(
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),

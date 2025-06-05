@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EditCustomerScreen extends StatefulWidget {
   final Customer customer;
@@ -101,8 +102,14 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                           height: 20,
                           child: Image.asset('assets/images/phone.png', color: Colors.black),
                         ),
-                        onPressed: () {
-                          debugPrint('Llamando...');
+                        onPressed: () async {
+                          final String phone = '+51${widget.customer.customerPhone}';
+                          final Uri callUri = Uri(scheme: 'tel', path: phone);
+                          if (await canLaunchUrl(callUri)) {
+                            await launchUrl(callUri);
+                          } else {
+                            debugPrint('No se pudo lanzar $callUri');
+                          }
                         },
                       ),
                     ],
@@ -130,8 +137,14 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                           height: 20,
                           child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                         ),
-                        onPressed: () {
-                          debugPrint('Abriendo WhatsApp');
+                        onPressed: () async {
+                          final String phone = '51${widget.customer.customerPhone}';
+                          final Uri whatsappUri = Uri.parse("https://wa.me/$phone");
+                          if (await canLaunchUrl(whatsappUri)) {
+                            await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                          } else {
+                            debugPrint('No se pudo abrir WhatsApp para $phone');
+                          }
                         },
                       ),
                     ],
@@ -156,8 +169,18 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                             color: Colors.black,
                           ),
                         ),
-                        onPressed: () {
-                          debugPrint('Abriendo Gmail');
+                        onPressed: () async {
+                          final String customerEmail = widget.customer.customerEmail;
+                          final Uri emailLaunchUri = Uri(
+                            scheme: 'mailto',
+                            path: customerEmail,
+                          );
+
+                          if (await canLaunchUrl(emailLaunchUri)) {
+                            await launchUrl(emailLaunchUri);
+                          } else {
+                            debugPrint('No se pudo abrir el cliente de correo');
+                          }
                         },
                       ),
                     ],
@@ -183,8 +206,18 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                             color: Colors.black,
                           ),
                         ),
-                        onPressed: () {
-                          debugPrint('Abriendo Gmail');
+                        onPressed: () async {
+                          final String customerEmail = widget.customer.customerEmail;
+                          final Uri emailLaunchUri = Uri(
+                            scheme: 'mailto',
+                            path: customerEmail,
+                          );
+
+                          if (await canLaunchUrl(emailLaunchUri)) {
+                            await launchUrl(emailLaunchUri);
+                          } else {
+                            debugPrint('No se pudo abrir el cliente de correo');
+                          }
                         },
                       ),
                     ],
@@ -209,8 +242,19 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                             color: Colors.black,
                           ),
                         ),
-                        onPressed: () {
-                          debugPrint('Viendo Ubicación');
+                        onPressed: () async {
+                          final String fullAddress =
+                              '${widget.customer.customerAddress}, $districtName, $provinceName, $departmentName';
+
+                          final Uri mapsUri = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(fullAddress)}',
+                          );
+
+                          if (await canLaunchUrl(mapsUri)) {
+                            await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+                          } else {
+                            debugPrint('No se pudo abrir Google Maps');
+                          }
                         },
                       ),
                     ],
@@ -244,8 +288,19 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                             color: Colors.black,
                           ),
                         ),
-                        onPressed: () {
-                          debugPrint('Viendo Ubicación');
+                        onPressed: () async {
+                          final String fullAddress =
+                              '${widget.customer.customerAddress}, ${widget.customer.customerReference}, $districtName, $provinceName, $departmentName';
+
+                          final Uri mapsUri = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(fullAddress)}',
+                          );
+
+                          if (await canLaunchUrl(mapsUri)) {
+                            await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+                          } else {
+                            debugPrint('No se pudo abrir Google Maps');
+                          }
                         },
                       ),
                     ],
@@ -496,7 +551,7 @@ class _RecordCardState extends State<RecordCard> {
               const SizedBox(height: 20),
               partOrder(idCustomer: widget.customer.idCustomer!),
               const SizedBox(height: 15),
-              SearchProduct(),
+              SearchProduct(idCustomer: widget.customer.idCustomer!),
               const SizedBox(height: 20),
               ResumeProduct(selectedProducts: Provider.of<ProductsProvider>(context).selectedProducts,),
               const SizedBox(height: 10),
