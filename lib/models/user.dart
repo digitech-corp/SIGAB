@@ -4,7 +4,7 @@ class User{
   String email;
   String password;
   final String? image;
-  final String? role;
+  String role;
 
   User({
     required this.name,
@@ -12,7 +12,7 @@ class User{
     required this.email,
     required this.password,
     this.image,
-    this.role,
+    required this.role,
   });
 
   factory User.fromJSON(Map<String, dynamic> json){

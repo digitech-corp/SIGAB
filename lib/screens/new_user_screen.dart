@@ -280,6 +280,7 @@ class RegisterButton extends StatelessWidget {
                     dni: dni.text,
                     email: email.text,
                     password: userPassword.text,
+                    role: ""
                   );
 
                   final success = await provider.registerUser(newUser);

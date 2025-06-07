@@ -1,4 +1,5 @@
 import 'package:balanced_foods/providers/users_provider.dart';
+import 'package:balanced_foods/screens/modulo_transportistas/transport_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/new_user_screen.dart';
 import 'package:balanced_foods/screens/recover_password_screen.dart';
@@ -320,10 +321,22 @@ class LoginButtons extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Inicio de sesión exitoso")),
                       );
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SalesModuleScreen()),
-                      );
+                      final role = user.role.toUpperCase().trim();
+                      if (role == 'VENDEDOR') {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => SalesModuleScreen()),
+                        );
+                      } else if (role == 'TRANSPORTISTA') {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => TransportScreen()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Rol no reconocido")),
+                        );
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Usuario o contraseña incorrectos")),
