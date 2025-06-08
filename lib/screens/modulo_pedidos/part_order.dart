@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
@@ -5,6 +7,7 @@ import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class partOrder extends StatelessWidget {
@@ -248,7 +251,7 @@ class _SearchProductState extends State<SearchProduct> {
                                 );
                               });
                             },
-                            fillColor: MaterialStateProperty.all<Color>(
+                            fillColor: WidgetStateProperty.all<Color>(
                               selection.isSelected ? const Color(0xFF333333) : Colors.white,
                             ),
                           ),
@@ -525,6 +528,11 @@ class paymentMethod extends StatefulWidget {
 class PaymentMethodState extends State<paymentMethod> {
   bool _contado = false;
   bool _credito = false;
+  String? _importeGuardado;
+  String? _saldoGuardado;
+  String? _cuotasGuardadas;
+  String? _montoGuardado;
+  String? _fechaGuardada;
   
   String get selectedPaymentMethod {
     if (_contado) return "CONTADO";
@@ -621,7 +629,6 @@ class PaymentMethodState extends State<paymentMethod> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                
                 SizedBox(
                   height: 30,
                   child: ElevatedButton(
@@ -630,12 +637,40 @@ class PaymentMethodState extends State<paymentMethod> {
                           showDialog(
                             context: context,
                             builder: (context) {
-                              return RegistrarPagoFormDialog(
-                                onGuardar: () {
-                                  // lógica al guardar
-                                  print('Pago guardado');
-                                },
-                              );
+                              if (_contado) {
+                                _cuotasGuardadas = null;
+                                _montoGuardado = null;
+                                _fechaGuardada = null;
+                                return RegistrarPagoContado(
+                                  importeInicial: _importeGuardado,
+                                  saldoInicial: _saldoGuardado,
+                                  onGuardar: (importe, saldo) {
+                                    setState(() {
+                                      _importeGuardado = importe;
+                                      _saldoGuardado = saldo;
+                                    });
+                                    print('Pago guardado');
+                                  },
+                                );
+                              }
+                              if (_credito) {
+                                _importeGuardado = null;
+                                _saldoGuardado = null;
+                                return RegistrarPagoCredito(
+                                  cuotasInicial: _cuotasGuardadas,
+                                  montoInicial: _montoGuardado,
+                                  fechaInicial: _fechaGuardada,
+                                  onGuardar: (cuotas, monto, fecha) {
+                                    setState(() {
+                                      _cuotasGuardadas = cuotas;
+                                      _montoGuardado = monto;
+                                      _fechaGuardada = fecha;
+                                    });
+                                    print('Pago guardado');
+                                  },
+                                );
+                              }
+                              return const SizedBox.shrink();
                             },
                           );
                         }
@@ -676,18 +711,32 @@ class PaymentMethodState extends State<paymentMethod> {
   }
 }
 
-class RegistrarPagoFormDialog extends StatefulWidget {
-  final VoidCallback onGuardar;
+class RegistrarPagoContado extends StatefulWidget {
+  final void Function(String importe, String saldo) onGuardar;
+  final String? importeInicial;
+  final String? saldoInicial;
 
-  const RegistrarPagoFormDialog({super.key, required this.onGuardar});
+  const RegistrarPagoContado({
+    super.key,
+    required this.onGuardar,
+    this.importeInicial,
+    this.saldoInicial,
+  });
 
   @override
-  State<RegistrarPagoFormDialog> createState() => _RegistrarPagoFormDialogState();
+  State<RegistrarPagoContado> createState() => _RegistrarPagoContadoState();
 }
 
-class _RegistrarPagoFormDialogState extends State<RegistrarPagoFormDialog> {
-  final _importeController = TextEditingController();
-  final _saldoController = TextEditingController();
+class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
+  late final TextEditingController _importeController;
+  late final TextEditingController _saldoController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _importeController = TextEditingController(text: widget.importeInicial);
+    _saldoController = TextEditingController(text: widget.saldoInicial);
+  }
 
   @override
   void dispose() {
@@ -738,6 +787,9 @@ class _RegistrarPagoFormDialogState extends State<RegistrarPagoFormDialog> {
                       fontWeight: FontWeight.w300,
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                    ],
                   ),
                 ),
               ],
@@ -763,6 +815,9 @@ class _RegistrarPagoFormDialogState extends State<RegistrarPagoFormDialog> {
                       fontWeight: FontWeight.w300,
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                    ],
                   ),
                 ),
               ],
@@ -772,7 +827,207 @@ class _RegistrarPagoFormDialogState extends State<RegistrarPagoFormDialog> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  widget.onGuardar();
+                  widget.onGuardar(
+                    _importeController.text,
+                    _saldoController.text,
+                  );
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF6600),
+                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Guardar',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RegistrarPagoCredito extends StatefulWidget {
+  final void Function(String cuotas, String monto, String fecha) onGuardar;
+
+  final String? cuotasInicial;
+  final String? montoInicial;
+  final String? fechaInicial;
+
+  const RegistrarPagoCredito({
+    super.key,
+    required this.onGuardar,
+    this.cuotasInicial,
+    this.montoInicial,
+    this.fechaInicial,
+  });
+
+  @override
+  State<RegistrarPagoCredito> createState() => _RegistrarPagoCreditoState();
+}
+
+class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
+  late final TextEditingController _cuotasController;
+  late final TextEditingController _montoController;
+  late final TextEditingController _fechaController;
+
+  Future<void> _seleccionarFecha(BuildContext context) async {
+    final DateTime? fechaSeleccionada = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (fechaSeleccionada != null) {
+      final String fechaFormateada = DateFormat('dd/MM/yyyy').format(fechaSeleccionada);
+      setState(() {
+        _fechaController.text = fechaFormateada;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _cuotasController = TextEditingController(text: widget.cuotasInicial);
+    _montoController = TextEditingController(text: widget.montoInicial);
+    _fechaController = TextEditingController(text: widget.fechaInicial);
+  }
+
+  @override
+  void dispose() {
+    _cuotasController.dispose();
+    _montoController.dispose();
+    _fechaController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Center(
+              child: Text(
+                'Registro de Cuotas',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Montserrat',
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(flex: 2, child: const Text('N° de Cuotas:')),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 3, 
+                  child: TextField(
+                    controller: _cuotasController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFD9D9D9),
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    ),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(flex: 2, child: const Text('Monto:')),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _montoController,
+                    decoration: const InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFD9D9D9),
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    ),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(flex: 2, child: const Text('Fecha de Pago:')),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _fechaController,
+                    readOnly: true,
+                    onTap: () => _seleccionarFecha(context),
+                    decoration: const InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFFD9D9D9),
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    ),
+                    style: const TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.onGuardar(
+                    _cuotasController.text,
+                    _montoController.text,
+                    _fechaController.text,
+                  );
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(

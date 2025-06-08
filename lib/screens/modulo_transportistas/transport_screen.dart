@@ -540,6 +540,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
                         border: UnderlineInputBorder(),
                       ),
                     ),
+                    
                   ),
                 ],
               ),
