@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/orderDetail.dart';
+import 'package:balanced_foods/models/paymentInfo.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
@@ -528,11 +529,12 @@ class paymentMethod extends StatefulWidget {
 class PaymentMethodState extends State<paymentMethod> {
   bool _contado = false;
   bool _credito = false;
-  String? _importeGuardado;
-  String? _saldoGuardado;
-  String? _cuotasGuardadas;
-  String? _montoGuardado;
-  String? _fechaGuardada;
+  double? _importeGuardado;
+  double? _saldoGuardado;
+  int? _cuotasGuardadas;
+  double? _montoGuardado;
+  DateTime? _fechaGuardada;
+  PaymentInfo? paymentInfo;
   
   String get selectedPaymentMethod {
     if (_contado) return "CONTADO";
@@ -638,8 +640,8 @@ class PaymentMethodState extends State<paymentMethod> {
                             context: context,
                             builder: (context) {
                               if (_contado) {
-                                _cuotasGuardadas = null;
-                                _montoGuardado = null;
+                                _cuotasGuardadas = 0;
+                                _montoGuardado = 0.0;
                                 _fechaGuardada = null;
                                 return RegistrarPagoContado(
                                   importeInicial: _importeGuardado,
@@ -648,14 +650,18 @@ class PaymentMethodState extends State<paymentMethod> {
                                     setState(() {
                                       _importeGuardado = importe;
                                       _saldoGuardado = saldo;
+                                      paymentInfo = ContadoPaymentInfo(
+                                        importe: importe,
+                                        saldo: saldo,
+                                      );
                                     });
                                     print('Pago guardado');
                                   },
                                 );
                               }
                               if (_credito) {
-                                _importeGuardado = null;
-                                _saldoGuardado = null;
+                                _importeGuardado = 0.0;
+                                _saldoGuardado = 0.0;
                                 return RegistrarPagoCredito(
                                   cuotasInicial: _cuotasGuardadas,
                                   montoInicial: _montoGuardado,
@@ -665,6 +671,11 @@ class PaymentMethodState extends State<paymentMethod> {
                                       _cuotasGuardadas = cuotas;
                                       _montoGuardado = monto;
                                       _fechaGuardada = fecha;
+                                      paymentInfo = CreditoPaymentInfo(
+                                        numeroCuotas: cuotas,
+                                        monto: monto,
+                                        fechaPago: fecha!,
+                                      );
                                     });
                                     print('Pago guardado');
                                   },
@@ -709,12 +720,21 @@ class PaymentMethodState extends State<paymentMethod> {
       ],
     );
   }
+  //  Map<String, String> getPayments() {
+  //   return {
+  //     "importe": _importeGuardado.toString(),
+  //     "saldo": _saldoGuardado.toString(),
+  //     "cuota": _cuotasGuardadas.toString(),
+  //     "monto": _montoGuardado.toString(),
+  //     "fecha": _fechaGuardada.toString(),
+  //   };
+  // }
 }
 
 class RegistrarPagoContado extends StatefulWidget {
-  final void Function(String importe, String saldo) onGuardar;
-  final String? importeInicial;
-  final String? saldoInicial;
+  final void Function(double importe, double saldo) onGuardar;
+  final double? importeInicial;
+  final double? saldoInicial;
 
   const RegistrarPagoContado({
     super.key,
@@ -734,8 +754,8 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
   @override
   void initState() {
     super.initState();
-    _importeController = TextEditingController(text: widget.importeInicial);
-    _saldoController = TextEditingController(text: widget.saldoInicial);
+    _importeController = TextEditingController(text: widget.importeInicial.toString());
+    _saldoController = TextEditingController(text: widget.saldoInicial.toString());
   }
 
   @override
@@ -828,8 +848,8 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
               child: ElevatedButton(
                 onPressed: () {
                   widget.onGuardar(
-                    _importeController.text,
-                    _saldoController.text,
+                    double.tryParse(_importeController.text) ?? 0.0,
+                    double.tryParse(_saldoController.text) ?? 0.0,
                   );
                   Navigator.pop(context);
                 },
@@ -859,11 +879,11 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
 }
 
 class RegistrarPagoCredito extends StatefulWidget {
-  final void Function(String cuotas, String monto, String fecha) onGuardar;
+  final void Function(int cuotas, double monto, DateTime fecha) onGuardar;
 
-  final String? cuotasInicial;
-  final String? montoInicial;
-  final String? fechaInicial;
+  final int? cuotasInicial;
+  final double? montoInicial;
+  final DateTime? fechaInicial;
 
   const RegistrarPagoCredito({
     super.key,
@@ -901,9 +921,9 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
   @override
   void initState() {
     super.initState();
-    _cuotasController = TextEditingController(text: widget.cuotasInicial);
-    _montoController = TextEditingController(text: widget.montoInicial);
-    _fechaController = TextEditingController(text: widget.fechaInicial);
+    _cuotasController = TextEditingController(text: widget.cuotasInicial.toString());
+    _montoController = TextEditingController(text: widget.montoInicial.toString());
+    _fechaController = TextEditingController(text: widget.fechaInicial.toString());
   }
 
   @override
@@ -1024,9 +1044,11 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
               child: ElevatedButton(
                 onPressed: () {
                   widget.onGuardar(
-                    _cuotasController.text,
-                    _montoController.text,
-                    _fechaController.text,
+                    int.tryParse(_cuotasController.text) ?? 0,
+                    double.tryParse(_montoController.text) ?? 0.0,
+                    _fechaController.text.isNotEmpty
+                        ? DateFormat('dd/MM/yyyy').parse(_fechaController.text)
+                        : DateTime.now(),
                   );
                   Navigator.pop(context);
                 },
@@ -1313,7 +1335,9 @@ Future<void> registerOrder({
   required GlobalKey<ObservationsState> observationsKey,
   required GlobalKey<PaymentMethodState> paymentKey,
   required GlobalKey<ReceiptTypeState> receiptKey,
+  // required GlobalKey<ReceiptTypeState> paymentInfoKey,
   required VoidCallback resetForm,
+  PaymentInfo? paymentInfo,
 }) async {
   final provider = Provider.of<OrdersProvider>(context, listen: false);
   final products = Provider.of<ProductsProvider>(context, listen: false);
@@ -1322,6 +1346,7 @@ Future<void> registerOrder({
   final obs = observationsKey.currentState!.getObservations();
   final payment = paymentKey.currentState!.selectedPaymentMethod;
   final receipt = receiptKey.currentState!.selectedReceiptType;
+  // final paymentInfo = paymentInfoKey.currentState!.getPayments();
 
   double total = selectedProducts.fold(
     0.0,
@@ -1377,6 +1402,8 @@ Future<void> registerOrder({
     deliveryTime: _tryParseTimeOfDay(obs['time']),
     additionalInformation: obs['info'] ?? '',
     details: details,
+    paymentInfo: paymentInfo,
+    paymentState: "Pendiente",
     dateCreated: DateTime.now(),
     timeCreated: TimeOfDay.now(),
   );

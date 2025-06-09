@@ -6,7 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 class ProvincesProvider extends ChangeNotifier{
   bool isLoading = false;
-  bool useLocalData = true;
+  bool useLocalData = false;
   List<Province> provinces = [];
   
   Future<void> fetchProvinces() async {

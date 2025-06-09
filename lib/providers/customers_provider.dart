@@ -6,7 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 class CustomersProvider extends ChangeNotifier{
   bool isLoading = false;
-  bool useLocalData = true;
+  bool useLocalData = false;
   List<Customer> customers = [];
   
   Future<void> fetchCustomers() async {

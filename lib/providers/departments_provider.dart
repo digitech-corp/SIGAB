@@ -6,7 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 class DepartmentsProvider extends ChangeNotifier{
   bool isLoading = false;
-  bool useLocalData = true;
+  bool useLocalData = false;
   List<Department> departments = [];
 
   int? selectedDepartmentId;

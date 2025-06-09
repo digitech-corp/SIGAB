@@ -1,9 +1,32 @@
+import 'package:balanced_foods/models/customer.dart';
+import 'package:balanced_foods/models/order.dart';
+import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/customers_provider.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class CollectionScreen extends StatelessWidget {
+class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
 
+  @override
+  State<CollectionScreen> createState() => _CollectionScreenState();
+}
+
+class _CollectionScreenState extends State<CollectionScreen> {
+  
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      Provider.of<CustomersProvider>(context, listen: false).fetchCustomers();
+      Provider.of<OrdersProvider>(context, listen: false).fetchOrders();
+      Provider.of<CompaniesProvider>(context, listen: false).fetchCompanies();
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +98,45 @@ class _CreditosCardState extends State<CreditosCard> {
 
   @override
   Widget build(BuildContext context) {
+    final customersProvider = Provider.of<CustomersProvider>(context);
+    final customers = customersProvider.customers;
+    final companiesProvider = Provider.of<CompaniesProvider>(context);
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final orders = ordersProvider.orders;
+    final filteredOrders = orders.where((o) => o.paymentState == 'Pendiente').toList();
+    print("Cantidad de pedidos:${filteredOrders.length}");
+    final DateTime today = DateTime.now();
+
+    // Filtra los pedidos por estado de vencimiento
+    final vencidos = filteredOrders.where(
+      (o) => o.deliveryDate != null && o.deliveryDate!.isBefore(today),
+    ).toList();
+
+    final porVencer = filteredOrders.where(
+      (o) => o.deliveryDate != null && 
+            (o.deliveryDate!.isAfter(today) || o.deliveryDate!.isAtSameMomentAs(today)),
+    ).toList();
+
+    List<Order> listaAMostrar = _selectedIndex == 0 ? vencidos : porVencer;
+
+  // Ordenar según _sortBy
+  listaAMostrar.sort((a, b) {
+    switch (_sortBy) {
+      case 'Monto Total':
+        return b.total.compareTo(a.total); // Descendente
+      case 'Días Vencido':
+        final int diasA = today.difference(a.deliveryDate ?? today).inDays;
+        final int diasB = today.difference(b.deliveryDate ?? today).inDays;
+        return diasB.compareTo(diasA); // Más vencido primero
+      case 'Fecha Vencimiento':
+      default:
+        final DateTime fechaA = a.deliveryDate ?? DateTime(2100);
+        final DateTime fechaB = b.deliveryDate ?? DateTime(2100);
+        return fechaA.compareTo(fechaB); // Ascendente
+    }
+  });
+
+
     return Expanded(
       child: Column(
         children: [
@@ -169,50 +231,52 @@ class _CreditosCardState extends State<CreditosCard> {
           ),
           // Tarjetas scrollables
           Expanded(
-            child: _selectedIndex == 0
-                ? ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    itemCount: 3, // Créditos vencidos
-                    itemBuilder: (context, index) {
-                      return _creditCard(
-                        cliente: index == 0
-                            ? 'MOLINOS PERUANOS SA'
-                            : 'AGROINDUSTRIA LOS ANDES SAC',
-                        contacto: 'Angel Sebastian Cubas',
-                        pedido: '95-2025',
-                        estadoVencimiento: 'VENCIDO',
-                        vencidoDias: '${3 + index} días',
-                        monto: 'S/. 780.50',
-                        saldo: 'S/. 780.50',
-                        fechaVencimiento: '17/05/2025',
-                        esPorVencer: false,
-                      );
-                    },
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 10),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    itemCount: 3, // Créditos por vencer
-                    itemBuilder: (context, index) {
-                      return _creditCard(
-                        cliente: index == 0
-                            ? 'FRUTAS DEL SUR SAC'
-                            : 'EXPORTACIONES PERUANAS EIRL',
-                        contacto: 'Maria López',
-                        pedido: '96-2025',
-                        estadoVencimiento: 'VIGENTE',
-                        vencidoDias: 'En ${5 - index} días',
-                        monto: 'S/. 540.00',
-                        saldo: 'S/. 540.00',
-                        fechaVencimiento: '20/05/2025',
-                        esPorVencer: true,
-                      );
-                    },
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 10),
-                  ),
-          )
+          child: ordersProvider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : listaAMostrar.isEmpty
+                  ? const Center(child: Text('No hay créditos pendientes'))
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      itemCount: listaAMostrar.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final order = listaAMostrar[index];
+
+                        final customerId = order.idCustomer;
+                        Customer? customer;
+                        if (customerId != null) {
+                          try {
+                            customer = customers.firstWhere((c) => c.idCustomer == customerId);
+                          } catch (_) {
+                            customer = null;
+                          }
+                        }
+
+                        String persona = customer?.customerName ?? '--';
+                        String empresa = companiesProvider.getCompanyNameById(customer?.idCompany ?? 0);
+                        final codPedido = 'PEDIDO N° ${order.idOrder.toString().padLeft(2, '0')}-2025';
+                        final total = order.total.toStringAsFixed(2);
+                        final int diasDiferencia = today.difference(order.deliveryDate!).inDays;
+
+                        final String estadoVencimiento = diasDiferencia > 0 ? 'VENCIDO' : 'POR VENCER';
+                        final Color colorTexto = diasDiferencia > 0 ? Color(0xFFFF6600) : Color(0XFF3498DB);
+
+                        return _creditCard(
+                          cliente: empresa,
+                          contacto: persona,
+                          pedido: codPedido,
+                          estadoVencimiento: estadoVencimiento,
+                          vencidoDias: '$diasDiferencia días',
+                          monto: 'S/. $total',
+                          saldo: 'S/. $total',
+                          fechaVencimiento: order.deliveryDate != null
+                              ? DateFormat('dd/MM/yy').format(order.deliveryDate!)
+                              : 'Sin fecha',
+                          colorTexto: colorTexto,
+                        );
+                      },
+                    ),
+        )
         ],
       ),
     );
@@ -227,9 +291,9 @@ class _CreditosCardState extends State<CreditosCard> {
     required String monto,
     required String saldo,
     required String fechaVencimiento,
-    required bool esPorVencer,
+    required Color colorTexto,
   }) {
-    final Color estadoColor = esPorVencer ? Colors.blue : Colors.red;
+    //final Color estadoColor = esPorVencer ? Colors.blue : Colors.red;
 
     final _labelStyle = TextStyle(
       fontFamily: 'Montserrat',
@@ -239,9 +303,8 @@ class _CreditosCardState extends State<CreditosCard> {
     final _weakStyle = _labelStyle.copyWith(fontWeight: FontWeight.w300);
     final _strongStyle = _labelStyle.copyWith(fontWeight: FontWeight.w400); 
     final _customerStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, fontSize: 12,); 
-    final _estadoStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, color: estadoColor);    
-    final _saldoStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, color: estadoColor, fontSize: 12);    
-
+    final _estadoStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, color: colorTexto);    
+    final _saldoStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, fontSize: 12, color: colorTexto);    
 
     return Card(
       color: Color(0xFFD9D9D9),

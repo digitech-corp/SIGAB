@@ -1,4 +1,5 @@
 import 'package:balanced_foods/models/orderDetail.dart';
+import 'package:balanced_foods/models/paymentInfo.dart';
 import 'package:flutter/material.dart';
 
 class Order{
@@ -18,6 +19,7 @@ class Order{
   TimeOfDay? timeCreated;
   DateTime? dateCreated;
   final List<OrderDetail> details;
+  PaymentInfo? paymentInfo;
 
   Order({
     this.idOrder,
@@ -36,6 +38,7 @@ class Order{
     this.timeCreated,
     this.dateCreated,
     required this.details,
+    this.paymentInfo
   });
 
   factory Order.fromJSON(Map<String, dynamic> json){
@@ -66,6 +69,17 @@ class Order{
       details: (json['details'] as List<dynamic>)
           .map((d) => OrderDetail.fromJSON(d))
           .toList(),
+      paymentInfo: (() {
+      final info = json['paymentInfo'];
+        if (info != null) {
+          if (json['paymentMethod'] == 'Contado') {
+            return ContadoPaymentInfo.fromJson(info);
+          } else if (json['paymentMethod'] == 'Crédito') {
+            return CreditoPaymentInfo.fromJson(info);
+          }
+        }
+        return null;
+      })(),
     );
   }
 
@@ -91,12 +105,13 @@ class Order{
           : null,
       'dateCreated': dateCreated?.toIso8601String().split('T').first,
       "details": details.map((d) => d.toJson()).toList(),
+      'paymentInfo': paymentInfo?.toJson(),
     };
   }
 
   @override
   String toString() {
-    return 'Order{idOrder: $idOrder, idCustomer: $idCustomer, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, paymentState: $paymentState, timeCreated: $timeCreated, dateCreated: $dateCreated, details: $details}';
+    return 'Order{idOrder: $idOrder, idCustomer: $idCustomer, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, paymentState: $paymentState, timeCreated: $timeCreated, dateCreated: $dateCreated, details: $details. paymentInfo: $paymentInfo}';
   }
 
   static TimeOfDay _parseTimeOfDay(String timeString) {

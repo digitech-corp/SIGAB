@@ -8,7 +8,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 class ProductsProvider extends ChangeNotifier{
   bool isLoading = false;
-  bool useLocalData = true;
+  bool useLocalData = false;
   List<Product> products = [];
 
   Future<void> fetchProducts() async {

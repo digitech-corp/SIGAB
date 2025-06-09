@@ -388,6 +388,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       receiptKey: _receiptKey,
       observationsKey: _observationsKey,
       paymentKey: _paymentKey,
+      // paymentInfoKey: _paymentInfoKey,
       resetForm: _resetForm,
     );
   }
