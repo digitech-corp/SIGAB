@@ -1,3 +1,4 @@
+import 'package:balanced_foods/models/paymentInfo.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
@@ -567,6 +568,9 @@ class _RecordCardState extends State<RecordCard> {
     );
   }
   Widget _collectionsDetail() {
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final customerOrders = ordersProvider.getOrdersByCustomer(widget.customer.idCustomer!);
+
     return Card(
       color: Colors.transparent,
       elevation: 0,
@@ -576,56 +580,63 @@ class _RecordCardState extends State<RecordCard> {
           children: [
             Text('RELACIÓN DE FACTURAS', style: AppTextStyles.cardTitle),
             Divider(color: AppColors.lightGris, thickness: 1.0, height: 25),
-            Row(
-              children: [
-                Text('Pedido 19-2025', style: AppTextStyles.base),
-                Spacer(),
-                Icon(
-                  Icons.attach_file,
-                  color: Colors.black,
-                  size: 20
-                ),
-                const SizedBox(width: 20),
-                IconButton(
-                  icon: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+            customerOrders.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('No hay facturas registradas', style: AppTextStyles.bodyTable),
+                  )
+                : ListView.builder(
+                    itemCount: customerOrders.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final order = customerOrders[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            // Título de la factura/pedido
+                            Text(
+                              'Pedido ${order.idOrder ?? "-"}-2025',
+                              style: AppTextStyles.base,
+                            ),
+                            Spacer(),
+                            // Ícono de adjunto
+                            Icon(
+                              Icons.attach_file,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 20),
+                            // Botón de WhatsApp
+                            IconButton(
+                              icon: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                              ),
+                              onPressed: () {
+                                debugPrint('Abriendo WhatsApp');
+                                // Aquí puedes agregar lógica para enviar la factura por WhatsApp
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    debugPrint('Abriendo WhatsApp');
-                  },
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Text('Pedido 35-2025', style: AppTextStyles.base),
-                Spacer(),
-                Icon(
-                  Icons.attach_file,
-                  color: Colors.black,
-                  size: 20
-                ),
-                const SizedBox(width: 20),
-                IconButton(
-                  icon: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
-                  ),
-                  onPressed: () {
-                    debugPrint('Abriendo WhatsApp');
-                  },
-                ),
-              ],
-            )
           ],
         ),
       ),
     );
   }
   Widget _creditsDetail() {
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final customerOrders = ordersProvider
+        .getOrdersByCustomer(widget.customer.idCustomer!)
+        .where((order) => order.paymentMethod == 'Crédito')
+        .toList();
+
     return Card(
       color: Colors.transparent,
       elevation: 0,
@@ -639,8 +650,8 @@ class _RecordCardState extends State<RecordCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Fecha  ', style: AppTextStyles.bodyTable),
-                Text('  Número Pedido', style: AppTextStyles.base),
+                Text('Fecha', style: AppTextStyles.bodyTable),
+                Text('Número Pedido', style: AppTextStyles.base),
                 Text('F. Venc', style: AppTextStyles.bodyTable),
                 Text('Monto', style: AppTextStyles.bodyTable),
                 Text('Estado', style: AppTextStyles.bodyTable),
@@ -648,35 +659,58 @@ class _RecordCardState extends State<RecordCard> {
             ),
             Divider(color: AppColors.lightGris, thickness: 1.0, height: 2),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('15/03/25', style: AppTextStyles.bodyTable),
-                Text('Pedido 19-2025', style: AppTextStyles.bodyTable),
-                Text('22/03/25', style: AppTextStyles.bodyTable),
-                Text('S/. 357.90', style: AppTextStyles.bodyTable),
-                Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 20
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('18/03/25', style: AppTextStyles.bodyTable),
-                Text('Pedido 45-2025', style: AppTextStyles.bodyTable),
-                Text('25/03/25', style: AppTextStyles.bodyTable),
-                Text('S/. 357.90', style: AppTextStyles.bodyTable),
-                Icon(
-                  Icons.cancel,
-                  color: Colors.red,
-                  size: 20
-                ),
-              ],
-            ),
+            customerOrders.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('No hay créditos registrados', style: AppTextStyles.bodyTable),
+                  )
+                : ListView.builder(
+                    itemCount: customerOrders.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final order = customerOrders[index];
+                      String fechaVenc = '--/--/--';
+                      if (order.paymentInfo is CreditoPaymentInfo) {
+                        final creditoInfo = order.paymentInfo as CreditoPaymentInfo;
+                        fechaVenc = DateFormat('dd/MM/yy').format(creditoInfo.fechaPago);
+                        print('Fecha de vencimiento: $fechaVenc');
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              order.dateCreated != null
+                                  ? DateFormat('dd/MM/yy').format(order.dateCreated!)
+                                  : '--/--/--',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            // Número de pedido
+                            Text(
+                              'Pedido ${order.idOrder ?? "-"}-2025',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            // Fecha de vencimiento
+                            Text(
+                              fechaVenc,
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            // Monto
+                            Text(
+                              'S/. ${order.total.toStringAsFixed(2)}',
+                              style: AppTextStyles.bodyTable,
+                            ),
+                            // Estado
+                            order.paymentState == 'Pagado'
+                                ? const Icon(Icons.check_circle, color: Colors.green, size: 20)
+                                : const Icon(Icons.cancel, color: Colors.red, size: 20),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ],
         ),
       ),
@@ -723,6 +757,7 @@ class _RecordCardState extends State<RecordCard> {
       receiptKey: _receiptKey,
       observationsKey: _observationsKey,
       paymentKey: _paymentKey,
+      paymentInfoKey: _paymentKey,
       resetForm: _resetForm,
     );
   }

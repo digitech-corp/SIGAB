@@ -1,3 +1,4 @@
+import 'package:balanced_foods/screens/modulo_dashboard/chart_daily.dart';
 import 'package:balanced_foods/screens/modulo_dashboard/paymentMethodG.raphic.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
@@ -336,9 +337,7 @@ class _DashboardDailyState extends State<DashboardDaily> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: Alignment.center,
-      margin: EdgeInsets.all(20),
-      child: Image.asset('assets/images/dashboard_daily.jpeg', fit: BoxFit.cover),
+      child: SalesDonutChart(),
     );
   }
 }

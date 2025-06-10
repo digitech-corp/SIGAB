@@ -24,7 +24,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
       final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
+      final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
 
+      productsProvider.fetchProducts();
       customersProvider.fetchCustomers();
       companiesProvider.fetchCompanies();
     });
@@ -346,6 +348,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     final selectedProducts = products.selectedProducts;
     final paymentMethod = _paymentKey.currentState?.selectedPaymentMethod;
     final receiptType = _receiptKey.currentState?.selectedReceiptType;
+    // final paymentInfo = _paymentKey.currentState!.paymentInfo;
 
     // Validar cliente
     if (idCustomer == null) {
@@ -388,7 +391,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       receiptKey: _receiptKey,
       observationsKey: _observationsKey,
       paymentKey: _paymentKey,
-      // paymentInfoKey: _paymentInfoKey,
+      paymentInfoKey: _paymentKey,
       resetForm: _resetForm,
     );
   }

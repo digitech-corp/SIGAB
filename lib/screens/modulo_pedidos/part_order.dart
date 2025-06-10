@@ -720,15 +720,16 @@ class PaymentMethodState extends State<paymentMethod> {
       ],
     );
   }
-  //  Map<String, String> getPayments() {
-  //   return {
-  //     "importe": _importeGuardado.toString(),
-  //     "saldo": _saldoGuardado.toString(),
-  //     "cuota": _cuotasGuardadas.toString(),
-  //     "monto": _montoGuardado.toString(),
-  //     "fecha": _fechaGuardada.toString(),
-  //   };
-  // }
+  
+  Map<String, String> getPayments() {
+    return {
+      "importe": _importeGuardado.toString(),
+      "saldo": _saldoGuardado.toString(),
+      "cuota": _cuotasGuardadas.toString(),
+      "monto": _montoGuardado.toString(),
+      "fecha": _fechaGuardada.toString(),
+    };
+  }
 }
 
 class RegistrarPagoContado extends StatefulWidget {
@@ -1335,9 +1336,9 @@ Future<void> registerOrder({
   required GlobalKey<ObservationsState> observationsKey,
   required GlobalKey<PaymentMethodState> paymentKey,
   required GlobalKey<ReceiptTypeState> receiptKey,
-  // required GlobalKey<ReceiptTypeState> paymentInfoKey,
+  required GlobalKey<PaymentMethodState> paymentInfoKey,
   required VoidCallback resetForm,
-  PaymentInfo? paymentInfo,
+  // PaymentInfo? paymentInfo,
 }) async {
   final provider = Provider.of<OrdersProvider>(context, listen: false);
   final products = Provider.of<ProductsProvider>(context, listen: false);
@@ -1346,8 +1347,8 @@ Future<void> registerOrder({
   final obs = observationsKey.currentState!.getObservations();
   final payment = paymentKey.currentState!.selectedPaymentMethod;
   final receipt = receiptKey.currentState!.selectedReceiptType;
-  // final paymentInfo = paymentInfoKey.currentState!.getPayments();
-
+  final paymentInfo = paymentKey.currentState!.paymentInfo;
+  
   double total = selectedProducts.fold(
     0.0,
     (total, item) => total + (item.product.price * item.quantity),
@@ -1403,6 +1404,7 @@ Future<void> registerOrder({
     additionalInformation: obs['info'] ?? '',
     details: details,
     paymentInfo: paymentInfo,
+    state: 'Pendiente',
     paymentState: "Pendiente",
     dateCreated: DateTime.now(),
     timeCreated: TimeOfDay.now(),

@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/order.dart';
+import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 
 class OrdersProvider extends ChangeNotifier{
+  final AppSettingsProvider settingsProvider;
+  OrdersProvider({required this.settingsProvider});
+  bool get useLocalData => settingsProvider.useLocalData;
+  
   bool isLoading = false;
-  bool useLocalData = false;
   List<Order> orders = [];
   
   Future<void> fetchOrders() async {
@@ -16,6 +20,7 @@ class OrdersProvider extends ChangeNotifier{
       if (useLocalData) {
         final data = await loadJsonFromAssets('assets/datos/orders.json');
         orders = List<Order>.from(data['orders'].map((order) => Order.fromJSON(order)));
+        print("Cantidad de pedidos: ${orders.length}");
       } else {
         final url = Uri.parse('http://10.0.2.2:12346/orders');
         final response = await http.get(url);

@@ -2,7 +2,7 @@ import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/paymentInfo.dart';
 import 'package:flutter/material.dart';
 
-class Order{
+class Order {
   int? idOrder;
   int idCustomer;
   String paymentMethod;
@@ -38,48 +38,54 @@ class Order{
     this.timeCreated,
     this.dateCreated,
     required this.details,
-    this.paymentInfo
+    this.paymentInfo,
   });
 
-  factory Order.fromJSON(Map<String, dynamic> json){
-     return Order(
+  factory Order.fromJSON(Map<String, dynamic> json) {
+    TimeOfDay? parseTime(String? time) {
+      if (time == null) return null;
+      final parts = time.split(':');
+      return TimeOfDay(
+        hour: int.tryParse(parts[0]) ?? 0,
+        minute: int.tryParse(parts[1]) ?? 0,
+      );
+    }
+
+    // Deserialización de paymentInfo (espera una lista con un solo objeto)
+    PaymentInfo? paymentInfo;
+    if (json['paymentInfo'] != null && (json['paymentInfo'] as List).isNotEmpty) {
+      final info = (json['paymentInfo'] as List).first;
+      if (info['tipo'] == 'Crédito') {
+        paymentInfo = CreditoPaymentInfo.fromJson(info);
+      } else if (info['tipo'] == 'Contado') {
+        paymentInfo = ContadoPaymentInfo.fromJson(info);
+      }
+    }
+
+    return Order(
       idOrder: json['idOrder'],
-      idCustomer: json['idCustomer'] ?? 0, // Assuming idCustomer is required
+      idCustomer: json['idCustomer'] ?? 0,
       paymentMethod: json['paymentMethod'],
       receiptType: json['receiptType'],
-      subtotal: json['subtotal']?? 0,
-      igv: json['igv']?? 0.0,
-      total: json['total']?? 0.0,
+      subtotal: (json['subtotal'] as num).toDouble(),
+      igv: (json['igv'] as num).toDouble(),
+      total: (json['total'] as num).toDouble(),
       deliveryLocation: json['deliveryLocation'],
       deliveryDate: json['deliveryDate'] != null
-        ? DateTime.tryParse(json['deliveryDate'])
-        : null,
-      deliveryTime: json['deliveryTime'] != null
-        ? Order._parseTimeOfDay(json['deliveryTime'])
-        : null,
+          ? DateTime.tryParse(json['deliveryDate'])
+          : null,
+      deliveryTime: parseTime(json['deliveryTime']),
       additionalInformation: json['additionalInformation'],
       state: json['state'],
       paymentState: json['paymentState'],
-      timeCreated: json['timeCreated'] != null
-        ? Order._parseTimeOfDay(json['timeCreated'])
-        : null,
+      timeCreated: parseTime(json['timeCreated']),
       dateCreated: json['dateCreated'] != null
-        ? DateTime.tryParse(json['dateCreated'])
-        : null,
+          ? DateTime.tryParse(json['dateCreated'])
+          : null,
       details: (json['details'] as List<dynamic>)
           .map((d) => OrderDetail.fromJSON(d))
           .toList(),
-      paymentInfo: (() {
-      final info = json['paymentInfo'];
-        if (info != null) {
-          if (json['paymentMethod'] == 'Contado') {
-            return ContadoPaymentInfo.fromJson(info);
-          } else if (json['paymentMethod'] == 'Crédito') {
-            return CreditoPaymentInfo.fromJson(info);
-          }
-        }
-        return null;
-      })(),
+      paymentInfo: paymentInfo,
     );
   }
 
@@ -104,23 +110,14 @@ class Order{
           ? '${timeCreated!.hour.toString().padLeft(2, '0')}:${timeCreated!.minute.toString().padLeft(2, '0')}:00'
           : null,
       'dateCreated': dateCreated?.toIso8601String().split('T').first,
-      "details": details.map((d) => d.toJson()).toList(),
-      'paymentInfo': paymentInfo?.toJson(),
+      'details': details.map((d) => d.toJson()).toList(),
+      // Exporta como lista para mantener compatibilidad con tu API/mockoon
+      'paymentInfo': paymentInfo != null ? [paymentInfo!.toJson()] : [],
     };
   }
 
   @override
   String toString() {
-    return 'Order{idOrder: $idOrder, idCustomer: $idCustomer, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, paymentState: $paymentState, timeCreated: $timeCreated, dateCreated: $dateCreated, details: $details. paymentInfo: $paymentInfo}';
-  }
-
-  static TimeOfDay _parseTimeOfDay(String timeString) {
-    final parts = timeString.split(":");
-    if (parts.length >= 2) {
-      final hour = int.tryParse(parts[0]) ?? 0;
-      final minute = int.tryParse(parts[1]) ?? 0;
-      return TimeOfDay(hour: hour, minute: minute);
-    }
-    return const TimeOfDay(hour: 0, minute: 0);
+    return 'Order{idOrder: $idOrder, idCustomer: $idCustomer, paymentMethod: $paymentMethod, receiptType: $receiptType, subtotal: $subtotal, igv: $igv, total: $total, deliveryLocation: $deliveryLocation, deliveryDate: $deliveryDate, deliveryTime: $deliveryTime, additionalInformation: $additionalInformation, state: $state, paymentState: $paymentState, timeCreated: $timeCreated, dateCreated: $dateCreated, details: $details, paymentInfo: $paymentInfo}';
   }
 }

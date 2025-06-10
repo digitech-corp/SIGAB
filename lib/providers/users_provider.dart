@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/user.dart';
+import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 
 class UsersProvider extends ChangeNotifier{
+  final AppSettingsProvider settingsProvider;
+  UsersProvider({required this.settingsProvider});
+  bool get useLocalData => settingsProvider.useLocalData;
+  
   bool isLoading = false;
-  bool useLocalData = false;
   List<User> users= [];
   
 

@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/company.dart';
+import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 
 class CompaniesProvider extends ChangeNotifier{
+  final AppSettingsProvider settingsProvider;
+  CompaniesProvider({required this.settingsProvider});
+  bool get useLocalData => settingsProvider.useLocalData;
+  
   bool isLoading = false;
-  bool useLocalData = false;
   List<Company> companies = [];
   
   Future<void> fetchCompanies() async {

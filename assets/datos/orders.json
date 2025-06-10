@@ -29,6 +29,13 @@
           "unitPrice": 98.90,
           "partialPrice": 98.90
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -60,6 +67,13 @@
           "unitPrice": 98.90,
           "partialPrice": 197.80
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -84,6 +98,13 @@
           "quantity": 3,
           "unitPrice": 98.90,
           "partialPrice": 296.70
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
         }
       ]
     },
@@ -110,12 +131,20 @@
           "unitPrice": 98.90,
           "partialPrice": 593.40
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
+        }
       ]
     },
     {
       "idOrder": 5,
       "idCustomer": 8,
-      "paymentMethod": "Contado",
+      "paymentMethod": "Crédito",
       "receiptType": "FACTURA",
       "subtotal": 494.50,
       "igv": 89.01,
@@ -135,12 +164,20 @@
           "unitPrice": 98.90,
           "partialPrice": 494.50
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
+        }
       ]
     },
     {
       "idOrder": 6,
       "idCustomer": 8,
-      "paymentMethod": "Contado",
+      "paymentMethod": "Crédito",
       "receiptType": "FACTURA",
       "subtotal": 494.50,
       "igv": 89.01,
@@ -159,6 +196,14 @@
           "quantity": 5,
           "unitPrice": 100.90,
           "partialPrice": 494.50
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
         }
       ]
     },
@@ -191,6 +236,14 @@
           "unitPrice": 98.90,
           "partialPrice": 197.80
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
+        }
       ]
     },
     {
@@ -215,6 +268,14 @@
           "quantity": 3,
           "unitPrice": 98.90,
           "partialPrice": 296.70
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
         }
       ]
     },
@@ -241,6 +302,13 @@
           "unitPrice": 98.90,
           "partialPrice": 395.60
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -265,6 +333,14 @@
           "quantity": 2,
           "unitPrice": 98.90,
           "partialPrice": 197.80
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
         }
       ]
     },
@@ -291,6 +367,13 @@
           "unitPrice": 98.90,
           "partialPrice": 494.50
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -315,6 +398,14 @@
           "quantity": 3,
           "unitPrice": 98.90,
           "partialPrice": 296.70
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
         }
       ]
     },
@@ -341,6 +432,13 @@
           "unitPrice": 98.90,
           "partialPrice": 197.80
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -365,6 +463,14 @@
           "quantity": 2,
           "unitPrice": 105.80,
           "partialPrice": 211.60
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
         }
       ]
     },
@@ -391,6 +497,13 @@
           "unitPrice": 94.80,
           "partialPrice": 284.40
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -416,6 +529,13 @@
           "unitPrice": 98.90,
           "partialPrice": 98.90
         }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
       ]
     },
     {
@@ -440,6 +560,14 @@
           "quantity": 2,
           "unitPrice": 104.00,
           "partialPrice": 208.00
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
         }
       ]
     }

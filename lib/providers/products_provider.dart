@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/product.dart';
+import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 
 class ProductsProvider extends ChangeNotifier{
+  final AppSettingsProvider settingsProvider;
+  ProductsProvider({required this.settingsProvider});
+  bool get useLocalData => settingsProvider.useLocalData;
+  
   bool isLoading = false;
-  bool useLocalData = false;
   List<Product> products = [];
 
   Future<void> fetchProducts() async {
