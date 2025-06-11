@@ -8,7 +8,6 @@ import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:balanced_foods/screens/front_page_screen.dart';
-import 'package:balanced_foods/screens/modulo_dashboard/chart_daily.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

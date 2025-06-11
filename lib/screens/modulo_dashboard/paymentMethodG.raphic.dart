@@ -26,7 +26,6 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
     if (renderBox == null) return;
 
     final offset = renderBox.localToGlobal(Offset.zero);
-    final size = renderBox.size;
     final screenWidth = MediaQuery.of(context).size.width;
 
     const double tooltipPadding = 0;

@@ -104,7 +104,6 @@ class _CreditosCardState extends State<CreditosCard> {
     final ordersProvider = Provider.of<OrdersProvider>(context);
     final orders = ordersProvider.orders;
     final filteredOrders = orders.where((o) => o.paymentState == 'Pendiente').toList();
-    print("Cantidad de pedidos:${filteredOrders.length}");
     final DateTime today = DateTime.now();
 
     // Filtra los pedidos por estado de vencimiento

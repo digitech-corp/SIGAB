@@ -52,11 +52,11 @@
       "additionalInformation": "Llamar antes de llegar",
       "state": "Entregado",
       "paymentState": "Pagado",
-      "dateCreated": "2025-06-02",
+      "dateCreated": "2025-05-15",
       "timeCreated": "09:45:00",
       "details": [
         {
-          "idProducto": 2,
+          "idProducto": 39,
           "quantity": 4,
           "unitPrice": 98.90,
           "partialPrice": 395.60
@@ -192,7 +192,7 @@
       "timeCreated": "17:43:00",
       "details": [
         {
-          "idProducto": 1,
+          "idProducto": 22,
           "quantity": 5,
           "unitPrice": 100.90,
           "partialPrice": 494.50
@@ -264,7 +264,7 @@
       "timeCreated": "10:15:00",
       "details": [
         {
-          "idProducto": 5,
+          "idProducto": 22,
           "quantity": 3,
           "unitPrice": 98.90,
           "partialPrice": 296.70
@@ -297,7 +297,7 @@
       "timeCreated": "08:45:00",
       "details": [
         {
-          "idProducto": 2,
+          "idProducto": 33,
           "quantity": 4,
           "unitPrice": 98.90,
           "partialPrice": 395.60
@@ -329,7 +329,7 @@
       "timeCreated": "12:30:00",
       "details": [
         {
-          "idProducto": 4,
+          "idProducto": 39,
           "quantity": 2,
           "unitPrice": 98.90,
           "partialPrice": 197.80
@@ -362,7 +362,7 @@
       "timeCreated": "11:45:00",
       "details": [
         {
-          "idProducto": 1,
+          "idProducto": 39,
           "quantity": 5,
           "unitPrice": 98.90,
           "partialPrice": 494.50
@@ -394,7 +394,7 @@
       "timeCreated": "09:30:00",
       "details": [
         {
-          "idProducto": 6,
+          "idProducto": 39,
           "quantity": 3,
           "unitPrice": 98.90,
           "partialPrice": 296.70
@@ -427,7 +427,7 @@
       "timeCreated": "09:20:00",
       "details": [
         {
-          "idProducto": 3,
+          "idProducto": 33,
           "quantity": 2,
           "unitPrice": 98.90,
           "partialPrice": 197.80
@@ -459,7 +459,7 @@
       "timeCreated": "11:45:00",
       "details": [
         {
-          "idProducto": 3,
+          "idProducto": 22,
           "quantity": 2,
           "unitPrice": 105.80,
           "partialPrice": 211.60
