@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/paymentInfo.dart';
@@ -640,8 +638,8 @@ class PaymentMethodState extends State<paymentMethod> {
                             context: context,
                             builder: (context) {
                               if (_contado) {
-                                _cuotasGuardadas = 0;
-                                _montoGuardado = 0.0;
+                                _cuotasGuardadas = null;
+                                _montoGuardado = null;
                                 _fechaGuardada = null;
                                 return RegistrarPagoContado(
                                   importeInicial: _importeGuardado,
@@ -660,8 +658,8 @@ class PaymentMethodState extends State<paymentMethod> {
                                 );
                               }
                               if (_credito) {
-                                _importeGuardado = 0.0;
-                                _saldoGuardado = 0.0;
+                                _importeGuardado = null;
+                                _saldoGuardado = null;
                                 return RegistrarPagoCredito(
                                   cuotasInicial: _cuotasGuardadas,
                                   montoInicial: _montoGuardado,
@@ -674,7 +672,7 @@ class PaymentMethodState extends State<paymentMethod> {
                                       paymentInfo = CreditoPaymentInfo(
                                         numeroCuotas: cuotas,
                                         monto: monto,
-                                        fechaPago: fecha!,
+                                        fechaPago: fecha,
                                       );
                                     });
                                     print('Pago guardado');
@@ -721,15 +719,15 @@ class PaymentMethodState extends State<paymentMethod> {
     );
   }
   
-  Map<String, String> getPayments() {
-    return {
-      "importe": _importeGuardado.toString(),
-      "saldo": _saldoGuardado.toString(),
-      "cuota": _cuotasGuardadas.toString(),
-      "monto": _montoGuardado.toString(),
-      "fecha": _fechaGuardada.toString(),
-    };
-  }
+  // Map<String, String> getPayments() {
+  //   return {
+  //     "importe": _importeGuardado.toString(),
+  //     "saldo": _saldoGuardado.toString(),
+  //     "cuota": _cuotasGuardadas.toString(),
+  //     "monto": _montoGuardado.toString(),
+  //     "fecha": _fechaGuardada.toString(),
+  //   };
+  // }
 }
 
 class RegistrarPagoContado extends StatefulWidget {
@@ -755,8 +753,12 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
   @override
   void initState() {
     super.initState();
-    _importeController = TextEditingController(text: widget.importeInicial.toString());
-    _saldoController = TextEditingController(text: widget.saldoInicial.toString());
+    _importeController = TextEditingController(
+      text: widget.importeInicial != null ? widget.importeInicial.toString() : ''
+    );
+    _saldoController = TextEditingController(
+      text: widget.saldoInicial != null ? widget.saldoInicial.toString() : ''
+    );
   }
 
   @override
@@ -922,9 +924,15 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
   @override
   void initState() {
     super.initState();
-    _cuotasController = TextEditingController(text: widget.cuotasInicial.toString());
-    _montoController = TextEditingController(text: widget.montoInicial.toString());
-    _fechaController = TextEditingController(text: widget.fechaInicial.toString());
+    _cuotasController = TextEditingController(
+      text: widget.cuotasInicial != null ? widget.cuotasInicial.toString() : ''
+    );
+    _montoController = TextEditingController(
+      text: widget.montoInicial != null ? widget.montoInicial.toString() : ''
+    );
+    _fechaController = TextEditingController(
+      text: widget.fechaInicial != null ? widget.fechaInicial.toString() : ''
+    );
   }
 
   @override

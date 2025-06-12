@@ -184,12 +184,10 @@ class _OrderScreenState extends State<OrderScreen> {
                           
                           final firstDetail = order.idCustomer;
                           Customer? customer;
-                          if (firstDetail != null) {
-                            try {
-                              customer = customers.firstWhere((c) => c.idCustomer == firstDetail);
-                            } catch (_) {
-                              customer = null;
-                            }
+                          try {
+                            customer = customers.firstWhere((c) => c.idCustomer == firstDetail);
+                          } catch (_) {
+                            customer = null;
                           }
 
                           String persona = '--';

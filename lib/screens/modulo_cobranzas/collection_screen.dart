@@ -3,6 +3,7 @@ import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
+import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
 import 'package:balanced_foods/screens/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -243,12 +244,10 @@ class _CreditosCardState extends State<CreditosCard> {
 
                         final customerId = order.idCustomer;
                         Customer? customer;
-                        if (customerId != null) {
-                          try {
-                            customer = customers.firstWhere((c) => c.idCustomer == customerId);
-                          } catch (_) {
-                            customer = null;
-                          }
+                        try {
+                          customer = customers.firstWhere((c) => c.idCustomer == customerId);
+                        } catch (_) {
+                          customer = null;
                         }
 
                         String persona = customer?.customerName ?? '--';
@@ -261,6 +260,7 @@ class _CreditosCardState extends State<CreditosCard> {
                         final Color colorTexto = diasDiferencia > 0 ? Color(0xFFFF6600) : Color(0XFF3498DB);
 
                         return _creditCard(
+                          idOrder: order.idOrder ?? 0,
                           cliente: empresa,
                           contacto: persona,
                           pedido: codPedido,
@@ -282,6 +282,7 @@ class _CreditosCardState extends State<CreditosCard> {
   }
 
   Widget _creditCard({
+    required int idOrder,
     required String cliente,
     required String contacto,
     required String pedido,
@@ -346,7 +347,21 @@ class _CreditosCardState extends State<CreditosCard> {
                         children: [
                           Text('PEDIDO N° $pedido', style: _weakStyle),
                           const SizedBox(width: 10),
-                          Icon(Icons.attach_file, color: Colors.black, size: 20),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => InvoiceScreen(
+                                  idOrder: idOrder,
+                                )),
+                              );
+                            },
+                            child: Icon(
+                              Icons.attach_file,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                          ),
                         ],
                       ),
                       Row(

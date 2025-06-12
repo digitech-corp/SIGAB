@@ -338,7 +338,7 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
+          "numeroCuotas": 23,
           "monto": 236.00,
           "fechaPago": "2025-07-10"
         }
@@ -488,11 +488,11 @@
       "additionalInformation": "Revisar antes de recibir",
       "state": "Pendiente",
       "paymentState": "Pendiente",
-      "dateCreated": "2025-06-07",
+      "dateCreated": "2025-06-11",
       "timeCreated": "08:30:00",
       "details": [
         {
-          "idProducto": 3,
+          "idProducto": 27,
           "quantity": 3,
           "unitPrice": 94.80,
           "partialPrice": 284.40
@@ -520,11 +520,11 @@
       "additionalInformation": "Pedido urgente",
       "state": "Pendiente",
       "paymentState": "Pendiente",
-      "dateCreated": "2025-06-08",
+      "dateCreated": "2025-06-12",
       "timeCreated": "10:20:00",
       "details": [
         {
-          "idProducto": 3,
+          "idProducto": 27,
           "quantity": 1,
           "unitPrice": 98.90,
           "partialPrice": 98.90
@@ -552,7 +552,105 @@
       "additionalInformation": "Revisar precio por lote",
       "state": "Pendiente",
       "paymentState": "Pendiente",
-      "dateCreated": "2025-06-09",
+      "dateCreated": "2025-06-12",
+      "timeCreated": "14:45:00",
+      "details": [
+        {
+          "idProducto": 40,
+          "quantity": 2,
+          "unitPrice": 104.00,
+          "partialPrice": 208.00
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-10"
+        }
+      ]
+    },
+    {
+      "idOrder": 18,
+      "idCustomer": 2,
+      "paymentMethod": "Crédito",
+      "receiptType": "OTROS",
+      "subtotal": 208.00,
+      "igv": 37.44,
+      "total": 245.44,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-10",
+      "deliveryTime": "17:00:00",
+      "additionalInformation": "Revisar precio por lote",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-12",
+      "timeCreated": "14:45:00",
+      "details": [
+        {
+          "idProducto": 38,
+          "quantity": 2,
+          "unitPrice": 104.00,
+          "partialPrice": 208.00
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Crédito",
+          "numeroCuotas": 3,
+          "monto": 236.00,
+          "fechaPago": "2025-07-20"
+        }
+      ]
+    },
+    {
+      "idOrder": 19,
+      "idCustomer": 5,
+      "paymentMethod": "Contado",
+      "receiptType": "FACTURA",
+      "subtotal": 98.90,
+      "igv": 17.80,
+      "total": 116.70,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-09",
+      "deliveryTime": "11:00:00",
+      "additionalInformation": "Pedido urgente",
+      "state": "Pendiente",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-13",
+      "timeCreated": "10:20:00",
+      "details": [
+        {
+          "idProducto": 40,
+          "quantity": 1,
+          "unitPrice": 98.90,
+          "partialPrice": 98.90
+        }
+      ],
+      "paymentInfo": [
+        {
+          "tipo": "Contado",
+          "importe": 402.03,
+          "saldo": 0.0
+        }
+      ]
+    },
+    {
+      "idOrder": 20,
+      "idCustomer": 6,
+      "paymentMethod": "Crédito",
+      "receiptType": "OTROS",
+      "subtotal": 208.00,
+      "igv": 37.44,
+      "total": 245.44,
+      "deliveryLocation": "Av. Lima 100",
+      "deliveryDate": "2025-06-10",
+      "deliveryTime": "17:00:00",
+      "additionalInformation": "Revisar precio por lote",
+      "state": "Entregado",
+      "paymentState": "Pendiente",
+      "dateCreated": "2025-06-13",
       "timeCreated": "14:45:00",
       "details": [
         {

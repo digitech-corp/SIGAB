@@ -178,7 +178,11 @@ class NewUserForm extends StatelessWidget {
             controller: email,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, ingresa tu correo corporativo';
+                return 'Por favor, ingresa un correo corporativo';
+              }
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Por favor, ingresa un correo electrónico válido';
               }
               return null;
             },

@@ -324,7 +324,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                         width: 28,
                         child: Checkbox(
                           value: selection.isSelected,
-                          onChanged: (widget.idCustomer != null && widget.idCustomer! >= 1)
+                          onChanged: (widget.idCustomer >= 1)
                               ? (val) {
                                   setState(() {
                                     selection.isSelected = val ?? false;

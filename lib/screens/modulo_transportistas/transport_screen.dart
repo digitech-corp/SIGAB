@@ -24,7 +24,6 @@ class TransportScreen extends StatefulWidget {
 
 class _TransportScreenState extends State<TransportScreen> {
   DateTime selectedDate = DateTime.now();
-  bool _isExpanded = false;
 
   @override
   void initState() {
@@ -175,12 +174,10 @@ class _TransportScreenState extends State<TransportScreen> {
                             
                             final firstDetail = order.idCustomer;
                             Customer? customer;
-                            if (firstDetail != null) {
-                              try {
-                                customer = customers.firstWhere((c) => c.idCustomer == firstDetail);
-                              } catch (_) {
-                                customer = null;
-                              }
+                            try {
+                              customer = customers.firstWhere((c) => c.idCustomer == firstDetail);
+                            } catch (_) {
+                              customer = null;
                             }
 
                             String persona = '--';
@@ -192,8 +189,8 @@ class _TransportScreenState extends State<TransportScreen> {
                               empresa = companiesProvider.getCompanyNameById(customer.idCompany);
                               customerPhone = customer.customerPhone;
                               String departmentName = departmentsProvider.getDepartmentName(customer.idDepartment);
-                              String provinceName = provincesProvider.getProvinceName(customer.idProvince) ?? '';
-                              String districtName= districtsProvider.getDistrictName(customer.idDistrict) ?? '';
+                              String provinceName = provincesProvider.getProvinceName(customer.idProvince);
+                              String districtName= districtsProvider.getDistrictName(customer.idDistrict);
                               fullAddress = '${customer.customerAddress}, ${districtName}, ${provinceName}, ${departmentName}';
                             }
                             

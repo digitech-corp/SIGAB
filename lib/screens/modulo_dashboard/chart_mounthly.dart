@@ -87,9 +87,9 @@ Future<Map<String, List<MonthlySalesData>>> buildSalesDataByAnimalTypeMonthly(
     final month = order.dateCreated!.month;
 
     for (var detail in order.details) {
-      final product = products.firstWhere((p) => p.idProduct == detail.idProducto, orElse: () => null!);
-      if (product == null) continue;
-      final animalType = product.animalType; // Ajusta según tu modelo
+      final product = products.firstWhere((p) => p.idProduct == detail.idProducto);
+      
+      final animalType = product.animalType;
 
       grouped.putIfAbsent(animalType, () => {});
       grouped[animalType]!.update(

@@ -1,14 +1,23 @@
+import 'dart:io';
+
 import 'package:balanced_foods/models/paymentInfo.dart';
+import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
+import 'package:balanced_foods/screens/Reportes/create_pdf.dart';
+import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
+import 'package:balanced_foods/screens/Reportes/invoice_temporal.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EditCustomerScreen extends StatefulWidget {
@@ -35,6 +44,8 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
       Provider.of<DistrictsProvider>(context, listen: false).fetchDistricts();
       Provider.of<OrdersProvider>(context, listen: false).fetchOrders();
       Provider.of<ProductsProvider>(context, listen: false).setCurrentCustomer(widget.customer.idCustomer!);
+      final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
+      productsProvider.fetchProducts();
     });
   }
 
@@ -569,6 +580,9 @@ class _RecordCardState extends State<RecordCard> {
   }
   Widget _collectionsDetail() {
     final ordersProvider = Provider.of<OrdersProvider>(context);
+    final customersProvider = Provider.of<CustomersProvider>(context);
+    final companiesProvider = Provider.of<CompaniesProvider>(context);
+    final productsProvider = Provider.of<ProductsProvider>(context);
     final customerOrders = ordersProvider.getOrdersByCustomer(widget.customer.idCustomer!);
 
     return Card(
@@ -602,10 +616,20 @@ class _RecordCardState extends State<RecordCard> {
                             ),
                             Spacer(),
                             // Ícono de adjunto
-                            Icon(
-                              Icons.attach_file,
-                              color: Colors.black,
-                              size: 20,
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => InvoiceScreen(
+                                    idOrder: order.idOrder ?? 0,
+                                  )),
+                                );
+                              },
+                              child: Icon(
+                                Icons.attach_file,
+                                color: Colors.black,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 20),
                             // Botón de WhatsApp
@@ -615,10 +639,33 @@ class _RecordCardState extends State<RecordCard> {
                                 height: 20,
                                 child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                               ),
-                              onPressed: () {
-                                debugPrint('Abriendo WhatsApp');
-                                // Aquí puedes agregar lógica para enviar la factura por WhatsApp
-                              },
+                              onPressed: () async {
+                              final customer = customersProvider.customers
+                                  .firstWhere((c) => c.idCustomer == order.idCustomer);
+                              final phone = '51${widget.customer.customerPhone}';
+
+                              final pdfBytes = await generarPdfFacturaConDiseno(
+                                order: order,
+                                customer: customer,
+                                companyName: companiesProvider.getCompanyNameById(customer.idCompany),
+                                allProducts: productsProvider.products,
+                              );
+
+                              // Guarda el PDF en el almacenamiento temporal
+                              final tempDir = await getTemporaryDirectory();
+                              final file = File('${tempDir.path}/factura.pdf');
+                              await file.writeAsBytes(pdfBytes);
+
+                              // Mensaje personalizado
+                              final mensaje = 'Hola ${customer.customerName}, aquí tienes tu factura.';
+
+                              // Comparte el archivo y el mensaje (el usuario elegirá WhatsApp)
+                              await Share.shareXFiles(
+                                [XFile(file.path)],
+                                text: mensaje,
+                                subject: 'Factura',
+                              );
+                            }
                             ),
                           ],
                         ),

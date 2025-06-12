@@ -23,6 +23,22 @@
         "password": "1234",
         "image": "",
         "role": "Transportista"
+    },
+    {
+        "name": "Josue Romero",
+        "dni": "78856457",
+        "email": "vendedor123@gmail.com",
+        "password": "1234",
+        "image": "",
+        "role": "Vendedor"
+    },
+    {
+        "name": "Ricardo Peralta",
+        "dni": "63665241",
+        "email": "transportista123@gmail.com",
+        "password": "1234",
+        "image": "",
+        "role": "Transportista"
     }
   ]
 }

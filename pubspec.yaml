@@ -38,6 +38,9 @@ dependencies:
   google_maps_flutter: ^2.12.2
   geocoding: ^4.0.0
   url_launcher: ^6.3.1
+  path_provider: ^2.1.5
+  share_plus: ^11.0.0
+  printing: ^5.14.2
   syncfusion_flutter_charts: ^29.2.10
 
   # The following adds the Cupertino Icons font to your application.

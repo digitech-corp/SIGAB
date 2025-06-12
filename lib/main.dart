@@ -7,6 +7,7 @@ import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
+import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
 import 'package:balanced_foods/screens/front_page_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -91,7 +92,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'ADYSA',
         home: FrontPage(),
-        // home: SalesDonutChart(),
+        // home: InvoiceScreen(idOrder: 1),
       ),
     );
   }
