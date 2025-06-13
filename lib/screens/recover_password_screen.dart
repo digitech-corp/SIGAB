@@ -1,6 +1,6 @@
+import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,29 +40,6 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final bodyPadding = screenWidth * 0.06;
-
-    Future<void> recoverPassword(String email) async {
-    final url = Uri.parse('http://10.0.2.2:12346/recover');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final message = data['message'] ?? 'Revisa tu correo electrónico.';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al procesar la solicitud.')));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ocurrió un error. Intenta nuevamente.')));
-    }
-  }
-
     return Scaffold(
       backgroundColor: AppColors.orange,
       body: Column(
@@ -117,7 +94,11 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
                             child: ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
-                                  recoverPassword(_userName.text.trim());
+                                  final usersProvider = Provider.of<UsersProvider>(context, listen: false);
+                                  usersProvider.recoverPassword(_userName.text);
+                                  // usersProvider.recoverPassword(_userName.text).then((message) {
+                                  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+                                  // });
                                 }
                               },
                               style: ElevatedButton.styleFrom(

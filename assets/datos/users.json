@@ -1,6 +1,7 @@
 {
   "users": [
     {
+        "idUser": 1,
         "name": "Juan Pérez",
         "dni": "12345678",
         "email": "juan.perez@example.com",
@@ -9,6 +10,7 @@
         "role": "Vendedor"
     },
     {
+        "idUser": 2,
         "name": "Steffany Effio Campos",
         "dni": "47978672",
         "email": "ventasadysa@gmail.com",
@@ -17,6 +19,7 @@
         "role": "Vendedor"
     },
     {
+        "idUser": 3,
         "name": "Moises Marin",
         "dni": "71697023",
         "email": "marin.mmoises.456@gmail.com",
@@ -25,6 +28,7 @@
         "role": "Transportista"
     },
     {
+        "idUser": 4,
         "name": "Josue Romero",
         "dni": "78856457",
         "email": "vendedor123@gmail.com",
@@ -33,6 +37,7 @@
         "role": "Vendedor"
     },
     {
+        "idUser": 5,
         "name": "Ricardo Peralta",
         "dni": "63665241",
         "email": "transportista123@gmail.com",

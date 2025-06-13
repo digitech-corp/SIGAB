@@ -52,51 +52,53 @@ class _NewUserScreenState extends State<NewUserScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.orange,
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(64),
-                bottomRight: Radius.circular(64),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(64),
+                  bottomRight: Radius.circular(64),
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: bodyPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    IconButton(icon: Icon(Icons.arrow_back_ios), color: AppColors.orange, onPressed: () {Navigator.pop(context);}),
+                    const SizedBox(height: 20),
+                    // Header
+                    const NewUserHeader(),
+                    const SizedBox(height: 30),
+                    // Formulario
+                    NewUserForm(
+                      formKey: _formKey,
+                      name: _name,
+                      dni: _dni,
+                      email: _email,
+                      userPassword: _userPassword,
+                      confirmPassword: _confirmPassword,
+                    ),
+                  ],
+                ),
               ),
             ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: bodyPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  IconButton(icon: Icon(Icons.arrow_back_ios), color: AppColors.orange, onPressed: () {Navigator.pop(context);}),
-                  const SizedBox(height: 20),
-                  // Header
-                  const NewUserHeader(),
-                  const SizedBox(height: 30),
-                  // Formulario
-                  NewUserForm(
-                    formKey: _formKey,
-                    name: _name,
-                    dni: _dni,
-                    email: _email,
-                    userPassword: _userPassword,
-                    confirmPassword: _confirmPassword,
-                  ),
-                ],
-              ),
+            const SizedBox(height: 35),
+            // Botones
+            RegisterButton(
+              formKey: _formKey,
+              name: _name,
+              dni: _dni,
+              email: _email,
+              userPassword: _userPassword,
             ),
-          ),
-          const SizedBox(height: 35),
-          // Botones
-          RegisterButton(
-            formKey: _formKey,
-            name: _name,
-            dni: _dni,
-            email: _email,
-            userPassword: _userPassword,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

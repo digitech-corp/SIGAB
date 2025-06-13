@@ -105,6 +105,27 @@ class UsersProvider extends ChangeNotifier{
     }
   }
 
+  Future<String> recoverPassword(String email) async {
+    final url = Uri.parse('http://10.0.2.2:12346/recover');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['message'] ?? 'Revisa tu correo electrónico.';
+      } else {
+        return 'Error al procesar la solicitud.';
+      }
+    } catch (e) {
+      return 'Ocurrió un error. Intenta nuevamente.';
+    }
+  }
+
   // CARGAR DATOS
   Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
     final jsonString = await rootBundle.loadString(path);

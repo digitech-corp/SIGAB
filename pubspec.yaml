@@ -41,6 +41,8 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^11.0.0
   printing: ^5.14.2
+  mockito: ^5.4.6
+  build_runner: ^2.4.14
   syncfusion_flutter_charts: ^29.2.10
 
   # The following adds the Cupertino Icons font to your application.

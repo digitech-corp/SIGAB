@@ -850,7 +850,19 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  widget.onGuardar(
+                  final importeText = _importeController.text.trim();
+                  final saldoText = _saldoController.text.trim();
+
+                  if (importeText.isEmpty || saldoText.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Por favor, completa todos los campos.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+                  widget.onGuardar( 
                     double.tryParse(_importeController.text) ?? 0.0,
                     double.tryParse(_saldoController.text) ?? 0.0,
                   );
@@ -1052,12 +1064,24 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
+                  final cuotasText = _cuotasController.text.trim();
+                  final montoText = _montoController.text.trim();
+                  final fechaText = _fechaController.text.trim();
+
+                  if (cuotasText.isEmpty || montoText.isEmpty || fechaText.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Por favor, completa todos los campos.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
                   widget.onGuardar(
-                    int.tryParse(_cuotasController.text) ?? 0,
-                    double.tryParse(_montoController.text) ?? 0.0,
-                    _fechaController.text.isNotEmpty
-                        ? DateFormat('dd/MM/yyyy').parse(_fechaController.text)
-                        : DateTime.now(),
+                    int.tryParse(cuotasText) ?? 0,
+                    double.tryParse(montoText) ?? 0.0,
+                    DateFormat('dd/MM/yyyy').parse(fechaText),
                   );
                   Navigator.pop(context);
                 },
