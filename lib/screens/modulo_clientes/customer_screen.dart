@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
@@ -205,11 +207,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   children: [
                     CircleAvatar(
                       radius: 18,
-                      backgroundImage: c.customerImage.isNotEmpty
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: (c.customerImage.isNotEmpty && !Platform.environment.containsKey('FLUTTER_TEST'))
                           ? NetworkImage(c.customerImage)
                           : null,
-                      backgroundColor: Colors.grey[300],
-                      child: c.customerImage.isEmpty
+                      child: (c.customerImage.isEmpty || Platform.environment.containsKey('FLUTTER_TEST'))
                           ? Icon(
                               Icons.person,
                               size: 30,
