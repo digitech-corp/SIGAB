@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:balanced_foods/models/paymentInfo.dart';
 import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
@@ -10,7 +9,6 @@ import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/screens/Reportes/create_pdf.dart';
 import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
-import 'package:balanced_foods/screens/Reportes/invoice_temporal.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
@@ -642,7 +640,6 @@ class _RecordCardState extends State<RecordCard> {
                               onPressed: () async {
                               final customer = customersProvider.customers
                                   .firstWhere((c) => c.idCustomer == order.idCustomer);
-                              final phone = '51${widget.customer.customerPhone}';
 
                               final pdfBytes = await generarPdfFacturaConDiseno(
                                 order: order,

@@ -94,15 +94,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'Registrar Nuevo Cliente',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('Registrar Nuevo Cliente', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -115,15 +107,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Identificación Personal',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.black,
-                ),
-              ),
+              Text('Identificación Personal', style: AppTextStyles.subtitle),
               const SizedBox(height: 07),
               NewCustomerForm(
                 formKey: _formKey,
@@ -293,12 +277,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                     return null;
                   },
                   hintText: 'p. ej. Alfredo Fiestas',
-                  hintStyle: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w300,
-                    color: Color(0xFFBDBDBD),
-                  ),
+                  hintStyle: AppTextStyles.base
                 ),
               ),
               _buildImagePicker()
@@ -315,9 +294,10 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'DNI',
-            inputFormatters: [ // 👈 Este es el nuevo parámetro
-              FilteringTextInputFormatter.digitsOnly, // Solo números
-              LengthLimitingTextInputFormatter(8), // Máximo 8 dígitos
+            hintStyle: AppTextStyles.base,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(8),
             ],
           ),
           const SizedBox(height: 07),
@@ -331,6 +311,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Celular',
+            hintStyle: AppTextStyles.base,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(9),
@@ -346,6 +327,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Correo Electrónico',
+            hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -357,6 +339,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Dirección...',
+            hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -368,6 +351,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Referencia',
+            hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 07),
           _buildSelect(
@@ -442,15 +426,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
             ],
           ),
           const SizedBox(height: 20),
-          Text(
-            'Datos de la Empresa',
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-              color: Colors.black,
-            ),
-          ),
+          Text('Datos de la Empresa', style: AppTextStyles.subtitle),
           const SizedBox(height: 07),
           _buildTextField(
             controller: widget.companyRUC,
@@ -462,6 +438,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'RUC',
+            hintStyle: AppTextStyles.base,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(11),
@@ -477,6 +454,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Razón Social',
+            hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -488,6 +466,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Dirección Fiscal',
+            hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 07),
           _buildTextField(
@@ -499,6 +478,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               return null;
             },
             hintText: 'Sitio Web',
+            hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 20),
           Center(
@@ -579,18 +559,10 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: Color(0xFFFF6600), width: 1),
+                    side: BorderSide(color: AppColors.orange, width: 1),
                   ),
                 ),
-                child: const Text(
-                  'Añadir Contacto',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    color: Color(0xFFFF6600),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                child: Text('Añadir Contacto', style: AppTextStyles.btn),
               ),
             ),
           ),
@@ -613,30 +585,20 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      style: const TextStyle(
-        fontFamily: 'Montserrat',
-        fontSize: 16,
-        color: Color(0xFF333333),
-        fontWeight: FontWeight.w300,
-      ),
+      style: AppTextStyles.selectStyle,
       obscureText: obscureText,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle:
             hintStyle ??
-            const TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-              color: Color(0xFFBDBDBD),
-            ),
+            AppTextStyles.base,
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 5.0),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
+          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
+          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
         ),
       ),
       validator: validator,
@@ -653,30 +615,20 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
     return DropdownButtonFormField<String>(
       value: selectedValue,
       onChanged: onChanged,
-      style: const TextStyle(
-        fontFamily: 'Montserrat',
-        fontSize: 16,
-        color: Color(0xFF333333),
-        fontWeight: FontWeight.w300,
-      ),
+      style: AppTextStyles.selectStyle,
       decoration: const InputDecoration(
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 5.0),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
+          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 0.5),
+          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
         ),
       ),
       hint: Text(
         hintText ?? '',
-        style: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontSize: 16,
-          fontWeight: FontWeight.w300,
-          color: Color(0xFFBDBDBD),
-        ),
+        style: AppTextStyles.base,
       ),
       validator: validator,
       items:
@@ -685,15 +637,30 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               value: value,
               child: Text(
                 value,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  color: Color(0xFF333333),
-                  fontWeight: FontWeight.w300,
-                ),
+                style: AppTextStyles.selectStyle,
               ),
             );
           }).toList(),
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w300,
+    fontSize: 16,
+    color: AppColors.lightGris
+  );
+  static final title = base.copyWith(fontWeight: FontWeight.w600, color: AppColors.gris);
+  static final subtitle = base.copyWith(color: Colors.black);
+  static final name = base.copyWith(fontSize: 20);
+  static final btn = base.copyWith(fontSize: 14, color: AppColors.orange, fontWeight: FontWeight.w500);
+  static final selectStyle = base.copyWith(color: AppColors.gris);
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const lightGris = Color(0xFFBDBDBD);
 }

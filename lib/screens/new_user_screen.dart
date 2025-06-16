@@ -300,7 +300,7 @@ class RegisterButton extends StatelessWidget {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Verisión de prueba, no se puede registrar un nuevo usuario")),
+                      const SnackBar(content: Text("Versión de prueba, no se puede registrar un nuevo usuario")),
                     );
                   }
                 }

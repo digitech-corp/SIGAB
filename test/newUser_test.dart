@@ -29,7 +29,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Encuentra los campos de texto (ajusta los índices si cambia el orden)
+    // Campos de texto
     final nameField = find.byType(TextFormField).at(0);
     final dniField = find.byType(TextFormField).at(1);
     final emailField = find.byType(TextFormField).at(2);
@@ -37,20 +37,20 @@ void main() {
     final confirmPasswordField = find.byType(TextFormField).at(4);
     final registerButton = find.text('Registrarse');
 
-    // Ingresa los datos del nuevo usuario
+    // Nuevos datos de prueba
     await tester.enterText(nameField, 'Nuevo Usuario');
     await tester.enterText(dniField, '12345678');
     await tester.enterText(emailField, 'nuevo@correo.com');
     await tester.enterText(passwordField, 'password123');
     await tester.enterText(confirmPasswordField, 'password123');
 
-    // Toca el botón de registro
+    // Registrar
     await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -300));
     await tester.pumpAndSettle();
     await tester.tap(registerButton);
     await tester.pumpAndSettle();
 
-    // Verifica que se muestre el mensaje de éxito (en SnackBar)
+    // Mensaje de éxito
     expect(find.text('Registrado correctamente'), findsOneWidget);
   });
 }
