@@ -84,7 +84,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
           child: AppBar(
             toolbarHeight: 80,
             automaticallyImplyLeading: false,
-            backgroundColor: const Color(0xFFFF6600),
+            backgroundColor: AppColors.orange,
             title: Row(
               children: [
                 IconButton(
@@ -98,15 +98,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'Catálogo de Productos',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('Catálogo de Productos', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -122,16 +114,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      'Selecciona los productos requeridos',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
-                        
-                      ),
-                    ),
+                    Text('Selecciona los productos requeridos', style: AppTextStyles.subtitle),
                   ],
                 ),
               ),
@@ -168,7 +151,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected ? const Color(0xFFFF6600) : const Color(0xffBDBDBD),
+                    color: isSelected ? AppColors.orange : AppColors.lightGris,
                   ),
                 ),
                 child: Row(
@@ -178,19 +161,14 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                       item.imagenUrl,
                       width: 18,
                       height: 18,
-                      color: isSelected ? const Color(0xFFFF6600) : Colors.black,
+                      color: isSelected ? AppColors.orange : Colors.black,
                     ),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         item.nombre,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w300,
-                          color: isSelected ? const Color(0xFFFF6600) : const Color(0xffBDBDBD),
-                        ),
+                        style: AppTextStyles.itemSelect(isSelected)
                       ),
                     ),
                   ],
@@ -218,13 +196,13 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
         children: [
           Row(
             children: [
-              Expanded(flex: 1, child: Text('Cant.', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+              Expanded(flex: 1, child: Text('Cant.', style: AppTextStyles.tableHead)),
               const SizedBox(width: 10),
-              Expanded(flex: 5, child: Text('Nombre del Producto', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-              Expanded(flex: 1, child: Text('Tipo', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-              const SizedBox(width: 20),
-              Expanded(flex: 2, child: Text('Precio', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
-              Expanded(flex: 1, child: Text('Selec', style: TextStyle(fontFamily: 'Montserrat', fontSize: 11, fontWeight: FontWeight.w400, color: Color(0xff333333)))),
+              Expanded(flex: 5, child: Text('Nombre del Producto', style: AppTextStyles.tableHead)),
+              Expanded(flex: 1, child: Text('Tipo', style: AppTextStyles.tableHead)),
+              Expanded(flex: 2, child: Text('Precio', style: AppTextStyles.tableHead, textAlign: TextAlign.end)),
+              const SizedBox(width: 15),
+              Expanded(flex: 1, child: Text('Selec', style: AppTextStyles.tableHead)),
             ],
           ),
           const Divider(height: 1),
@@ -253,11 +231,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                             contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                             border: UnderlineInputBorder(),
                           ),
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                          ),
+                          style: AppTextStyles.cant,
                           onChanged: (val) {
                             final parsed = int.tryParse(val);
                             if (parsed != null) {
@@ -273,29 +247,15 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 6), // reducido
+                      const SizedBox(width: 6),
                       Expanded(
                         flex: 5,
-                        child: Text(
-                          product.productName,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        child: Text(product.productName, style: AppTextStyles.tableData),
                       ),
-                      const SizedBox(width: 6), // reducido
+                      const SizedBox(width: 6),
                       Expanded(
                         flex: 1,
-                        child: Text(
-                          product.productType,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        child: Text(product.productType, style: AppTextStyles.tableData),
                       ),
                       Expanded(
                         flex: 2,
@@ -307,19 +267,10 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                               provider.updatePrice(product.idProduct, selectedPrice);
                             }
                           },
-                          child: Text(
-                            '${product.price.toStringAsFixed(2)}',
-                            textAlign: TextAlign.end,
-                            style: const TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontSize: 11,
-                              fontWeight: FontWeight.w400,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
+                          child: Text('${product.price.toStringAsFixed(2)}', style: AppTextStyles.tableData, textAlign: TextAlign.end),
                         ),
                       ),
-                      const SizedBox(width: 8), // más compacto
+                      const SizedBox(width: 15),
                       SizedBox(
                         width: 28,
                         child: Checkbox(
@@ -345,7 +296,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                             if (states.contains(MaterialState.disabled)) {
                               return Colors.grey.shade300;
                             }
-                            return selection.isSelected ? const Color(0xFF333333) : Colors.white;
+                            return selection.isSelected ? AppColors.gris : Colors.white;
                           }),
                         ),
                       ),
@@ -374,13 +325,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Historial de Precios',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('Historial de Precios', style: AppTextStyles.historyTitle),
                   const SizedBox(height: 10),
                   if (history.isEmpty)
                     const Text('No hay historial disponible.')
@@ -403,24 +348,8 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'S/ ${price.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xFF333333),
-                                  ),
-                                ),
-                                Text(
-                                  formattedDate,
-                                  style: const TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w300,
-                                    color: Color(0xFF333333),
-                                  ),
-                                ),
+                                Text('S/ ${price.toStringAsFixed(2)}', style: AppTextStyles.priceData),
+                                Text(formattedDate, style: AppTextStyles.priceData),
                               ],
                             ),
                             onChanged: (val) {
@@ -428,7 +357,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                                 selectedPrice = val;
                               });
                             },
-                            activeColor: const Color(0xFFFF6600),
+                            activeColor: AppColors.orange,
                           );
                         }).toList(),
                       ),
@@ -438,15 +367,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                     onPressed: () {
                       Navigator.pop(context, selectedPrice);
                     },
-                    child: const Text(
-                      'Usar este precio',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF6600),
-                      ),
-                    ),
+                    child: Text('Usar este precio', style: AppTextStyles.btnPrice),
                   ),
                   const SizedBox(height: 10),
                 ],
@@ -485,7 +406,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFF6600),
+          backgroundColor: AppColors.orange,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
@@ -518,4 +439,32 @@ class Catalogo {
     required this.nombre,
     required this.imagenUrl,
   });
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w400,
+    fontSize: 11,
+    color: AppColors.gris
+  );
+  static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600);
+  static final subtitle = base.copyWith(fontSize: 12, color: Colors.black,);
+  static final tableHead = base.copyWith(fontWeight: FontWeight.w500);
+  static final cant = base.copyWith(fontSize: 10);
+  static final tableData = base.copyWith();
+  static final historyTitle = base.copyWith(fontSize: 16, fontWeight: FontWeight.w500);
+  static final priceData = base.copyWith(fontSize: 13, fontWeight: FontWeight.w300);
+  static final btnPrice = base.copyWith(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.orange);
+  static TextStyle itemSelect(bool isSelected) {
+    return base.copyWith(
+      fontSize: 13, fontWeight: FontWeight.w300, color: isSelected ? AppColors.orange : AppColors.lightGris
+    );
+  }
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const lightGris = Color(0xFFBDBDBD);
 }

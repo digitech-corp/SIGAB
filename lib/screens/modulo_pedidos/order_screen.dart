@@ -68,7 +68,7 @@ class _OrderScreenState extends State<OrderScreen> {
     
 
     return Scaffold(
-      backgroundColor: const Color(0xFFECEFF1),
+      backgroundColor: AppColors.backgris,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
         child: ClipRRect(
@@ -96,15 +96,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'MODULO DE PEDIDOS',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('MODULO DE PEDIDOS', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -125,30 +117,14 @@ class _OrderScreenState extends State<OrderScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Resumen del día',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
+                    Text('Resumen del día', style: AppTextStyles.base),
                     GestureDetector(
                       onTap: () => _selectDate(context),
-                      child: Text(
-                        DateFormat('dd/MM/yyyy').format(selectedDate),
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
+                      child: Text(DateFormat('dd/MM/yyyy').format(selectedDate), style: AppTextStyles.date),
                     ),
                   ],
                 ),
-                const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
+                const Divider(color: AppColors.lightGris, thickness: 1.0),
                 const SizedBox(height: 10),
 
                 // Resumen de pedidos
@@ -156,16 +132,8 @@ class _OrderScreenState extends State<OrderScreen> {
                 const SizedBox(height: 20),
 
                 // Título detalles
-                const Text(
-                  'Detalles de Pedidos',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
-                  ),
-                ),
-                const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
+                Text('Detalles de Pedidos', style: AppTextStyles.base),
+                const Divider(color: AppColors.lightGris, thickness: 1.0),
                 const SizedBox(height: 10),
               ],
             ),
@@ -232,7 +200,7 @@ class _OrderScreenState extends State<OrderScreen> {
               child: IconButton(
                 icon: const Icon(
                   Icons.add_circle,
-                  color: Color(0xFFFF6600),
+                  color: AppColors.orange,
                   size: 45,
                 ),
                 onPressed: () {
@@ -263,47 +231,15 @@ class _OrderScreenState extends State<OrderScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Total de Pedidos del día:',
-                style: TextStyle(
-                  color: Color(0xFF333333),
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                ),
-              ),
-              Text(
-                '$totalPedidos',
-                style: const TextStyle(
-                  color: Color(0xFF333333),
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
-              ),
+              Text('Total de Pedidos del día:', style: AppTextStyles.subtitle),
+              Text('$totalPedidos', style: AppTextStyles.base),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Monto facturado:',
-                style: TextStyle(
-                  color: Color(0xFF333333),
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                ),
-              ),
-              Text(
-                'S/. ${montoTotal.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Color(0xFF333333),
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
-              ),
+              Text('Monto facturado:', style:AppTextStyles.subtitle),
+              Text('S/. ${montoTotal.toStringAsFixed(2)}', style: AppTextStyles.base),
             ],
           ),
         ],
@@ -336,59 +272,19 @@ class _OrderScreenState extends State<OrderScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          company,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 12,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text(company, style: AppTextStyles.company),
                         const SizedBox(height: 2),
-                        Text(
-                          person,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
+                        Text(person, style: AppTextStyles.orderinfo),
                         const SizedBox(height: 2),
-                        Text(
-                          codOrder,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
+                        Text(codOrder, style: AppTextStyles.orderinfo),
                       ],
                     ),
                     const Spacer(),
                     Row(
                       children: [
-                        Text(
-                          hour,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
+                        Text(hour, style: AppTextStyles.hour),
                         const SizedBox(width: 20),
-                        Text(
-                          'S/. ${total.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
+                        Text('S/. ${total.toStringAsFixed(2)}', style: AppTextStyles.total),
                       ],
                     ),
                   ],
@@ -400,4 +296,27 @@ class _OrderScreenState extends State<OrderScreen> {
       ),
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 14,
+    color: AppColors.gris
+  );
+  static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600);
+  static final date = base.copyWith(fontSize: 12, fontWeight: FontWeight.w300);
+  static final subtitle = base.copyWith(fontWeight: FontWeight.w400);
+  static final company = base.copyWith(fontSize: 12, color: AppColors.orange);
+  static final orderinfo = base.copyWith(fontSize: 10, color: Colors.black, fontWeight: FontWeight.w300);
+  static final hour = base.copyWith(fontSize: 10, fontWeight: FontWeight.w300);
+  static final total = base.copyWith(fontSize: 12, fontWeight: FontWeight.w400);
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const backgris = Color(0xFFECEFF1);
+  static const lightGris = Color(0xFFBDBDBD);
 }

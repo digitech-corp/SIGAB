@@ -718,7 +718,6 @@ class _RecordCardState extends State<RecordCard> {
                       if (order.paymentInfo is CreditoPaymentInfo) {
                         final creditoInfo = order.paymentInfo as CreditoPaymentInfo;
                         fechaVenc = DateFormat('dd/MM/yy').format(creditoInfo.fechaPago);
-                        print('Fecha de vencimiento: $fechaVenc');
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),

@@ -77,7 +77,7 @@ class _TransportScreenState extends State<TransportScreen> {
     }).toList();
     
     return Scaffold(
-      backgroundColor: const Color(0xFFECEFF1),
+      backgroundColor: AppColors.backgris,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
         child: ClipRRect(
@@ -105,15 +105,7 @@ class _TransportScreenState extends State<TransportScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'MODULO DE TRANSPORTISTA',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('MODULO DE TRANSPORTISTA', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -132,30 +124,14 @@ class _TransportScreenState extends State<TransportScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Entregas del día',
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF333333),
-                        ),
-                      ),
+                      Text('Entregas del día', style: AppTextStyles.subtitle),
                       GestureDetector(
                         onTap: () => _selectDate(context),
-                        child: Text(
-                          DateFormat('dd/MM/yyyy').format(selectedDate),
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w300,
-                            color: Color(0xFF333333),
-                          ),
-                        ),
+                        child: Text(DateFormat('dd/MM/yyyy').format(selectedDate), style: AppTextStyles.date),
                       ),
                     ],
                   ),
-                  const Divider(color: Color(0xFFBDBDBD), thickness: 1.0),
+                  const Divider(color: AppColors.backgris, thickness: 1.0),
                   const SizedBox(height: 10),
                 ],
               ),
@@ -252,35 +228,11 @@ class _OrderCardState extends State<OrderCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
-                        Text(
-                          widget.empresa,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 12,
-                            color: Color(0xFFFF6600),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text(widget.empresa, style: AppTextStyles.company),
                         const SizedBox(height: 2),
-                        Text(
-                          widget.persona,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
+                        Text(widget.persona, style: AppTextStyles.orderData),
                         const SizedBox(height: 2),
-                        Text(
-                          widget.codPedido,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
+                        Text(widget.codPedido, style: AppTextStyles.orderData),
                       ],
                     ),
                   ),
@@ -293,7 +245,7 @@ class _OrderCardState extends State<OrderCard> {
                           height: 20,
                           child: Image.asset(
                             'assets/images/gps.png',
-                            color: Color(0xFFFF6600),
+                            color: AppColors.orange,
                           ),
                         ),
                         onPressed: () async {
@@ -327,7 +279,7 @@ class _OrderCardState extends State<OrderCard> {
                             icon: SizedBox(
                               width: 16,
                               height: 16,
-                              child: Image.asset('assets/images/phone.png', color: Color(0xFFFF6600)),
+                              child: Image.asset('assets/images/phone.png', color: AppColors.orange),
                             ),
                             onPressed: () async {
                               final String phone = '+51${widget.customerPhone}';
@@ -343,7 +295,7 @@ class _OrderCardState extends State<OrderCard> {
                             icon: SizedBox(
                               width: 16,
                               height: 16,
-                              child: Image.asset('assets/images/whatsapp.png', color: Color(0xFFFF6600)),
+                              child: Image.asset('assets/images/whatsapp.png', color: AppColors.orange),
                             ),
                             onPressed: () async {
                               final String phone = '51${widget.customerPhone}';
@@ -385,7 +337,7 @@ class _OrderCardState extends State<OrderCard> {
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
                                 if (states.contains(WidgetState.pressed)) {
-                                  return Color(0xFFFF6600);
+                                  return AppColors.orange;
                                 }
                                 return Colors.white;
                               }),
@@ -393,10 +345,10 @@ class _OrderCardState extends State<OrderCard> {
                                 if (states.contains(WidgetState.pressed)) {
                                   return Colors.white;
                                 }
-                                return Color(0xFFFF6600);
+                                return AppColors.orange;
                               }),
                               side: WidgetStateProperty.all(
-                                const BorderSide(color: Color(0xFFFF6600)),
+                                const BorderSide(color: AppColors.orange),
                               ),
                               shape: WidgetStateProperty.all(
                                 RoundedRectangleBorder(
@@ -412,15 +364,7 @@ class _OrderCardState extends State<OrderCard> {
                                 _isExpanded = !_isExpanded;
                               });
                             },
-                            child: const Text(
-                              'Detalles entrega',
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 10,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFFF6600),
-                              ),
-                            ),
+                            child: Text('Detalles entrega', style: AppTextStyles.btnDetails),
                           ),
                         ),
                       ),
@@ -469,16 +413,9 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
         const SizedBox(height: 5),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Detalles de Entrega',
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 10,
-              fontWeight: FontWeight.w400
-            ),
-          ),
+          child: Text('Detalles de Entrega', style: AppTextStyles.detailsHead),
         ),
-        Divider(color: Color(0xFFBDBDBD), thickness: 1.0, height: 5),
+        Divider(color: AppColors.lightGris, thickness: 1.0, height: 5),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Table(
@@ -492,14 +429,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 0),
-                    child: Text(
-                      'Registro de Incidencias:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
+                    child: Text('Registro de Incidencias:', style: AppTextStyles.orderData),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 10),
@@ -518,14 +448,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                      'Firma del cliente:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
+                    child: Text('Firma del cliente:', style: AppTextStyles.orderData),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 10),
@@ -545,14 +468,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Text(
-                      'Fotos de entrega:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
+                    child: Text('Fotos de entrega:', style: AppTextStyles.orderData),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 10),
@@ -615,26 +531,42 @@ class _btnConfirmarState extends State<btnConfirmar> {
               },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                backgroundColor: Color(0xFFFF6600),
+                backgroundColor: AppColors.orange,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               ),
-              child: Text(
-                'Confirmar Entrega',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white,
-                ),
-              ),
+              child: Text('Confirmar Entrega', style: AppTextStyles.btnConfirmar),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w300,
+    fontSize: 10,
+    color: Colors.black
+  );
+  static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.gris);
+  static final subtitle = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.gris);
+  static final date = base.copyWith(fontSize: 12, color: AppColors.gris);
+  static final company = base.copyWith(fontSize: 12, color: AppColors.orange, fontWeight: FontWeight.w500);
+  static final orderData = base.copyWith();
+  static final btnDetails = base.copyWith(fontWeight: FontWeight.w400, color: AppColors.orange);
+  static final detailsHead = base.copyWith(fontWeight: FontWeight.w400);
+  static final btnConfirmar = base.copyWith(fontWeight: FontWeight.w400, color: Colors.white);
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const backgris = Color(0xFFECEFF1);
+  static const lightGris = Color(0xFFBDBDBD);
 }

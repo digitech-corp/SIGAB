@@ -23,15 +23,7 @@ class partOrder extends StatelessWidget {
           children: [
             Column(
               children: [
-                Text(
-                  'Selección de Productos',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black
-                  ),
-                ),
+                Text('Selección de Productos', style: AppTextStyles.subtitle),
               ], 
             ),
             Column(
@@ -43,15 +35,7 @@ class partOrder extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => ProductCatalogScreen(idCustomer: idCustomer)),
                     );
                   },
-                  child: Text(
-                    'Ver Catálogo',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black
-                    ),
-                  ),
+                  child: Text('Ver Catálogo', style: AppTextStyles.catalog),
                 ),
               ],
             ),
@@ -96,12 +80,10 @@ class _SearchProductState extends State<SearchProduct> {
     final allProducts = provider.products;
     final selectionMap = provider.selectionMap;
     
-    // Asegúrate de tener un ProductSelection por cada producto
     final filteredSelections = allProducts.where((product) {
       return product.productName.toLowerCase().contains(_searchText.toLowerCase()) ||
             product.idProduct.toString().contains(_searchText);
     }).map((product) {
-      // Si no está en el mapa, lo creas en ese momento (sin seleccionarlo aún)
       return selectionMap[product.idProduct] ??
           ProductSelection(product: product);
     }).toList();
@@ -120,14 +102,9 @@ class _SearchProductState extends State<SearchProduct> {
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                     hintText: 'Buscar Producto/Código',
-                    hintStyle: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w300,
-                      fontSize: 10,
-                      color: Colors.black,
-                    ),
+                    hintStyle: AppTextStyles.searchproduct,
                     filled: true,
-                    fillColor: const Color(0xFFECEFF1),
+                    fillColor: AppColors.backgris,
                     prefixIcon: const Icon(
                       Icons.search,
                       color: Colors.black,
@@ -146,11 +123,7 @@ class _SearchProductState extends State<SearchProduct> {
                       borderSide: const BorderSide(color: Colors.black),
                     ),
                   ),
-                  style: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    color: Colors.black,
-                  ),
+                  style: AppTextStyles.searchproduct
                 ),
               ),
             ),
@@ -159,7 +132,7 @@ class _SearchProductState extends State<SearchProduct> {
         const SizedBox(height: 8),
         if (_searchText.isNotEmpty)
           SizedBox(
-            height: 200, // puedes ajustar esto
+            height: 200,
             child: ListView.builder(
               itemCount: filteredSelections.length,
               itemBuilder: (context, index) {
@@ -181,11 +154,7 @@ class _SearchProductState extends State<SearchProduct> {
                             contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                             border: UnderlineInputBorder(),
                           ),
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                          ),
+                          style: AppTextStyles.searchproduct,
                           onChanged: (val) {
                             final parsed = int.tryParse(val);
                             if (parsed != null) {
@@ -204,25 +173,11 @@ class _SearchProductState extends State<SearchProduct> {
                       const SizedBox(width: 10),
                       SizedBox(
                         width: 200,
-                        child: Text(
-                          product.productName,
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        child: Text(product.productName, style: AppTextStyles.productinfo),
                       ),
                       SizedBox(
                         width: 50,
-                        child: Text(
-                          '${product.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        child: Text('${product.price.toStringAsFixed(2)}', style: AppTextStyles.productinfo),
                       ),
                       SizedBox(
                         width: 30,
@@ -251,7 +206,7 @@ class _SearchProductState extends State<SearchProduct> {
                               });
                             },
                             fillColor: WidgetStateProperty.all<Color>(
-                              selection.isSelected ? const Color(0xFF333333) : Colors.white,
+                              selection.isSelected ? AppColors.gris : Colors.white,
                             ),
                           ),
                         ),
@@ -305,32 +260,20 @@ class ResumeProduct extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    const style = TextStyle(
-      fontFamily: 'Montserrat',
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-      color: Color(0xFF333333),
-    );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-        Expanded(flex: 1, child: Text('Cant.', style: style)),
-        Expanded(flex: 3, child: Text('Nombre del Producto', style: style)),
-        Expanded(flex: 1, child: Text('Pres', style: style)),
-        Expanded(flex: 1, child: Text('Tipo', style: style)),
-        Expanded(flex: 1, child: Text('Precio', style: style, textAlign: TextAlign.right)),
-        Expanded(flex: 1, child: Text('Parcial', style: style, textAlign: TextAlign.right)),
+      children: [
+        Expanded(flex: 1, child: Text('Cant.', style: AppTextStyles.tableHead)),
+        Expanded(flex: 3, child: Text('Nombre del Producto', style: AppTextStyles.tableHead)),
+        Expanded(flex: 1, child: Text('Pres', style: AppTextStyles.tableHead)),
+        Expanded(flex: 1, child: Text('Tipo', style: AppTextStyles.tableHead)),
+        Expanded(flex: 1, child: Text('Precio', style: AppTextStyles.tableHead, textAlign: TextAlign.right)),
+        Expanded(flex: 1, child: Text('Parcial', style: AppTextStyles.tableHead, textAlign: TextAlign.right)),
       ],
     );
   }
 
   Widget _buildProductList() {
-    const style = TextStyle(
-      fontFamily: 'Montserrat',
-      fontSize: 11,
-      fontWeight: FontWeight.w300,
-      color: Color(0xFF333333),
-    );
     return ListView.builder(
       itemCount: selectedProducts.length,
       shrinkWrap: true,
@@ -340,12 +283,12 @@ class ResumeProduct extends StatelessWidget {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(flex: 1, child: Text('${selection.quantity.toString().padLeft(2, '0')}', style: style)),
-            Expanded(flex: 3, child: Text(selection.product.productName, style: style)),
-            Expanded(flex: 1, child: Text('S50', style: style)), // Aquí puedes ajustar 'Pres' si tienes ese dato
-            Expanded(flex: 1, child: Text(selection.product.productType, style: style)),
-            Expanded(flex: 1, child: Text('${selection.product.price.toStringAsFixed(2)}', style: style, textAlign: TextAlign.right)),
-            Expanded(flex: 1, child: Text('${(selection.product.price * selection.quantity).toStringAsFixed(2)}', style: style, textAlign: TextAlign.right)),
+            Expanded(flex: 1, child: Text('${selection.quantity.toString().padLeft(2, '0')}', style: AppTextStyles.tableData)),
+            Expanded(flex: 3, child: Text(selection.product.productName, style: AppTextStyles.tableData)),
+            Expanded(flex: 1, child: Text('S50', style: AppTextStyles.tableData)),
+            Expanded(flex: 1, child: Text(selection.product.productType, style: AppTextStyles.tableData)),
+            Expanded(flex: 1, child: Text('${selection.product.price.toStringAsFixed(2)}', style: AppTextStyles.tableData, textAlign: TextAlign.right)),
+            Expanded(flex: 1, child: Text('${(selection.product.price * selection.quantity).toStringAsFixed(2)}', style: AppTextStyles.tableData, textAlign: TextAlign.right)),
           ],
         );
       },
@@ -353,37 +296,24 @@ class ResumeProduct extends StatelessWidget {
   }
 
   Widget _buildTotalSection(double subtotal, double igv, double total) {
-    const labelStyle = TextStyle(
-      fontFamily: 'Montserrat',
-      fontSize: 11,
-      fontWeight: FontWeight.w300,
-      color: Color(0xFF333333),
-    );
-    const totalStyle = TextStyle(
-      fontFamily: 'Montserrat',
-      fontSize: 11,
-      fontWeight: FontWeight.w500,
-      color: Color(0xFF333333),
-    );
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: const [
-            Text('SubTotal', style: labelStyle),
-            Text('I.G.V.', style: labelStyle),
-            Text('TOTAL', style: totalStyle),
+          children: [
+            Text('SubTotal', style: AppTextStyles.tableData),
+            Text('I.G.V.', style: AppTextStyles.tableData),
+            Text('TOTAL', style: AppTextStyles.tableTotal),
           ],
         ),
         const SizedBox(width: 10),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(subtotal.toStringAsFixed(2), style: labelStyle),
-            Text(igv.toStringAsFixed(2), style: labelStyle),
-            Text(total.toStringAsFixed(2), style: totalStyle),
+            Text(subtotal.toStringAsFixed(2), style: AppTextStyles.tableData),
+            Text(igv.toStringAsFixed(2), style: AppTextStyles.tableData),
+            Text(total.toStringAsFixed(2), style: AppTextStyles.tableTotal),
           ],
         ),
       ],
@@ -424,7 +354,7 @@ class ReceiptTypeState extends State<receiptType> {
                 scale: 0.8,
                 child: Checkbox(
                   value: _otros, 
-                  activeColor: Color(0xFF333333),
+                  activeColor: AppColors.gris,
                   checkColor: Colors.white,
                   onChanged: (value) {
                     setState(() {
@@ -437,14 +367,7 @@ class ReceiptTypeState extends State<receiptType> {
                 ),
               ),
             ),
-            Text(
-              'OTROS/N.V.',
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 12,
-                fontWeight: FontWeight.w400
-              ),
-            ),
+            Text('OTROS/N.V.', style: AppTextStyles.vars),
           ],
         ),
         Row(
@@ -456,7 +379,7 @@ class ReceiptTypeState extends State<receiptType> {
                 scale: 0.8,
                 child: Checkbox(
                   value: _factura, 
-                  activeColor: Color(0xFF333333),
+                  activeColor: AppColors.gris,
                   checkColor: Colors.white,
                   onChanged: (value) {
                     setState(() {
@@ -469,14 +392,7 @@ class ReceiptTypeState extends State<receiptType> {
                 ),
               ),
             ),
-            Text(
-              'FACTURA',
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 12,
-                fontWeight: FontWeight.w400
-              ),
-            ),
+            Text('FACTURA', style: AppTextStyles.vars),
           ],
         ),
         Row(
@@ -488,7 +404,7 @@ class ReceiptTypeState extends State<receiptType> {
                 scale: 0.8,
                 child: Checkbox(
                   value: _boleta, 
-                  activeColor: Color(0xFF333333),
+                  activeColor: AppColors.gris,
                   checkColor: Colors.white,
                   onChanged: (value) {
                     setState(() {
@@ -501,21 +417,13 @@ class ReceiptTypeState extends State<receiptType> {
                 ),
               ),
             ),
-            Text(
-              'BOLETA DE VENTA',
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 12,
-                fontWeight: FontWeight.w400
-              ),
-            ),
+            Text('BOLETA DE VENTA', style: AppTextStyles.vars),
           ],
         ),
       ],
     );
   }
 }
-
 
 class paymentMethod extends StatefulWidget {
   const paymentMethod({super.key});
@@ -547,15 +455,7 @@ class PaymentMethodState extends State<paymentMethod> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 10),
-        Text(
-          'Modalidad de Pago',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF333333)
-          ),
-        ),
+        Text('Modalidad de Pago', style: AppTextStyles.subtitle),
         const SizedBox(height: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -565,20 +465,12 @@ class PaymentMethodState extends State<paymentMethod> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'CONTADO',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w300,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
+                  Text('CONTADO', style: AppTextStyles.vars),
                   Transform.scale(
                     scale: 0.9,
                     child: Checkbox(
                       visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
-                      activeColor: Color(0xFF333333),
+                      activeColor: AppColors.gris,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       value: _contado,
                       onChanged: (value) {
@@ -598,20 +490,12 @@ class PaymentMethodState extends State<paymentMethod> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'CRÉDITO',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w300,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
+                  Text('CRÉDITO', style: AppTextStyles.vars),
                   Transform.scale(
                     scale: 0.9,
                     child: Checkbox(
                       visualDensity: VisualDensity(horizontal: -4.0, vertical: -4.0),
-                      activeColor: Color(0xFF333333),
+                      activeColor: AppColors.gris,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       value: _credito,
                       onChanged: (value) {
@@ -653,7 +537,6 @@ class PaymentMethodState extends State<paymentMethod> {
                                         saldo: saldo,
                                       );
                                     });
-                                    print('Pago guardado');
                                   },
                                 );
                               }
@@ -675,7 +558,6 @@ class PaymentMethodState extends State<paymentMethod> {
                                         fechaPago: fecha,
                                       );
                                     });
-                                    print('Pago guardado');
                                   },
                                 );
                               }
@@ -687,7 +569,7 @@ class PaymentMethodState extends State<paymentMethod> {
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: haySeleccion 
-                      ? Color(0xFFFF6600)
+                      ? AppColors.orange
                       : Colors.white,
                       foregroundColor: haySeleccion
                         ? Colors.white
@@ -697,17 +579,7 @@ class PaymentMethodState extends State<paymentMethod> {
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 40),
                     ),
-                    child: Text(
-                      'Registrar Pago',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        color: haySeleccion
-                        ? Colors.white
-                        : Color(0xFFFF6600),
-                      ),
-                    ),
+                    child: Text('Registrar Pago', style: AppTextStyles.btnPayment(haySeleccion)),
                   ),
                 ),
               ],
@@ -779,36 +651,25 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
-              child: Text(
-                'Registro de Pago',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Montserrat',
-                ),
-              ),
+            Center(
+              child: Text('Registro de Pago', style: AppTextStyles.titlePayment),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
-                const Text('Importe:'),
+                Text('Importe:', style: AppTextStyles.vars),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     controller: _importeController,
                     decoration: const InputDecoration(
                       filled: true,
-                      fillColor: Color(0xFFD9D9D9),
+                      fillColor: AppColors.lightGris,
                       border: OutlineInputBorder(),
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     ),
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: AppTextStyles.controllers,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -820,23 +681,19 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('Saldo:'),
+                Text('Saldo:', style: AppTextStyles.vars),
                 const SizedBox(width: 26),
                 Expanded(
                   child: TextField(
                     controller: _saldoController,
                     decoration: const InputDecoration(
                       filled: true,
-                      fillColor: Color(0xFFD9D9D9),
+                      fillColor: AppColors.lightGris,
                       border: OutlineInputBorder(),
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     ),
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: AppTextStyles.controllers,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -869,21 +726,13 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF6600),
+                  backgroundColor: AppColors.orange,
                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Guardar',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Text('Guardar', style: AppTextStyles.btnSave),
               ),
             ),
           ],
@@ -966,20 +815,13 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Center(
-              child: Text(
-                'Registro de Cuotas',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Montserrat',
-                ),
-              ),
+            Center(
+              child: Text('Registro de Cuotas', style: AppTextStyles.titlePayment),
             ),
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(flex: 2, child: const Text('N° de Cuotas:')),
+                Expanded(flex: 2, child: Text('N° de Cuotas:', style: AppTextStyles.vars)),
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 3, 
@@ -987,16 +829,12 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
                     controller: _cuotasController,
                     decoration: const InputDecoration(
                       filled: true,
-                      fillColor: Color(0xFFD9D9D9),
+                      fillColor: AppColors.lightGris,
                       border: OutlineInputBorder(),
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     ),
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: AppTextStyles.controllers,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
@@ -1006,7 +844,7 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(flex: 2, child: const Text('Monto:')),
+                Expanded(flex: 2, child: Text('Monto:', style: AppTextStyles.vars)),
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 3,
@@ -1014,16 +852,12 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
                     controller: _montoController,
                     decoration: const InputDecoration(
                       filled: true,
-                      fillColor: Color(0xFFD9D9D9),
+                      fillColor: AppColors.lightGris,
                       border: OutlineInputBorder(),
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     ),
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: AppTextStyles.controllers,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -1035,7 +869,7 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(flex: 2, child: const Text('Fecha de Pago:')),
+                Expanded(flex: 2, child: Text('Fecha de Pago:', style: AppTextStyles.vars)),
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 3,
@@ -1045,16 +879,12 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
                     onTap: () => _seleccionarFecha(context),
                     decoration: const InputDecoration(
                       filled: true,
-                      fillColor: Color(0xFFD9D9D9),
+                      fillColor: AppColors.lightGris,
                       border: OutlineInputBorder(),
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     ),
-                    style: const TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: AppTextStyles.controllers
                   ),
                 ),
               ],
@@ -1086,21 +916,13 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF6600),
+                  backgroundColor: AppColors.orange,
                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Guardar',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Text('Guardar', style: AppTextStyles.btnSave),
               ),
             ),
           ],
@@ -1137,21 +959,13 @@ class ObservationsState extends State<observations> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'OBSERVACIONES', 
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Colors.black
-          ),
-        ),
+        Text('OBSERVACIONES', style: AppTextStyles.obs),
         const SizedBox(height: 20),
         Container(
           width: double.infinity, 
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(12)),
-            color: Color(0xFFECEFF1),
+            color: AppColors.backgris,
           ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -1161,15 +975,7 @@ class ObservationsState extends State<observations> {
                 SizedBox(height: 10),
                 Row(
                   children: [
-                    Text(
-                      'Lugar de Entrega:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
+                    Text('Lugar de Entrega:', style: AppTextStyles.vars),
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
@@ -1178,17 +984,13 @@ class ObservationsState extends State<observations> {
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                            borderSide: BorderSide(color: AppColors.lightGris),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                            borderSide: BorderSide(color: AppColors.lightGris, width: 2),
                           ),
                         ),
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
+                        style: AppTextStyles.controllers
                       ),
                     ),
                   ],
@@ -1196,15 +998,7 @@ class ObservationsState extends State<observations> {
                 SizedBox(height: 10),
                 Row(
                   children: [
-                    Text(
-                      'Fecha de Entrega:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
+                    Text('Fecha de Entrega:', style: AppTextStyles.vars),
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
@@ -1213,17 +1007,13 @@ class ObservationsState extends State<observations> {
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                            borderSide: BorderSide(color: AppColors.lightGris),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                            borderSide: BorderSide(color: AppColors.lightGris, width: 2),
                           ),
                         ),
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
+                        style: AppTextStyles.controllers
                       ),
                     ),
                   ],
@@ -1231,15 +1021,7 @@ class ObservationsState extends State<observations> {
                 SizedBox(height: 10),
                 Row(
                   children: [
-                    Text(
-                      'Hora de Entrega:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
+                    Text('Hora de Entrega:', style: AppTextStyles.vars),
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
@@ -1248,17 +1030,13 @@ class ObservationsState extends State<observations> {
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                            borderSide: BorderSide(color: AppColors.lightGris),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                            borderSide: BorderSide(color: AppColors.lightGris, width: 2),
                           ),
                         ),
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
+                        style: AppTextStyles.controllers
                       ),
                     ),
                   ],
@@ -1266,15 +1044,7 @@ class ObservationsState extends State<observations> {
                 SizedBox(height: 10),
                 Row(
                   children: [
-                    Text(
-                      'Información Adicional:',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
+                    Text('Información Adicional:', style: AppTextStyles.vars),
                     SizedBox(width: 5),
                     Expanded(
                       child: TextField(
@@ -1287,17 +1057,13 @@ class ObservationsState extends State<observations> {
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+                            borderSide: BorderSide(color: AppColors.lightGris),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFBDBDBD), width: 2),
+                            borderSide: BorderSide(color: AppColors.lightGris, width: 2),
                           ),
                         ),
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 11,
-                          color: Colors.black,
-                        ),
+                        style: AppTextStyles.controllers
                       ),
                     ),
                   ],
@@ -1340,21 +1106,13 @@ class buttonRegisterOrder extends StatelessWidget {
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor: Color(0xFFFF6600),
+              backgroundColor: AppColors.orange,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text(
-              'REGISTRAR PEDIDO',
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
+            child: Text('REGISTRAR PEDIDO', style: AppTextStyles.btnSave),
           ),
         ),
       ],
@@ -1454,4 +1212,37 @@ Future<void> registerOrder({
       SnackBar(content: Text("Error al registrar pedido")),
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w400,
+    fontSize: 11,
+    color: AppColors.gris
+  );
+  static final subtitle = base.copyWith(fontSize: 12, color: Colors.black);
+  static final catalog = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black);
+  static final searchproduct = base.copyWith(fontSize: 10, fontWeight: FontWeight.w300);
+  static final productinfo = base.copyWith();
+  static final tableHead = base.copyWith();
+  static final tableData = base.copyWith(fontWeight: FontWeight.w300);
+  static final tableTotal = base.copyWith(fontWeight: FontWeight.w500,);
+  static final vars = base.copyWith(fontSize: 12, fontWeight: FontWeight.w300);
+  static final titlePayment = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
+  static final btnSave = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white);
+  static final controllers = base.copyWith(fontSize: 12, fontWeight: FontWeight.w300);
+  static final obs = base.copyWith(fontSize: 16, color: Colors.black);
+  static TextStyle btnPayment(bool haySeleccion) {
+    return base.copyWith(
+      fontSize: 14, fontWeight: FontWeight.w300, color: haySeleccion ? Colors.white : Color(0xFFFF6600),
+    );
+  }
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const backgris = Color(0xFFECEFF1);
+  static const lightGris = Color(0xFFBDBDBD);
 }
