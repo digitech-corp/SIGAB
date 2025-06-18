@@ -44,7 +44,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFECEFF1),
+      backgroundColor: AppColors.backgris,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(80),
         child: ClipRRect(
@@ -72,15 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'Dashboard',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('Dashboard', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -93,31 +85,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Panel de Ventas',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF333333),
-                ),
-              ),
-
+              Text('Panel de Ventas', style: AppTextStyles.subtitle),
               const SizedBox(height: 20),
               const VentasTotalesCard(),
               const SizedBox(height: 15),
               BarraDivididaConTooltip(contado: ordersContado.length, credito: ordersCredito.length),
               const SizedBox(height: 20),
-              const Text(
-                'Cuota de Ventas y Progreso',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF333333),
-                ),
-              ),
-
+              Text('Cuota de Ventas y Progreso', style: AppTextStyles.subtitle),
               const SizedBox(height: 15),
               Row(
                 children: [
@@ -128,16 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
 
               const SizedBox(height: 20),
-              const Text(
-                'Cuentas y Pedidos',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF333333),
-                ),
-              ),
-
+              Text('Cuentas y Pedidos', style: AppTextStyles.subtitle),
               const SizedBox(height: 15),
               Row(
                 children: [
@@ -165,25 +130,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 12,
-                  color: Color(0xFFFF6600),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(title, style: AppTextStyles.titlecard),
               const SizedBox(height: 8),
-              Text(
-                amount,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 20,
-                  color: Color(0xFF333333),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(amount, style: AppTextStyles.infocard),
             ],
           ),
         ),
@@ -201,35 +150,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 12,
-                  color: Color(0xFFFF6600),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(title, style: AppTextStyles.titlecard),
               const SizedBox(height: 8),
-              Text(
-                percent,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 20,
-                  color: Color(0xFF2ECC71),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(percent, style: AppTextStyles.percent),
               const SizedBox(height: 8),
-              Text(
-                amount,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 10,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(amount, style: AppTextStyles.infocard),
             ],
           ),
         ),
@@ -247,35 +172,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 12,
-                  color: Color(0xFFFF6600),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(title, style: AppTextStyles.titlecard),
               const SizedBox(height: 8),
-              Text(
-                count,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 20,
-                  color: Color(0xFFE74C3C),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(count, style: AppTextStyles.count),
               const SizedBox(height: 8),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 10,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              Text(subtitle, style: AppTextStyles.infocard),
             ],
           ),
         ),
@@ -317,20 +218,15 @@ class _VentasTotalesCardState extends State<VentasTotalesCard> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.white : const Color(0xFFECEFF1),
+                      color: isSelected ? Colors.white : AppColors.backgris,
                       borderRadius: BorderRadius.circular(10),
                       border: isSelected
-                          ? Border.all(color: const Color(0xFFFF6600), width: 2)
+                          ? Border.all(color: AppColors.orange, width: 2)
                           : null,
                     ),
                     child: Text(
                       _titulos[index],
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: isSelected ? const Color(0xFFFF6600) : const Color(0xFF333333),
-                      ),
+                      style: AppTextStyles.titleCards(isSelected)
                     ),
                   ),
                 );
@@ -454,8 +350,7 @@ class _DashboardMonthlyState extends State<DashboardMonthly> {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
-    // Filtrar órdenes desde enero hasta el mes actual
+    
     List<Order> filterOrdersByMonth(List<Order> orders) {
       final now = DateTime.now();
       final startOfYear = DateTime(now.year, 1, 1);
@@ -468,10 +363,8 @@ class _DashboardMonthlyState extends State<DashboardMonthly> {
       }).toList();
     }
 
-    // Aplicar el filtro y generar datos
     final monthOrders = filterOrdersByMonth(orders);
 
-    // buildSalesDataByAnimalTypeMonthly ahora devuelve un Future<Map<String, List<MonthlySalesData>>>
     return FutureBuilder<Map<String, List<MonthlySalesData>>>(
       future: buildSalesDataByAnimalTypeMonthly(monthOrders, products),
       builder: (context, snapshot) {
@@ -482,7 +375,6 @@ class _DashboardMonthlyState extends State<DashboardMonthly> {
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No hay datos'));
         }
-        // Mostrar el gráfico con los datos agrupados por animalType
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: MonthlyLineChart(dataByAnimalType: snapshot.data!),
@@ -490,4 +382,32 @@ class _DashboardMonthlyState extends State<DashboardMonthly> {
       },
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.gris
+  );
+  static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600);
+  static final subtitle = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
+  static final titlecard = base.copyWith(color: AppColors.orange);
+  static final infocard = base.copyWith(fontSize: 10, color: Colors.black);
+  static final percent = base.copyWith(fontSize: 20, color: AppColors.green);
+  static final count = base.copyWith(fontSize: 20, color: AppColors.red);
+  static TextStyle titleCards(bool isSelected) {
+    return base.copyWith(
+      color: isSelected ? AppColors.orange : AppColors.gris,
+    );
+  }
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const backgris = Color(0xFFECEFF1);
+  static const green = Color(0xFF2ECC71);
+  static const red = Color(0xFFE74C3C);
 }

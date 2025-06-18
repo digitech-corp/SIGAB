@@ -42,7 +42,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
           child: AppBar(
             toolbarHeight: 80,
             automaticallyImplyLeading: false,
-            backgroundColor: const Color(0xFFFF6600),
+            backgroundColor: AppColors.orange,
             title: Row(
               children: [
                 IconButton(
@@ -61,15 +61,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'Módulo de Cobranzas',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('Módulo de Cobranzas', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -158,25 +150,18 @@ class _CreditosCardState extends State<CreditosCard> {
                       ? Colors.white
                       : null,
                     border: isSelected
-                        ? Border.all(color: const Color(0xFFBDBDBD))
-                        : Border.all(color: Color(0xFFBDBDBD)),
+                        ? Border.all(color: AppColors.lightGris)
+                        : Border.all(color: AppColors.lightGris),
                   ),
                   child: Text(
                     _titulos[index],
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected 
-                      ? const Color(0xFFFF6600)
-                      : const Color(0xFFBDBDBD),
-                    ),
+                    style: AppTextStyles.titleCards(isSelected)
                   ),
                 ),
               );
             }),
           ),
-          const Divider(color: Color(0xFFBDBDBD), thickness: 1.0, height: 0,),
+          const Divider(color: AppColors.lightGris, thickness: 1.0, height: 0,),
 
           // Ordenar por Dropdown
           SingleChildScrollView(
@@ -185,27 +170,14 @@ class _CreditosCardState extends State<CreditosCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text(
-                    'Ordenar por: ',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                      color: Color(0xFF333333)
-                    ),
-                  ),
+                  Text('Ordenar por: ', style: AppTextStyles.orderby),
                   const SizedBox(width: 5),
                   Container(
                     height: 20,
                     width: 130,
                     child: DropdownButtonFormField<String>(
                       value: _sortBy,
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w300,
-                        color: Color(0xFF333333),
-                      ),
+                      style: AppTextStyles.base,
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(horizontal: 5),
@@ -257,7 +229,7 @@ class _CreditosCardState extends State<CreditosCard> {
                         final int diasDiferencia = today.difference(order.deliveryDate!).inDays;
 
                         final String estadoVencimiento = diasDiferencia > 0 ? 'VENCIDO' : 'POR VENCER';
-                        final Color colorTexto = diasDiferencia > 0 ? Color(0xFFFF6600) : Color(0XFF3498DB);
+                        final Color colorTexto = diasDiferencia > 0 ? AppColors.orange : AppColors.blue;
 
                         return _creditCard(
                           idOrder: order.idOrder ?? 0,
@@ -299,15 +271,16 @@ class _CreditosCardState extends State<CreditosCard> {
       fontFamily: 'Montserrat',
       fontSize: 10,
       color: Colors.black,
+      fontWeight: FontWeight.w500
     );
     final _weakStyle = _labelStyle.copyWith(fontWeight: FontWeight.w300);
     final _strongStyle = _labelStyle.copyWith(fontWeight: FontWeight.w400); 
-    final _customerStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, fontSize: 12,); 
-    final _estadoStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, color: colorTexto);    
-    final _saldoStyle = _labelStyle.copyWith(fontWeight: FontWeight.w500, fontSize: 12, color: colorTexto);    
+    final _customerStyle = _labelStyle.copyWith(fontSize: 12,); 
+    final _estadoStyle = _labelStyle.copyWith(color: colorTexto);    
+    final _saldoStyle = _labelStyle.copyWith(fontSize: 12, color: colorTexto);    
 
     return Card(
-      color: Color(0xFFD9D9D9),
+      color: AppColors.lightGris,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Container(
         width: double.infinity,
@@ -395,8 +368,8 @@ class _CreditosCardState extends State<CreditosCard> {
                                 child: OutlinedButton(
                                   onPressed: () {},
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: Color(0xFFFF6600),
-                                    side: BorderSide(color: Color(0xFFFF6600), width: 1),
+                                    foregroundColor: AppColors.orange,
+                                    side: BorderSide(color: AppColors.orange, width: 1),
                                     padding: EdgeInsets.symmetric(horizontal: 8),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(4),
@@ -406,17 +379,10 @@ class _CreditosCardState extends State<CreditosCard> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      Text(
-                                        'Llamar',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFFFF6600),
-                                        ),
-                                      ),
+                                      Text('Llamar', style: AppTextStyles.icons),
                                       Image.asset(
                                         'assets/images/phone.png',
-                                        color: Color(0xFFFF6600),
+                                        color: AppColors.orange,
                                         scale: 15,
                                       ),
                                     ],
@@ -430,8 +396,8 @@ class _CreditosCardState extends State<CreditosCard> {
                                 child: OutlinedButton(
                                   onPressed: () {},
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: Color(0xFFFF6600),
-                                    side: BorderSide(color: Color(0xFFFF6600), width: 1),
+                                    foregroundColor: AppColors.orange,
+                                    side: BorderSide(color: AppColors.orange, width: 1),
                                     padding: EdgeInsets.symmetric(horizontal: 8),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(4),
@@ -441,17 +407,10 @@ class _CreditosCardState extends State<CreditosCard> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      Text(
-                                        'Whatsapp',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFFFF6600),
-                                        ),
-                                      ),
+                                      Text('Whatsapp', style: AppTextStyles.icons),
                                       Image.asset(
                                         'assets/images/whatsapp.png',
-                                        color: Color(0xFFFF6600),
+                                        color: AppColors.orange,
                                         scale: 15,
                                       ),
                                     ],
@@ -471,4 +430,28 @@ class _CreditosCardState extends State<CreditosCard> {
       ),
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w300,
+    fontSize: 10,
+    color: AppColors.gris
+  );
+  static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600);
+  static final orderby = base.copyWith(fontSize: 12);
+  static final icons = base.copyWith(fontWeight: FontWeight.w400, color: AppColors.orange);
+  static TextStyle titleCards(bool isSelected) {
+    return base.copyWith(
+      fontSize: 14, fontWeight: FontWeight.w500, color: isSelected ? AppColors.orange : AppColors.lightGris,
+    );
+  }
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const lightGris = Color(0xFFBDBDBD);
+  static const blue = Color(0XFF3498DB);
 }

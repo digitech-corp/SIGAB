@@ -20,28 +20,13 @@ class MonthlyLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SfCartesianChart(
-      title: ChartTitle(
-        text: 'Ventas mensuales por tipo de animal',
-        textStyle: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
-          fontSize: 10,
-        ),
-      ),
+      title: ChartTitle(text: 'Ventas mensuales por tipo de animal', textStyle: AppTextStyles.base),
       primaryXAxis: CategoryAxis(
-        labelStyle: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
-          fontSize: 10,
-        ),
+        labelStyle: AppTextStyles.base
       ),
       primaryYAxis: NumericAxis(
         numberFormat: NumberFormat.currency(symbol: 'S/.', decimalDigits: 2),
-        labelStyle: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w300,
-          fontSize: 10,
-        ),
+        labelStyle: AppTextStyles.number
       ),
       tooltipBehavior: TooltipBehavior(enable: true),
       legend: Legend(
@@ -49,11 +34,7 @@ class MonthlyLineChart extends StatelessWidget {
         position: LegendPosition.bottom,
         orientation: LegendItemOrientation.horizontal, 
         overflowMode: LegendItemOverflowMode.wrap,
-        textStyle: TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w300,
-          fontSize: 9,
-        )
+        textStyle: AppTextStyles.Leyend
       ),
       series: dataByAnimalType.entries.map((entry) {
         return LineSeries<MonthlySalesData, String>(
@@ -63,11 +44,7 @@ class MonthlyLineChart extends StatelessWidget {
           yValueMapper: (MonthlySalesData sales, _) => sales.total,
           dataLabelSettings: const DataLabelSettings(
             isVisible: true,
-            textStyle: TextStyle(
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-            )
+            textStyle: AppTextStyles.base
           ),
         );
       }).toList(),
@@ -115,4 +92,17 @@ Future<Map<String, List<MonthlySalesData>>> buildSalesDataByAnimalTypeMonthly(
   return chartData;
 }
 
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 10,
+    color: AppColors.gris
+  );
+  static final number = base.copyWith(fontWeight: FontWeight.w300);
+  static final Leyend = base.copyWith(fontWeight: FontWeight.w300, fontSize: 9);
+}
 
+class AppColors {
+  static const gris = Color(0xFF333333);
+}

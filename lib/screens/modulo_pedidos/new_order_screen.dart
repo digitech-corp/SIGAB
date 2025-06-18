@@ -82,7 +82,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           child: AppBar(
             toolbarHeight: 80,
             automaticallyImplyLeading: false,
-            backgroundColor: const Color(0xFFFF6600),
+            backgroundColor: AppColors.orange,
             title: Row(
               children: [
                 IconButton(
@@ -96,15 +96,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   },
                 ),
                 const SizedBox(width: 1),
-                const Text(
-                  'Gestión de Pedidos',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
-                  ),
-                ),
+                Text('Gestión de Pedidos', style: AppTextStyles.title),
               ],
             ),
           ),
@@ -118,12 +110,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              const Text('CLIENTE'),
+              Text('CLIENTE', style: AppTextStyles.base),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
-                  color: Color(0xFFECEFF1),
+                  color: AppColors.backgris,
                 ),
                 child: Column(
                   children: [
@@ -136,14 +128,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                           hintText: 'Buscar Cliente/Empresa',
-                          hintStyle: const TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w300,
-                            fontSize: 10,
-                            color: Colors.black,
-                          ),
+                          hintStyle: AppTextStyles.search,
                           filled: true,
-                          fillColor: const Color(0xFFECEFF1),
+                          fillColor: AppColors.backgris,
                           prefixIcon: const Icon(Icons.search, size: 15, color: Colors.black),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
@@ -160,22 +147,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                           final customer = _filteredCustomers[index];
                           return ListTile(
                             dense: true,
-                            title: Text(
-                              customer.customerName,
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400
-                              ),
-                            ),
-                            subtitle: Text(
-                              companiesProvider.getCompanyNameById(customer.idCompany),
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400
-                              ),
-                            ),
+                            title: Text(customer.customerName, style: AppTextStyles.base),
+                            subtitle: Text(companiesProvider.getCompanyNameById(customer.idCompany), style: AppTextStyles.base),
                             onTap: () {
                               setState(() {
                                 _selectedCustomer = customer;
@@ -201,45 +174,17 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'CLIENTE:',
-                                      style: TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400
-                                      ),
-                                    ),
+                                    Text('CLIENTE:', style: AppTextStyles.base),
                                     SizedBox(height: 2),
-                                    Text(
-                                      'EMPRESA:',
-                                      style: TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400
-                                      ),
-                                    ),
+                                    Text('EMPRESA:', style: AppTextStyles.base),
                                   ],
                                 ),
                                 const SizedBox(width: 40),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      _selectedCustomer!.customerName,
-                                      style: TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500
-                                      ),
-                                    ),
-                                    Text(
-                                      companiesProvider.getCompanyNameById(_selectedCustomer!.idCompany),
-                                      style: TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400
-                                      ),
-                                    ),
+                                    Text(_selectedCustomer!.customerName, style: AppTextStyles.selection),
+                                    Text(companiesProvider.getCompanyNameById(_selectedCustomer!.idCompany), style: AppTextStyles.base),
                                   ],
                                 ),
                               ],
@@ -254,20 +199,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               ),
               
               const SizedBox(height: 20),
-              Text(
-                'CATÁLOGO', 
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                  color: Colors.black
-                ),
-              ),
+              Text('CATÁLOGO', style: AppTextStyles.subtitle),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
-                  color: Color(0xFFECEFF1),
+                  color: AppColors.backgris,
                 ),
                 child: Column(
                   children: [
@@ -288,41 +225,25 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               ),
               
               const SizedBox(height: 20),
-              Text(
-                'RESUMEN DE PEDIDO', 
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                  color: Colors.black
-                ),
-              ),
+              Text('RESUMEN DE PEDIDO', style: AppTextStyles.subtitle),
               const SizedBox(height: 20),
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
-                  color: Color(0xFFECEFF1),
+                  color: AppColors.backgris,
                 ),
                 child: ResumeProduct(selectedProducts: Provider.of<ProductsProvider>(context).selectedProducts,)
               ),
               
               const SizedBox(height: 20),
-              Text(
-                'MODALIDAD DE PAGO', 
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                  color: Colors.black
-                ),
-              ),
+              Text('MODALIDAD DE PAGO', style: AppTextStyles.subtitle),
               const SizedBox(height: 20),
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
-                  color: Color(0xFFECEFF1),
+                  color: AppColors.backgris,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -395,4 +316,23 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       resetForm: _resetForm,
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.gris
+  );
+  static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.gris);
+  static final search = base.copyWith(fontWeight: FontWeight.w300, fontSize: 10);
+  static final selection = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
+  static final subtitle = base.copyWith(fontSize: 16);
+}
+
+class AppColors {
+  static const orange = Color(0xFFFF6600);
+  static const gris = Color(0xFF333333);
+  static const backgris = Color(0xFFECEFF1);
 }

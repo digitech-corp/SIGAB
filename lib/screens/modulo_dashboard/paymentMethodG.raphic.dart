@@ -80,16 +80,7 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Ventas al Contado y Crédito',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 14,
-            fontWeight: FontWeight.
-            w500,
-            color: Color(0xFF333333),
-          ),
-        ),
+        Text('Ventas al Contado y Crédito', style: AppTextStyles.base),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -102,17 +93,14 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: Text(
-                'Total de Ventas: ${widget.contado + widget.credito}',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
+              child: Text('Total de Ventas: ${widget.contado + widget.credito}', style: AppTextStyles.total),
             ),
             // Leyenda de colores
             Row(
               children: const [
-                _Leyenda(color: Color(0xFFFF8C33), texto: 'Contado'),
+                _Leyenda(color: AppColors.orangeLight, texto: 'Contado'),
                 SizedBox(width: 12),
-                _Leyenda(color: Color(0xFF707070), texto: 'Crédito'),
+                _Leyenda(color: AppColors.grisLight, texto: 'Crédito'),
               ],
             ),
           ],
@@ -129,7 +117,7 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                   onTap: () => _showTooltip(context, _keyContado, '${widget.contado} ventas al contado'),
                   child: Container(
                     height: 30,
-                    color: const Color(0xFFFF8C33),
+                    color: AppColors.orangeLight,
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
@@ -146,7 +134,7 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                   onTap: () => _showTooltip(context, _keyCredito, '${widget.credito} ventas a crédito'),
                   child: Container(
                     height: 30,
-                    color: const Color(0xFF707070),
+                    color: AppColors.grisLight,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
@@ -190,4 +178,20 @@ class _Leyenda extends StatelessWidget {
       ],
     );
   }
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 14,
+    color: AppColors.gris
+  );
+  static final total = base.copyWith(fontWeight: FontWeight.w600);
+}
+
+class AppColors {
+  static const gris = Color(0xFF333333);
+  static const grisLight = Color(0xFF707070);
+  static const orangeLight = Color(0xFFFF8C33);
 }

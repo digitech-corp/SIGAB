@@ -17,11 +17,8 @@ class SalesDonutChart extends StatelessWidget {
           widget: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'S/.${total.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.indigo),
-              ),
-              const Text('Total Ventas', style: TextStyle(fontFamily: 'Montserrat', fontSize: 12)),
+              Text('S/.${total.toStringAsFixed(2)}', style: AppTextStyles.total),
+              Text('Total Ventas', style: AppTextStyles.title),
             ],
           ),
         )
@@ -38,7 +35,7 @@ class SalesDonutChart extends StatelessWidget {
             isVisible: true,
             labelPosition: ChartDataLabelPosition.outside,
             connectorLineSettings: ConnectorLineSettings(type: ConnectorType.curve, length: '10%'),
-            textStyle: TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w500, fontSize: 10),
+            textStyle: AppTextStyles.base,
           ),
           radius: '80%',
           innerRadius: '75%',
@@ -89,4 +86,19 @@ class SalesData {
   final Color color;
 
   SalesData(this.animalType, this.totalSales, this.color);
+}
+
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 10, 
+    color: AppColors.gris
+  );
+  static final total = base.copyWith(fontSize: 16, color: Colors.indigo);
+  static final title = base.copyWith(fontSize: 12);
+}
+
+class AppColors {
+  static const gris = Color(0xFF333333);
 }

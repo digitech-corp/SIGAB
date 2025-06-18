@@ -20,28 +20,13 @@ class WeeklyBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SfCartesianChart(
-      title: ChartTitle(
-        text: 'Ventas semanales por tipo de animal',
-        textStyle: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
-          fontSize: 10,
-        ),
-      ),
+      title: ChartTitle(text: 'Ventas semanales por tipo de animal', textStyle: AppTextStyles.base),
       primaryXAxis: CategoryAxis(
-        labelStyle: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
-          fontSize: 10,
-        ),
+        labelStyle: AppTextStyles.base
       ),
       primaryYAxis: NumericAxis(
         numberFormat: NumberFormat.currency(symbol: 'S/.', decimalDigits: 2),
-        labelStyle: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w300,
-          fontSize: 10,
-        ),
+        labelStyle: AppTextStyles.number
       ),
       tooltipBehavior: TooltipBehavior(enable: true),
       series: <CartesianSeries<SalesData, String>>[
@@ -52,11 +37,7 @@ class WeeklyBarChart extends StatelessWidget {
           pointColorMapper: (SalesData d, _) => d.color,
           dataLabelSettings: const DataLabelSettings(
             isVisible: true,
-            textStyle: TextStyle(
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-            ),
+            textStyle: AppTextStyles.base
           ),
         )
       ],
@@ -106,3 +87,16 @@ List<SalesData> buildSalesDataByAnimalTypeWeekly(List<Order> orders, List<Produc
   }).toList();
 }
 
+class AppTextStyles {
+  static const base = TextStyle(
+    fontFamily: 'Montserrat',
+    fontWeight: FontWeight.w500,
+    fontSize: 10,
+    color: AppColors.gris
+  );
+  static final number = base.copyWith(fontWeight: FontWeight.w300);
+}
+
+class AppColors {
+  static const gris = Color(0xFF333333);
+}
