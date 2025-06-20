@@ -120,7 +120,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
               ),
               _buildAnimalSelector(),
               const Divider(height: 0, thickness: 1),
-              const SizedBox(height: 5),
+              const SizedBox(height: 15),
               Expanded(
                 child: provider.isLoading
                     ? const Center(child: CircularProgressIndicator())

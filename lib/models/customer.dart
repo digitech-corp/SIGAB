@@ -65,4 +65,28 @@ class Customer{
   String toString() {
     return 'Customer{idCustomer: $idCustomer, customerName: $customerName, dni: $dni, customerImage: $customerImage, customerPhone: $customerPhone, customerEmail: $customerEmail, customerAddress: $customerAddress, customerReference: $customerReference, idCompany: $idCompany, idDepartment: $idDepartment, idProvince: $idProvince, idDistrict: $idDistrict}';
   }
+
+  Customer copyWith({
+    String? name,
+    String? image,
+    String? phone,
+    String? email,
+    int? department,
+    int? province,
+    int? district,
+  }) {
+    return Customer(
+      customerName: name ?? this.customerName,
+      dni: dni ?? this.dni,
+      customerAddress: customerAddress ?? this.customerAddress,
+      customerReference: customerReference ?? this.customerReference,
+      idCompany: idCompany ?? this.idCompany,
+      customerImage: image ?? this.customerImage,
+      customerPhone: phone ?? this.customerPhone,
+      customerEmail: email ?? this.customerEmail,
+      idDepartment: department ?? this.idDepartment,
+      idProvince: province ?? this.idProvince,
+      idDistrict: district ?? this.idDistrict,
+    );
+  }
 }

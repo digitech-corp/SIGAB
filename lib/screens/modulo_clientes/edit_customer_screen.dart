@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:balanced_foods/models/department.dart';
+import 'package:balanced_foods/models/district.dart';
 import 'package:balanced_foods/models/paymentInfo.dart';
+import 'package:balanced_foods/models/province.dart';
 import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
@@ -9,9 +13,11 @@ import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/screens/Reportes/create_pdf.dart';
 import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
+import 'package:balanced_foods/screens/modulo_clientes/new_customer_screen.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -526,6 +532,9 @@ class _RecordCardState extends State<RecordCard> {
                     height: 37,
                     child: ElevatedButton(
                       onPressed: () {
+                         showEditCustomerDialog(context, widget.customer, (updatedCustomer) {
+                          print('Cliente actualizado: ${updatedCustomer.customerName}');
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -548,6 +557,266 @@ class _RecordCardState extends State<RecordCard> {
       ),
     );
   }
+
+  void showEditCustomerDialog(BuildContext context, Customer customer, Function(Customer) onSave) {
+    final nameController = TextEditingController(text: customer.customerName);
+    final phoneController = TextEditingController(text: customer.customerPhone);
+    final emailController = TextEditingController(text: customer.customerEmail);
+    XFile? _selectedImage;
+    String? _base64Image;
+    final ImagePicker _picker = ImagePicker();
+
+    Future<void> _pickImage() async {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        final bytes = await File(image.path).readAsBytes();
+        final base64Image = base64Encode(bytes);
+        setState(() {
+          _selectedImage = image;
+          _base64Image = base64Image;
+        });
+      }
+    }
+
+    Widget _buildCustomerImage(String? imageUrl) {
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 116,
+            height: 116,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[300],
+            ),
+            child: _selectedImage != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(58),
+                    child: Image.file(
+                      File(_selectedImage!.path),
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : (imageUrl != null && imageUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(58),
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Icon(
+                        Icons.person,
+                        size: 100,
+                        color: Colors.grey,
+                      )),
+          ),
+
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(2, 2),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.all(8),
+                child: Icon(
+                  Icons.camera_alt,
+                  color: Colors.grey[700],
+                  size: 28,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        final departmentsProvider = Provider.of<DepartmentsProvider>(context, listen: false);
+        final departments = departmentsProvider.departments;
+        String? selectedDepartment = departmentsProvider.getDepartmentName(customer.idDepartment);
+        final provincesProvider = Provider.of<ProvincesProvider>(context, listen: false);
+        final provinces = provincesProvider.provinces;
+        String? selectedProvince = provincesProvider.getProvinceName(customer.idProvince);
+        final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
+        final districts = districtsProvider.districts;
+        String? selectedDistrict = districtsProvider.getDistrictName(customer.idDistrict);
+        
+        final filteredProvinces = selectedDepartment == null
+          ? []
+          : provincesProvider.getProvincesByDepartment(
+              departmentsProvider.departments
+                  .firstWhere((d) => d.department == selectedDepartment)
+                  .idDepartment,
+            );
+        
+        final filteredDistricts = selectedProvince == null
+          ? []
+          : districtsProvider.districts.where((d) {
+              final province = filteredProvinces.firstWhere(
+                (p) => p.province == selectedProvince,
+                orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
+              );
+              return d.idProvince == province.idProvince;
+            }).toList();
+            
+        return AlertDialog(
+          title: Text('Editar Cliente', style: AppTextStyles.editTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildCustomerImage(customer.customerImage),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nombre',
+                    labelStyle: AppTextStyles.editVars
+                  ),
+                  style: AppTextStyles.base,
+                ),
+                TextField(
+                  controller: phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Teléfono',
+                    labelStyle: AppTextStyles.editVars
+                  ),
+                  style: AppTextStyles.base,
+                ),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Correo',
+                    labelStyle: AppTextStyles.editVars
+                  ),
+                  style: AppTextStyles.base,
+                ),
+                BuildSelect(
+                  selectedValue: selectedDepartment,
+                  options:
+                      Provider.of<DepartmentsProvider>(context).departments
+                          .map((d) => d.department)
+                          .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDepartment = value;
+                      selectedProvince = null;
+                      selectedDistrict = null;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, selecciona un departamento';
+                    }
+                    return null;
+                  },
+                  hintText: 'Departamento',
+                ),
+                const SizedBox(height: 07),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: BuildSelect(
+                        selectedValue: selectedProvince,
+                        options: filteredProvinces.map((p) => p.province.toString()).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedProvince = value;
+                            selectedDistrict = null;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, selecciona una provincia';
+                          }
+                          return null;
+                        },
+                        hintText: 'Provincia',
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: BuildSelect(
+                        selectedValue: selectedDistrict,
+                        options: filteredDistricts.map((d) => d.district.toString()).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedDistrict = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, selecciona un distrito';
+                          }
+                          return null;
+                        },
+                        hintText: 'Distrito',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), 
+              child: Text('Cancelar', style: AppTextStyles.btn),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final selectedDepartmentName = selectedDepartment;
+                final selectedDepartmentObj = departments.firstWhere(
+                  (d) => d.department == selectedDepartmentName,
+                  orElse: () => Department(idDepartment: 0, department: ''),
+                );
+                final selectedDepartmentId = selectedDepartmentObj.idDepartment;
+                final selectedProvinceName = selectedProvince;
+                final selectedProvinceObj = provinces.firstWhere(
+                  (d) => d.province == selectedProvinceName,
+                  orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
+                );
+                final selectedProvinceId = selectedProvinceObj.idProvince;
+                final selectedDistrictName = selectedDistrict;
+                final selectedDistrictObj = districts.firstWhere(
+                  (d) => d.district == selectedDistrictName,
+                  orElse: () => District(idDistrict: 0, district: '', idProvince: 0),
+                );
+                final selectedDistrictId = selectedDistrictObj.idDistrict;
+                final updatedCustomer = customer.copyWith(
+                  name: nameController.text,
+                  image: _selectedImage.toString(),
+                  phone: phoneController.text,
+                  email: emailController.text,
+                  department: selectedDepartmentId,
+                  province: selectedProvinceId,
+                  district: selectedDistrictId
+                );
+                onSave(updatedCustomer);
+                Navigator.pop(context);
+              },
+              child: Text('Guardar', style: AppTextStyles.btn),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   Widget _ordersDetail() {
     return Card(
       color: Colors.transparent,
@@ -813,9 +1082,11 @@ class AppTextStyles {
     fontSize: 13,
     color: AppColors.gris
   );
-  static final name = base.copyWith(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white);
-  static final company = base.copyWith(fontSize: 12,color: Colors.black);
+  static final name = base.copyWith(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white);
+  static final company = base.copyWith(fontSize: 12, color: Colors.black);
   static final cardTitle = base.copyWith();
+  static final editTitle = base.copyWith(fontWeight: FontWeight.w600, color: AppColors.orange);
+  static final editVars= base.copyWith(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black);
   static final subtitle = base.copyWith(fontSize: 10, color: AppColors.lightGris);
   static final btn = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
   static final headerTable = base.copyWith(fontSize: 11, fontWeight: FontWeight.w400);

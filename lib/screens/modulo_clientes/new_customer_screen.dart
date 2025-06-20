@@ -235,7 +235,6 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
     final departmentsProvider = Provider.of<DepartmentsProvider>(context);
     final provincesProvider = Provider.of<ProvincesProvider>(context);
     final districtsProvider = Provider.of<DistrictsProvider>(context);
-    //Nuevo
     final companyProvider = Provider.of<CompaniesProvider>(context, listen: false);
     final customerProvider = Provider.of<CustomersProvider>(context, listen: false);
 
@@ -354,7 +353,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
             hintStyle: AppTextStyles.base
           ),
           const SizedBox(height: 07),
-          _buildSelect(
+          BuildSelect(
             selectedValue: selectedDepartment,
             options:
                 departmentsProvider.departments
@@ -380,7 +379,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: _buildSelect(
+                child: BuildSelect(
                   selectedValue: selectedProvince,
                   options:
                       filteredProvinces
@@ -403,7 +402,7 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _buildSelect(
+                child: BuildSelect(
                   selectedValue: selectedDistrict,
                   options:
                       filteredDistricts
@@ -612,6 +611,56 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
     required String? Function(String?) validator,
     String? hintText,
   }) {
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      onChanged: onChanged,
+      style: AppTextStyles.selectStyle,
+      decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 5.0),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
+        ),
+      ),
+      hint: Text(
+        hintText ?? '',
+        style: AppTextStyles.base,
+      ),
+      validator: validator,
+      items:
+          options.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                style: AppTextStyles.selectStyle,
+              ),
+            );
+          }).toList(),
+    );
+  }
+}
+
+class BuildSelect extends StatelessWidget {
+  final String? selectedValue;
+  final List<String> options;
+  final ValueChanged<String?> onChanged;
+  final String? Function(String?) validator;
+  final String? hintText;
+  const BuildSelect({
+    required this.selectedValue,
+    required this.options,
+    required this.onChanged,
+    required this.validator,
+    required this.hintText,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       value: selectedValue,
       onChanged: onChanged,

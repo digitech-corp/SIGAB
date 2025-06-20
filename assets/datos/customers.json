@@ -48,9 +48,9 @@
       "customerAddress": "Mza. F Lote 3",
       "customerReference": "Cal J. Zapata frente al Col. Cristo Jesus",
       "idCompany": 4,
-      "idDepartment": 4,
-      "idProvince": 4,
-      "idDistrict": 4
+      "idDepartment": 1,
+      "idProvince": 1,
+      "idDistrict": 1
     },
     {
       "idCustomer": 5,
