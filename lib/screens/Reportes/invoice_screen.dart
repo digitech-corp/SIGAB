@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/models/order.dart';
@@ -10,7 +11,9 @@ import 'package:balanced_foods/screens/Reportes/create_pdf.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 
 class InvoiceScreen extends StatelessWidget {
   final int idOrder;
@@ -81,17 +84,13 @@ class InvoiceScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.download),
             onPressed: () async {
-              final pdfBytes = await generarPdfFacturaConDiseno(
+              await onDescargarFacturaPressed(
+                context,
                 order: order,
                 customer: customer,
                 companyName: company,
                 allProducts: productsProvider.products,
-              );
-
-              await guardarPdfConFileSaver(
-                pdfBytes,
-                'factura_${order.idOrder}.pdf',
-                context,
+                productsProvider: productsProvider,
               );
             },
           )
@@ -175,22 +174,52 @@ class InvoiceScreen extends StatelessWidget {
     );
   }
 
-  Future<void> guardarPdfConFileSaver(Uint8List pdfBytes, String fileName, BuildContext context) async {
-    try {
-      await FileSaver.instance.saveFile(
-        name: fileName,
-        bytes: pdfBytes,
-        ext: 'pdf',
-        mimeType: MimeType.pdf,
-      );
+  Future<void> guardarPdfConDialogo(Uint8List pdfBytes, String fileName) async {
+    await FileSaver.instance.saveFile(
+      name: fileName,
+      bytes: pdfBytes,
+      mimeType: MimeType.pdf,
+    );
+  }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Factura guardada correctamente')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar el archivo: $e')),
-      );
-    }
+  Future<String> guardarPdfTemporal(Uint8List pdfBytes, String fileName) async {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(pdfBytes);
+    return file.path;
+  }
+
+  Future<void> mostrarDialogoGuardarArchivo(String sourceFilePath, String fileName) async {
+    final params = SaveFileDialogParams(
+      sourceFilePath: sourceFilePath,
+      fileName: fileName,
+    );
+    final savedPath = await FlutterFileDialog.saveFile(params: params);
+    // Puedes mostrar un mensaje de éxito si savedPath no es null
+  }
+
+  Future<void> onDescargarFacturaPressed(
+    BuildContext context, {
+    required Order order,
+    required Customer customer,
+    required String companyName,
+    required List<Product> allProducts,
+    required ProductsProvider productsProvider,
+  }) async {
+    final pdfBytes = await generarPdfFacturaConDiseno(
+      order: order,
+      customer: customer,
+      companyName: companyName,
+      allProducts: productsProvider.products,
+    );
+
+    final fileName = 'factura_${order.idOrder}.pdf';
+    final tempPath = await guardarPdfTemporal(pdfBytes, fileName);
+
+    await mostrarDialogoGuardarArchivo(tempPath, fileName);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('¡Archivo listo para guardar!')),
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
@@ -12,11 +13,9 @@ Future<Uint8List> generarPdfFacturaConDiseno({
   required String companyName,
   required List<Product> allProducts,
 }) async {
+  // Carga la fuente personalizada
+  final ttf = pw.Font.ttf(await rootBundle.load('assets/fonts/OpenSans-Regular.ttf'));
   final pdf = pw.Document();
-
-  final dateFormatted = order.dateCreated != null
-      ? DateFormat('dd/MM/yyyy').format(order.dateCreated!)
-      : 'Fecha no disponible';
 
   DateTime now = DateTime.now();
   String horaActual = DateFormat.Hm().format(now);
@@ -25,21 +24,24 @@ Future<Uint8List> generarPdfFacturaConDiseno({
   final header = pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
-      pw.Text('ALIMENTOS BALANCEADOS ADYSA', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-      pw.Text('RUC: 12345678910'),
-      pw.Text('Dirección: Jr. Ejemplo 123 - Lima, Perú'),
-      pw.Text('Fecha: $fechaActual'),
-      pw.Text('Hora: $horaActual'),
-      pw.Text('Factura N° ${order.idOrder}'),
+      pw.Text(
+        'ALIMENTOS BALANCEADOS ADYSA',
+        style: pw.TextStyle(font: ttf, fontSize: 20, fontWeight: pw.FontWeight.bold),
+      ),
+      pw.Text('RUC: 12345678910', style: pw.TextStyle(font: ttf)),
+      pw.Text('Dirección: Jr. Ejemplo 123 - Lima, Perú', style: pw.TextStyle(font: ttf)),
+      pw.Text('Fecha: $fechaActual', style: pw.TextStyle(font: ttf)),
+      pw.Text('Hora: $horaActual', style: pw.TextStyle(font: ttf)),
+      pw.Text('Factura N° ${order.idOrder}', style: pw.TextStyle(font: ttf)),
     ],
   );
 
   final customerInfo = pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
-      pw.Text('Cliente: ${customer.customerName}'),
-      pw.Text('Empresa: $companyName'),
-      pw.Text('Ubicación: ${order.deliveryLocation}'),
+      pw.Text('Cliente: ${customer.customerName}', style: pw.TextStyle(font: ttf)),
+      pw.Text('Empresa: $companyName', style: pw.TextStyle(font: ttf)),
+      pw.Text('Ubicación: ${order.deliveryLocation}', style: pw.TextStyle(font: ttf)),
     ],
   );
 
@@ -63,10 +65,10 @@ Future<Uint8List> generarPdfFacturaConDiseno({
   final totals = pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.end,
     children: [
-      pw.Text('Subtotal: S/ ${order.subtotal.toStringAsFixed(2)}'),
-      pw.Text('IGV (18%): S/ ${order.igv.toStringAsFixed(2)}'),
+      pw.Text('Subtotal: S/ ${order.subtotal.toStringAsFixed(2)}', style: pw.TextStyle(font: ttf)),
+      pw.Text('IGV (18%): S/ ${order.igv.toStringAsFixed(2)}', style: pw.TextStyle(font: ttf)),
       pw.Text('Total: S/ ${order.total.toStringAsFixed(2)}',
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          style: pw.TextStyle(font: ttf, fontWeight: pw.FontWeight.bold)),
     ],
   );
 
@@ -82,11 +84,17 @@ Future<Uint8List> generarPdfFacturaConDiseno({
             pw.SizedBox(height: 16),
             customerInfo,
             pw.Divider(),
-            pw.Table.fromTextArray(data: productTableRows),
+            pw.Table.fromTextArray(
+              data: productTableRows,
+              cellStyle: pw.TextStyle(font: ttf),
+              headerStyle: pw.TextStyle(font: ttf, fontWeight: pw.FontWeight.bold),
+            ),
             pw.Divider(),
             totals,
             pw.SizedBox(height: 24),
-            pw.Center(child: pw.Text('Gracias por su compra')),
+            pw.Center(
+              child: pw.Text('Gracias por su compra', style: pw.TextStyle(font: ttf)),
+            ),
           ],
         ),
       ),
