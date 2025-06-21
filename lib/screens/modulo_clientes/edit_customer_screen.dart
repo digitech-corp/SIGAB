@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:balanced_foods/models/company.dart';
 import 'package:balanced_foods/models/department.dart';
 import 'package:balanced_foods/models/district.dart';
 import 'package:balanced_foods/models/paymentInfo.dart';
@@ -11,18 +12,17 @@ import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
-import 'package:balanced_foods/screens/Reportes/create_pdf.dart';
 import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
 import 'package:balanced_foods/screens/modulo_clientes/new_customer_screen.dart';
 import 'package:balanced_foods/screens/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 
 class EditCustomerScreen extends StatefulWidget {
   final Customer customer;
@@ -75,27 +75,48 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
             toolbarHeight: double.infinity,
             automaticallyImplyLeading: false,
             backgroundColor: AppColors.orange,
-            title: Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 58,
-                    backgroundImage: widget.customer.customerImage.isNotEmpty
-                        ? NetworkImage(widget.customer.customerImage)
-                        : null,
-                    backgroundColor: Colors.grey[300],
-                    child: widget.customer.customerImage.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            size: 100,
-                            color: AppColors.gris,
-                          )
-                        : null,
+            title: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 58,
+                        backgroundImage: widget.customer.customerImage.isNotEmpty
+                            ? NetworkImage(widget.customer.customerImage)
+                            : null,
+                        backgroundColor: Colors.grey[300],
+                        child: widget.customer.customerImage.isEmpty
+                            ? Icon(
+                                Icons.person,
+                                size: 100,
+                                color: AppColors.gris,
+                              )
+                            : null,
+                      ),
+                      Text(widget.customer.customerName, style: AppTextStyles.name),
+                      Text(widget.companyName, style: AppTextStyles.company),
+                    ],
                   ),
-                  Text(widget.customer.customerName, style: AppTextStyles.name),
-                  Text(widget.companyName, style: AppTextStyles.company),
-                ],
-              ),
+                ),
+                Positioned(
+                  left: 0,
+                  top: 50,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.black,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -559,258 +580,379 @@ class _RecordCardState extends State<RecordCard> {
   }
 
   void showEditCustomerDialog(BuildContext context, Customer customer, Function(Customer) onSave) {
+    final _formKey = GlobalKey<FormState>();
     final nameController = TextEditingController(text: customer.customerName);
+    final dniController = TextEditingController(text: customer.dni);
     final phoneController = TextEditingController(text: customer.customerPhone);
     final emailController = TextEditingController(text: customer.customerEmail);
-    XFile? _selectedImage;
-    String? _base64Image;
-    final ImagePicker _picker = ImagePicker();
+    final addressController = TextEditingController(text: customer.customerAddress);
+    final referenceController = TextEditingController(text: customer.customerReference);
 
-    Future<void> _pickImage() async {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        final bytes = await File(image.path).readAsBytes();
-        final base64Image = base64Encode(bytes);
-        setState(() {
-          _selectedImage = image;
-          _base64Image = base64Image;
-        });
-      }
-    }
+    final departmentsProvider = Provider.of<DepartmentsProvider>(context, listen: false);
+    final departments = departmentsProvider.departments;
+    final provincesProvider = Provider.of<ProvincesProvider>(context, listen: false);
+    final provinces = provincesProvider.provinces;
+    final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
+    final districts = districtsProvider.districts;
+    final companiesProvider = Provider.of<CompaniesProvider>(context, listen: false);
+    final companies = companiesProvider.companies;
+    final company = companiesProvider.getCompanyNameById(customer.idCompany);
+    final companyController = TextEditingController(text: company);
 
-    Widget _buildCustomerImage(String? imageUrl) {
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 116,
-            height: 116,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey[300],
-            ),
-            child: _selectedImage != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(58),
-                    child: Image.file(
-                      File(_selectedImage!.path),
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : (imageUrl != null && imageUrl.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(58),
-                        child: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : Icon(
-                        Icons.person,
-                        size: 100,
-                        color: Colors.grey,
-                      )),
-          ),
-
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(2, 2),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.all(8),
-                child: Icon(
-                  Icons.camera_alt,
-                  color: Colors.grey[700],
-                  size: 28,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-    
     showDialog(
       context: context,
       builder: (context) {
-        final departmentsProvider = Provider.of<DepartmentsProvider>(context, listen: false);
-        final departments = departmentsProvider.departments;
+        // Variables de estado local para el diálogo
+        XFile? _selectedImage;
+        String? _base64Image;
+        final ImagePicker _picker = ImagePicker();
+
         String? selectedDepartment = departmentsProvider.getDepartmentName(customer.idDepartment);
-        final provincesProvider = Provider.of<ProvincesProvider>(context, listen: false);
-        final provinces = provincesProvider.provinces;
         String? selectedProvince = provincesProvider.getProvinceName(customer.idProvince);
-        final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
-        final districts = districtsProvider.districts;
         String? selectedDistrict = districtsProvider.getDistrictName(customer.idDistrict);
-        
-        final filteredProvinces = selectedDepartment == null
-          ? []
-          : provincesProvider.getProvincesByDepartment(
-              departmentsProvider.departments
-                  .firstWhere((d) => d.department == selectedDepartment)
-                  .idDepartment,
-            );
-        
-        final filteredDistricts = selectedProvince == null
-          ? []
-          : districtsProvider.districts.where((d) {
-              final province = filteredProvinces.firstWhere(
-                (p) => p.province == selectedProvince,
-                orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // Filtrado dinámico de provincias y distritos
+            final filteredProvinces = selectedDepartment == null
+                ? []
+                : provincesProvider.getProvincesByDepartment(
+                    departments.firstWhere((d) => d.department == selectedDepartment).idDepartment,
+                  );
+            final filteredDistricts = selectedProvince == null
+                ? []
+                : districts.where((d) {
+                    final province = filteredProvinces.firstWhere(
+                      (p) => p.province == selectedProvince,
+                      orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
+                    );
+                    return d.idProvince == province.idProvince;
+                  }).toList();
+
+            // Selección de imagen
+            Future<void> _pickImage() async {
+              final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+              if (image != null) {
+                final bytes = await File(image.path).readAsBytes();
+                final base64Image = base64Encode(bytes);
+                setState(() {
+                  _selectedImage = image;
+                  _base64Image = base64Image;
+                });
+              }
+            }
+
+            Widget _buildCustomerImage(String? imageUrl) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[300],
+                    ),
+                    child: _selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(58),
+                            child: Image.file(
+                              File(_selectedImage!.path),
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : (imageUrl != null && imageUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(58),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 80,
+                                color: Colors.grey,
+                              )),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(2, 2),
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[700],
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               );
-              return d.idProvince == province.idProvince;
-            }).toList();
-            
-        return AlertDialog(
-          title: Text('Editar Cliente', style: AppTextStyles.editTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildCustomerImage(customer.customerImage),
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nombre',
-                    labelStyle: AppTextStyles.editVars
-                  ),
-                  style: AppTextStyles.base,
-                ),
-                TextField(
-                  controller: phoneController,
-                  decoration: InputDecoration(
-                    labelText: 'Teléfono',
-                    labelStyle: AppTextStyles.editVars
-                  ),
-                  style: AppTextStyles.base,
-                ),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Correo',
-                    labelStyle: AppTextStyles.editVars
-                  ),
-                  style: AppTextStyles.base,
-                ),
-                BuildSelect(
-                  selectedValue: selectedDepartment,
-                  options:
-                      Provider.of<DepartmentsProvider>(context).departments
-                          .map((d) => d.department)
-                          .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedDepartment = value;
-                      selectedProvince = null;
-                      selectedDistrict = null;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, selecciona un departamento';
-                    }
-                    return null;
-                  },
-                  hintText: 'Departamento',
-                ),
-                const SizedBox(height: 07),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: BuildSelect(
-                        selectedValue: selectedProvince,
-                        options: filteredProvinces.map((p) => p.province.toString()).toList(),
+            }
+
+            return AlertDialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 10),
+              title: Text('Editar Cliente', style: AppTextStyles.editTitle),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildCustomerImage(customer.customerImage),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Nombre',
+                          labelStyle: AppTextStyles.editVars,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 1),
+                        ),
+                        style: AppTextStyles.base,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: dniController,
+                              decoration: InputDecoration(
+                                labelText: 'Dni',
+                                labelStyle: AppTextStyles.editVars,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 1),
+                              ),
+                              style: AppTextStyles.base,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(8),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: phoneController,
+                              decoration: InputDecoration(
+                                labelText: 'Teléfono',
+                                labelStyle: AppTextStyles.editVars,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 1),
+                              ),
+                              style: AppTextStyles.base,
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(9),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Correo',
+                          labelStyle: AppTextStyles.editVars,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 1),
+                        ),
+                        style: AppTextStyles.base,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, ingresa un correo electrónico';
+                          }
+                          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Por favor, ingresa un correo electrónico válido';
+                          }
+                          return null;
+                        },
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                  
+                      TextField(
+                        controller: addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Dirección',
+                          labelStyle: AppTextStyles.editVars,
+                        ),
+                        style: AppTextStyles.base,
+                      ),
+                      TextField(
+                        controller: referenceController,
+                        decoration: InputDecoration(
+                          labelText: 'Referencia',
+                          labelStyle: AppTextStyles.editVars,
+                        ),
+                        style: AppTextStyles.base,
+                      ),
+                      TextField(
+                        controller: companyController,
+                        decoration: InputDecoration(
+                          labelText: 'Empresa',
+                          labelStyle: AppTextStyles.editVars,
+                        ),
+                        style: AppTextStyles.base,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Departamento', style: AppTextStyles.selectVars),
+                        ],
+                      ),
+                      BuildSelect(
+                        selectedValue: selectedDepartment,
+                        options: departments.map((d) => d.department).toList(),
                         onChanged: (value) {
                           setState(() {
-                            selectedProvince = value;
+                            selectedDepartment = value;
+                            selectedProvince = null;
                             selectedDistrict = null;
                           });
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Por favor, selecciona una provincia';
+                            return 'Por favor, selecciona un departamento';
                           }
                           return null;
                         },
-                        hintText: 'Provincia',
+                        hintText: 'Departamento',
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: BuildSelect(
-                        selectedValue: selectedDistrict,
-                        options: filteredDistricts.map((d) => d.district.toString()).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedDistrict = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, selecciona un distrito';
-                          }
-                          return null;
-                        },
-                        hintText: 'Distrito',
+                      const SizedBox(height: 7),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Provincia', style: AppTextStyles.selectVars),
+                                const SizedBox(height: 5),
+                                BuildSelect(
+                                  selectedValue: selectedProvince,
+                                  options: filteredProvinces.map((p) => p.province.toString()).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedProvince = value;
+                                      selectedDistrict = null;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Por favor, selecciona una provincia';
+                                    }
+                                    return null;
+                                  },
+                                  hintText: 'Provincia',
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Distrito', style: AppTextStyles.selectVars),
+                                const SizedBox(height: 5),
+                                BuildSelect(
+                                  selectedValue: selectedDistrict,
+                                  options: filteredDistricts.map((d) => d.district.toString()).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedDistrict = value;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Por favor, selecciona un distrito';
+                                    }
+                                    return null;
+                                  },
+                                  hintText: 'Distrito',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancelar', style: AppTextStyles.btn),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      final selectedDepartmentObj = departments.firstWhere(
+                        (d) => d.department == selectedDepartment,
+                        orElse: () => Department(idDepartment: 0, department: ''),
+                      );
+                      final selectedDepartmentId = selectedDepartmentObj.idDepartment;
+                      final selectedProvinceObj = provinces.firstWhere(
+                        (d) => d.province == selectedProvince,
+                        orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
+                      );
+                      final selectedProvinceId = selectedProvinceObj.idProvince;
+                      final selectedDistrictObj = districts.firstWhere(
+                        (d) => d.district == selectedDistrict,
+                        orElse: () => District(idDistrict: 0, district: '', idProvince: 0),
+                      );
+                      final selectedDistrictId = selectedDistrictObj.idDistrict;
+                      final companyNameObj = companies.firstWhere(
+                        (c) => c.companyName == companyController.text,
+                        orElse: () => Company(idCompany: 0, companyName: '', companyRUC: '', companyAddress: '', companyWeb: ''),
+                      );
+                      final companyId = companyNameObj.idCompany;
+
+                      final updatedCustomer = customer.copyWith(
+                        name: nameController.text,
+                        dni_new: dniController.text,
+                        image: _selectedImage != null ? _selectedImage.toString() : customer.customerImage,
+                        phone: phoneController.text,
+                        email: emailController.text,
+                        address: addressController.text,
+                        reference: referenceController.text,
+                        company: companyId,
+                        department: selectedDepartmentId,
+                        province: selectedProvinceId,
+                        district: selectedDistrictId,
+                      );
+                      onSave(updatedCustomer);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Editado correctamente")),
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text('Guardar', style: AppTextStyles.btn),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), 
-              child: Text('Cancelar', style: AppTextStyles.btn),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final selectedDepartmentName = selectedDepartment;
-                final selectedDepartmentObj = departments.firstWhere(
-                  (d) => d.department == selectedDepartmentName,
-                  orElse: () => Department(idDepartment: 0, department: ''),
-                );
-                final selectedDepartmentId = selectedDepartmentObj.idDepartment;
-                final selectedProvinceName = selectedProvince;
-                final selectedProvinceObj = provinces.firstWhere(
-                  (d) => d.province == selectedProvinceName,
-                  orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
-                );
-                final selectedProvinceId = selectedProvinceObj.idProvince;
-                final selectedDistrictName = selectedDistrict;
-                final selectedDistrictObj = districts.firstWhere(
-                  (d) => d.district == selectedDistrictName,
-                  orElse: () => District(idDistrict: 0, district: '', idProvince: 0),
-                );
-                final selectedDistrictId = selectedDistrictObj.idDistrict;
-                final updatedCustomer = customer.copyWith(
-                  name: nameController.text,
-                  image: _selectedImage.toString(),
-                  phone: phoneController.text,
-                  email: emailController.text,
-                  department: selectedDepartmentId,
-                  province: selectedProvinceId,
-                  district: selectedDistrictId
-                );
-                onSave(updatedCustomer);
-                Navigator.pop(context);
-              },
-              child: Text('Guardar', style: AppTextStyles.btn),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -907,32 +1049,27 @@ class _RecordCardState extends State<RecordCard> {
                                 child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                               ),
                               onPressed: () async {
-                              final customer = customersProvider.customers
-                                  .firstWhere((c) => c.idCustomer == order.idCustomer);
+                                final customer = customersProvider.customers
+                                    .firstWhere((c) => c.idCustomer == order.idCustomer);
 
-                              final pdfBytes = await generarPdfFacturaConDiseno(
-                                order: order,
-                                customer: customer,
-                                companyName: companiesProvider.getCompanyNameById(customer.idCompany),
-                                allProducts: productsProvider.products,
-                              );
+                                // Mensaje por defecto
+                                final mensaje = Uri.encodeComponent(
+                                    'Hola ${customer.customerName}, te comparto la factura de tu pedido. Gracias por su compra.');
 
-                              // Guarda el PDF en el almacenamiento temporal
-                              final tempDir = await getTemporaryDirectory();
-                              final file = File('${tempDir.path}/factura.pdf');
-                              await file.writeAsBytes(pdfBytes);
+                                // Asegúrate de que el número esté en formato correcto
+                                final numeroSinPrefijo = customer.customerPhone.replaceAll('+', '').replaceAll(' ', '');
+                                final whatsappUrl = Uri.parse("https://wa.me/$numeroSinPrefijo?text=$mensaje");
 
-                              // Mensaje personalizado
-                              final mensaje = 'Hola ${customer.customerName}, aquí tienes tu factura.';
-
-                              // Comparte el archivo y el mensaje (el usuario elegirá WhatsApp)
-                              await Share.shareXFiles(
-                                [XFile(file.path)],
-                                text: mensaje,
-                                subject: 'Factura',
-                              );
-                            }
+                                if (await canLaunchUrl(whatsappUrl)) {
+                                  await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('No se pudo abrir WhatsApp')),
+                                  );
+                                }
+                              },
                             ),
+
                           ],
                         ),
                       );
@@ -1060,7 +1197,6 @@ class _RecordCardState extends State<RecordCard> {
       return;
     }
 
-    // Si todo es válido, cerrar modal y registrar
     Navigator.pop(context);
 
     registerOrder(
@@ -1086,7 +1222,8 @@ class AppTextStyles {
   static final company = base.copyWith(fontSize: 12, color: Colors.black);
   static final cardTitle = base.copyWith();
   static final editTitle = base.copyWith(fontWeight: FontWeight.w600, color: AppColors.orange);
-  static final editVars= base.copyWith(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black);
+  static final editVars= base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black);
+  static final selectVars= base.copyWith(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.black);
   static final subtitle = base.copyWith(fontSize: 10, color: AppColors.lightGris);
   static final btn = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
   static final headerTable = base.copyWith(fontSize: 11, fontWeight: FontWeight.w400);

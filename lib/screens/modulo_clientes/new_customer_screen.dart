@@ -323,6 +323,10 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
               if (value == null || value.isEmpty) {
                 return 'Por favor, ingresa un correo electrónico';
               }
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Por favor, ingresa un correo electrónico válido';
+              }
               return null;
             },
             hintText: 'Correo Electrónico',
@@ -603,45 +607,6 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
       validator: validator,
     );
   }
-
-  Widget _buildSelect({
-    required String? selectedValue,
-    required List<String> options,
-    required ValueChanged<String?> onChanged,
-    required String? Function(String?) validator,
-    String? hintText,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: selectedValue,
-      onChanged: onChanged,
-      style: AppTextStyles.selectStyle,
-      decoration: const InputDecoration(
-        isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 5.0),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
-        ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
-        ),
-      ),
-      hint: Text(
-        hintText ?? '',
-        style: AppTextStyles.base,
-      ),
-      validator: validator,
-      items:
-          options.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(
-                value,
-                style: AppTextStyles.selectStyle,
-              ),
-            );
-          }).toList(),
-    );
-  }
 }
 
 class BuildSelect extends StatelessWidget {
@@ -667,7 +632,7 @@ class BuildSelect extends StatelessWidget {
       style: AppTextStyles.selectStyle,
       decoration: const InputDecoration(
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(vertical: 5.0),
+        contentPadding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: AppColors.lightGris, width: 0.5),
         ),
@@ -705,7 +670,7 @@ class AppTextStyles {
   static final subtitle = base.copyWith(color: Colors.black);
   static final name = base.copyWith(fontSize: 20);
   static final btn = base.copyWith(fontSize: 14, color: AppColors.orange, fontWeight: FontWeight.w500);
-  static final selectStyle = base.copyWith(color: AppColors.gris);
+  static final selectStyle = base.copyWith(fontSize: 13, color: AppColors.gris);
 }
 
 class AppColors {

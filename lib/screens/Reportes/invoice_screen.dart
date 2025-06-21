@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/product.dart';
@@ -5,6 +6,8 @@ import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
+import 'package:balanced_foods/screens/Reportes/create_pdf.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -72,7 +75,28 @@ class InvoiceScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Factura')),
+      appBar: AppBar(
+        title: const Text('Factura'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () async {
+              final pdfBytes = await generarPdfFacturaConDiseno(
+                order: order,
+                customer: customer,
+                companyName: company,
+                allProducts: productsProvider.products,
+              );
+
+              await guardarPdfConFileSaver(
+                pdfBytes,
+                'factura_${order.idOrder}.pdf',
+                context,
+              );
+            },
+          )
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
@@ -149,5 +173,24 @@ class InvoiceScreen extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
+  }
+
+  Future<void> guardarPdfConFileSaver(Uint8List pdfBytes, String fileName, BuildContext context) async {
+    try {
+      await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: pdfBytes,
+        ext: 'pdf',
+        mimeType: MimeType.pdf,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Factura guardada correctamente')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar el archivo: $e')),
+      );
+    }
   }
 }
