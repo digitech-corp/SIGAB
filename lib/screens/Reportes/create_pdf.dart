@@ -14,7 +14,7 @@ Future<Uint8List> generarPdfFacturaConDiseno({
   required List<Product> allProducts,
 }) async {
   // Carga la fuente personalizada
-  final ttf = pw.Font.ttf(await rootBundle.load('assets/fonts/OpenSans-Regular.ttf'));
+  final ttf = pw.Font.ttf(await rootBundle.load('assets/fonts/Montserrat-Regular.ttf'));
   final pdf = pw.Document();
 
   DateTime now = DateTime.now();

@@ -68,7 +68,10 @@ class _TransportScreenState extends State<TransportScreen> {
     final isLoading = ordersProvider.isLoading ||
                   customersProvider.isLoading ||
                   companiesProvider.isLoading;
-    final filteredOrders = orders.where((order) {
+    final orderPendiente = orders.where((order) {
+      return order.state == "Pendiente";
+    });
+    final filteredOrders = orderPendiente.where((order) {
       final delivery = order.dateCreated;
       return delivery != null &&
           delivery.year == selectedDate.year &&
@@ -389,18 +392,14 @@ class OrderExpandedDetail extends StatefulWidget {
 }
 
 class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
+  final List<XFile> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
-  XFile? _selectedImage;
-  String? _base64Image;
 
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      final bytes = await File(image.path).readAsBytes();
-      final base64Image = base64Encode(bytes);
+  Future<void> _pickImages() async {
+    final List<XFile>? pickedImages = await _picker.pickMultiImage();
+    if (pickedImages != null) {
       setState(() {
-        _selectedImage = image;
-        _base64Image = base64Image;
+        _selectedImages.addAll(pickedImages);
       });
     }
   }
@@ -410,98 +409,128 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
     return  Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 5),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Detalles de Entrega', style: AppTextStyles.detailsHead),
-        ),
-        Divider(color: AppColors.lightGris, thickness: 1.0, height: 5),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Table(
-            columnWidths: const {
-              0: IntrinsicColumnWidth(),
-              1: FlexColumnWidth(),
-            },
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [
-              TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 0),
-                    child: Text('Registro de Incidencias:', style: AppTextStyles.orderData),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: TextFormField(
-                      style: TextStyle(fontSize: 10),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                        border: UnderlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text('Firma del cliente:', style: AppTextStyles.orderData),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: TextFormField(
-                      style: TextStyle(fontSize: 10),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                        border: UnderlineInputBorder(),
-                      ),
-                    ),
-                    
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Text('Fotos de entrega:', style: AppTextStyles.orderData),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: GestureDetector(
-                        onTap: _pickImage,
-                        child: _selectedImage != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(_selectedImage!.path),
-                                fit: BoxFit.cover,
-                                width: 25,
-                                height: 25,
-                              ),
-                            )
-                          : Container(
-                              width: 25,
-                              height: 25,
-                              child: Icon(Icons.photo, color: Colors.grey),
-                            ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Detalles de Entrega:',
+            style: TextStyle(fontFamily: 'Montserrat', fontSize: 10, fontWeight: FontWeight.w400),
           ),
         ),
-        const SizedBox(height: 5),
-        const btnConfirmar(),
+        const Divider(color: Color(0xFFBDBDBD), thickness: 1.0, height: 3),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _buildEntregaSection(),
+        ),
         const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget _buildEntregaSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildFieldRow('Registro de Incidencias:', TextFormField(
+          style: const TextStyle(fontSize: 10),
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+            border: UnderlineInputBorder(),
+          ),
+        )),
+        const SizedBox(height: 10),
+        _buildFieldRow('Firma del cliente:', TextFormField(
+          style: const TextStyle(fontSize: 10),
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+            border: UnderlineInputBorder(),
+          ),
+        )),
+        const SizedBox(height: 10),
+        _buildFieldRow('Fotos de entrega:', GestureDetector(
+          onTap: _pickImages,
+          child: Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey),
+            ),
+            child: const Icon(Icons.add_photo_alternate, size: 20),
+          ),
+        )),
+        const SizedBox(height: 10),
+        if (_selectedImages.isNotEmpty)
+          SizedBox(
+            height: 70,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _selectedImages.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.file(
+                        File(_selectedImages[index].path),
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedImages.removeAt(index);
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(2),
+                          child: const Icon(
+                            Icons.close,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        const SizedBox(height: 16),
+        const btnConfirmar(),
+      ],
+    );
+  }
+
+  Widget _buildFieldRow(String label, Widget field) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 10,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: field),
       ],
     );
   }

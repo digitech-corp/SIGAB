@@ -20,6 +20,7 @@ class OrdersProvider extends ChangeNotifier{
       if (useLocalData) {
         final data = await loadJsonFromAssets('assets/datos/orders.json');
         orders = List<Order>.from(data['orders'].map((order) => Order.fromJSON(order)));
+        print('Cantidad de pedidos: ${orders.length}');
       } else {
         final url = Uri.parse('http://10.0.2.2:12346/orders');
         final response = await http.get(url);

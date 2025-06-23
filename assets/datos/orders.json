@@ -14,7 +14,7 @@
       "additionalInformation": "Entregar con cuidado",
       "state": "Entregado",
       "paymentState": "Pendiente",
-      "dateCreated": "2025-06-19",
+      "dateCreated": "2025-06-23",
       "timeCreated": "07:00:00",
       "details": [
         {
@@ -52,7 +52,7 @@
       "additionalInformation": "Llamar antes de llegar",
       "state": "Entregado",
       "paymentState": "Pagado",
-      "dateCreated": "2025-06-17",
+      "dateCreated": "2025-06-23",
       "timeCreated": "09:45:00",
       "details": [
         {
@@ -135,11 +135,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 5,
@@ -168,11 +169,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 6,
@@ -201,11 +203,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 7,
@@ -240,11 +243,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 8,
@@ -273,11 +277,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 9,
@@ -293,7 +298,7 @@
       "additionalInformation": "Llamar antes de llegar",
       "state": "Pendiente",
       "paymentState": "Pendiente",
-      "dateCreated": "2025-06-19",
+      "dateCreated": "2025-06-23",
       "timeCreated": "08:45:00",
       "details": [
         {
@@ -338,9 +343,10 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 23,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
       ]
     },
@@ -390,7 +396,7 @@
       "additionalInformation": "Entregar en horario de oficina",
       "state": "Entregado",
       "paymentState": "Pagado",
-      "dateCreated": "2025-06-19",
+      "dateCreated": "2025-06-23",
       "timeCreated": "09:30:00",
       "details": [
         {
@@ -403,11 +409,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 13,
@@ -455,7 +462,7 @@
       "additionalInformation": "",
       "state": "Entregado",
       "paymentState": "Pagado",
-      "dateCreated": "2025-06-19",
+      "dateCreated": "2025-06-23",
       "timeCreated": "11:45:00",
       "details": [
         {
@@ -468,11 +475,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 15,
@@ -565,11 +573,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 18,
@@ -598,11 +607,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-20"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     },
     {
       "idOrder": 19,
@@ -663,11 +673,12 @@
       "paymentInfo": [
         {
           "tipo": "Crédito",
-          "numeroCuotas": 3,
-          "monto": 236.00,
-          "fechaPago": "2025-07-10"
+          "cuotas": [
+            { "monto": 100.0, "fecha": "2025-07-10" },
+            { "monto": 100.0, "fecha": "2025-08-10" }
+          ]
         }
-      ]
+      ]    
     }
   ]
 }

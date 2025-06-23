@@ -1,3 +1,5 @@
+import 'package:balanced_foods/models/cuota.dart';
+
 abstract class PaymentInfo {
   Map<String, dynamic> toJson();
 }
@@ -24,29 +26,21 @@ class ContadoPaymentInfo extends PaymentInfo {
 }
 
 class CreditoPaymentInfo extends PaymentInfo {
-  final int numeroCuotas;
-  final double monto;
-  final DateTime fechaPago;
+  final List<Cuota> cuotas;
 
-  CreditoPaymentInfo({
-    required this.numeroCuotas,
-    required this.monto,
-    required this.fechaPago,
-  });
+  CreditoPaymentInfo({required this.cuotas});
 
   factory CreditoPaymentInfo.fromJson(Map<String, dynamic> json) {
     return CreditoPaymentInfo(
-      numeroCuotas: json['numeroCuotas'] ?? 0,
-      monto: json['monto'] ?? 0.0,
-      fechaPago: DateTime.tryParse(json['fechaPago']) ?? DateTime.now(),
+      cuotas: (json['cuotas'] as List<dynamic>)
+          .map((e) => Cuota.fromJson(e))
+          .toList(),
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
         'tipo': 'Crédito',
-        'numeroCuotas': numeroCuotas,
-        'monto': monto,
-        'fechaPago': fechaPago.toIso8601String(),
+        'cuotas': cuotas.map((c) => c.toJson()).toList(),
       };
 }

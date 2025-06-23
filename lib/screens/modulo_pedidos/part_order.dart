@@ -1,3 +1,4 @@
+import 'package:balanced_foods/models/cuota.dart';
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/paymentInfo.dart';
@@ -451,6 +452,12 @@ class PaymentMethodState extends State<paymentMethod> {
   @override
   Widget build(BuildContext context) {
     final bool haySeleccion = _credito || _contado;
+    final products = Provider.of<ProductsProvider>(context, listen: false);
+    final selectedProducts = products.selectedProducts;
+    final total = selectedProducts.fold(
+      0.0,
+      (total, item) => total + (item.product.price * item.quantity),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -528,6 +535,7 @@ class PaymentMethodState extends State<paymentMethod> {
                                 return RegistrarPagoContado(
                                   importeInicial: _importeGuardado,
                                   saldoInicial: _saldoGuardado,
+                                  total: total,
                                   onGuardar: (importe, saldo) {
                                     setState(() {
                                       _importeGuardado = importe;
@@ -544,18 +552,16 @@ class PaymentMethodState extends State<paymentMethod> {
                                 _importeGuardado = null;
                                 _saldoGuardado = null;
                                 return RegistrarPagoCredito(
-                                  cuotasInicial: _cuotasGuardadas,
-                                  montoInicial: _montoGuardado,
-                                  fechaInicial: _fechaGuardada,
-                                  onGuardar: (cuotas, monto, fecha) {
+                                  total: total,
+                                  onGuardar: (cuotasList) {
                                     setState(() {
-                                      _cuotasGuardadas = cuotas;
-                                      _montoGuardado = monto;
-                                      _fechaGuardada = fecha;
+                                      _cuotasGuardadas = cuotasList.length;
+                                      final totalCuotas = cuotasList.fold(0.0, (suma, c) => suma + c.monto);
+                                      _montoGuardado = totalCuotas;
+                                      _fechaGuardada = cuotasList.first.fecha;
+
                                       paymentInfo = CreditoPaymentInfo(
-                                        numeroCuotas: cuotas,
-                                        monto: monto,
-                                        fechaPago: fecha,
+                                        cuotas: cuotasList
                                       );
                                     });
                                   },
@@ -606,12 +612,14 @@ class RegistrarPagoContado extends StatefulWidget {
   final void Function(double importe, double saldo) onGuardar;
   final double? importeInicial;
   final double? saldoInicial;
+  final double total;
 
   const RegistrarPagoContado({
     super.key,
     required this.onGuardar,
     this.importeInicial,
     this.saldoInicial,
+    required this.total,
   });
 
   @override
@@ -628,13 +636,21 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
     _importeController = TextEditingController(
       text: widget.importeInicial != null ? widget.importeInicial.toString() : ''
     );
-    _saldoController = TextEditingController(
-      text: widget.saldoInicial != null ? widget.saldoInicial.toString() : ''
-    );
+    _saldoController = TextEditingController();
+
+    _importeController.addListener(_updateSaldo);
+    _updateSaldo();
+  }
+
+  void _updateSaldo() {
+    final importe = double.tryParse(_importeController.text) ?? 0.0;
+    final saldo = widget.total - importe;
+    _saldoController.text = saldo.toStringAsFixed(2);
   }
 
   @override
   void dispose() {
+    _importeController.removeListener(_updateSaldo);
     _importeController.dispose();
     _saldoController.dispose();
     super.dispose();
@@ -686,6 +702,7 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
                 Expanded(
                   child: TextField(
                     controller: _saldoController,
+                    readOnly: true,
                     decoration: const InputDecoration(
                       filled: true,
                       fillColor: AppColors.lightGris,
@@ -743,18 +760,13 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
 }
 
 class RegistrarPagoCredito extends StatefulWidget {
-  final void Function(int cuotas, double monto, DateTime fecha) onGuardar;
-
-  final int? cuotasInicial;
-  final double? montoInicial;
-  final DateTime? fechaInicial;
+  final void Function(List<Cuota> cuotas) onGuardar;
+  final double total;
 
   const RegistrarPagoCredito({
     super.key,
     required this.onGuardar,
-    this.cuotasInicial,
-    this.montoInicial,
-    this.fechaInicial,
+    required this.total,
   });
 
   @override
@@ -762,45 +774,58 @@ class RegistrarPagoCredito extends StatefulWidget {
 }
 
 class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
-  late final TextEditingController _cuotasController;
-  late final TextEditingController _montoController;
-  late final TextEditingController _fechaController;
+  final TextEditingController _cuotasController = TextEditingController();
+  final List<TextEditingController> _montosControllers = [];
+  final List<DateTime?> _fechas = [];
 
-  Future<void> _seleccionarFecha(BuildContext context) async {
-    final DateTime? fechaSeleccionada = await showDatePicker(
+  double _montoRestante = 0.0;
+  void _recalcularMontoRestante() {
+    final suma = _montosControllers.fold<double>(
+      0.0,
+      (prev, ctrl) => prev + (double.tryParse(ctrl.text.trim()) ?? 0.0),
+    );
+    setState(() {
+      _montoRestante = widget.total - suma;
+    });
+  }
+
+  void _actualizarCantidadCuotas(String value) {
+    final cantidad = int.tryParse(value) ?? 0;
+
+    setState(() {
+      _montosControllers
+        ..clear()
+        ..addAll(List.generate(cantidad, (_) {
+          final controller = TextEditingController();
+          controller.addListener(_recalcularMontoRestante);
+          return controller;
+      }));
+      _fechas
+        ..clear()
+        ..addAll(List.generate(cantidad, (_) => null));
+    });
+  }
+
+  Future<void> _seleccionarFecha(int index) async {
+    final seleccion = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
-
-    if (fechaSeleccionada != null) {
-      final String fechaFormateada = DateFormat('dd/MM/yyyy').format(fechaSeleccionada);
+    if (seleccion != null) {
       setState(() {
-        _fechaController.text = fechaFormateada;
+        _fechas[index] = seleccion;
       });
     }
   }
 
   @override
-  void initState() {
-    super.initState();
-    _cuotasController = TextEditingController(
-      text: widget.cuotasInicial != null ? widget.cuotasInicial.toString() : ''
-    );
-    _montoController = TextEditingController(
-      text: widget.montoInicial != null ? widget.montoInicial.toString() : ''
-    );
-    _fechaController = TextEditingController(
-      text: widget.fechaInicial != null ? widget.fechaInicial.toString() : ''
-    );
-  }
-
-  @override
   void dispose() {
     _cuotasController.dispose();
-    _montoController.dispose();
-    _fechaController.dispose();
+    for (var c in _montosControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -811,126 +836,144 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 40),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text('Registro de Cuotas', style: AppTextStyles.titlePayment),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(flex: 2, child: Text('N° de Cuotas:', style: AppTextStyles.vars)),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3, 
-                  child: TextField(
-                    controller: _cuotasController,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.lightGris,
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Registro de Cuotas', style: AppTextStyles.titlePayment),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _cuotasController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Número de Cuotas',
+                  labelStyle: AppTextStyles.controllers,
+                  filled: true,
+                  fillColor: AppColors.lightGris,
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: _actualizarCantidadCuotas,
+                style: AppTextStyles.base,
+              ),
+              const SizedBox(height: 16),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _montosControllers.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: TextField(
+                            controller: _montosControllers[index],
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                            ],
+                            decoration: InputDecoration(
+                              labelText: 'Monto cuota ${index + 1}',
+                              labelStyle: AppTextStyles.controllers,
+                              filled: true,
+                              fillColor: AppColors.lightGris,
+                              border: const OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                            style: AppTextStyles.base,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            onTap: () => _seleccionarFecha(index),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                labelText: 'Fecha',
+                                labelStyle: AppTextStyles.base,
+                                filled: true,
+                                fillColor: AppColors.lightGris,
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              child: Text(
+                                _fechas[index] != null
+                                    ? DateFormat('dd/MM/yyyy').format(_fechas[index]!)
+                                    : 'Seleccionar',
+                                style: AppTextStyles.controllers,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Total del pedido: S/ ${widget.total.toStringAsFixed(2)}',
                     style: AppTextStyles.controllers,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(flex: 2, child: Text('Monto:', style: AppTextStyles.vars)),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _montoController,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.lightGris,
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    ),
+                  Text(
+                    'Monto asignado: S/ ${(widget.total - _montoRestante).toStringAsFixed(2)}',
                     style: AppTextStyles.controllers,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(flex: 2, child: Text('Fecha de Pago:', style: AppTextStyles.vars)),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _fechaController,
-                    readOnly: true,
-                    onTap: () => _seleccionarFecha(context),
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.lightGris,
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  Text(
+                    'Restante: S/ ${_montoRestante.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: _montoRestante == 0.0 ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
                     ),
-                    style: AppTextStyles.controllers
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
+                ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
                 onPressed: () {
-                  final cuotasText = _cuotasController.text.trim();
-                  final montoText = _montoController.text.trim();
-                  final fechaText = _fechaController.text.trim();
-
-                  if (cuotasText.isEmpty || montoText.isEmpty || fechaText.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Por favor, completa todos los campos.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
+                  final cuotas = <Cuota>[];
+                  for (int i = 0; i < _montosControllers.length; i++) {
+                    final monto = double.tryParse(_montosControllers[i].text.trim());
+                    final fecha = _fechas[i];
+                    if (monto == null || fecha == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Completa todos los campos de cuotas'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                    cuotas.add(Cuota(monto: monto, fecha: fecha));
                   }
 
-                  widget.onGuardar(
-                    int.tryParse(cuotasText) ?? 0,
-                    double.tryParse(montoText) ?? 0.0,
-                    DateFormat('dd/MM/yyyy').parse(fechaText),
-                  );
+                  widget.onGuardar(cuotas);
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 child: Text('Guardar', style: AppTextStyles.btnSave),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
 
 class observations extends StatefulWidget  {
   const observations({super.key});

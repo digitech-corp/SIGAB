@@ -79,7 +79,7 @@ flutter:
   assets:
   - assets/images/
   - assets/datos/
-  - assets/fonts/OpenSans-Regular.ttf
+  - assets/fonts/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

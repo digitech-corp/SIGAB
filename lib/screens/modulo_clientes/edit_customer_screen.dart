@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:balanced_foods/models/company.dart';
+import 'package:balanced_foods/models/cuota.dart';
 import 'package:balanced_foods/models/department.dart';
 import 'package:balanced_foods/models/district.dart';
 import 'package:balanced_foods/models/paymentInfo.dart';
@@ -1122,8 +1123,8 @@ class _RecordCardState extends State<RecordCard> {
                       final order = customerOrders[index];
                       String fechaVenc = '--/--/--';
                       if (order.paymentInfo is CreditoPaymentInfo) {
-                        final creditoInfo = order.paymentInfo as CreditoPaymentInfo;
-                        fechaVenc = DateFormat('dd/MM/yy').format(creditoInfo.fechaPago);
+                        final creditoInfo = order.paymentInfo as Cuota;
+                        fechaVenc = DateFormat('dd/MM/yy').format(creditoInfo.fecha);
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10),

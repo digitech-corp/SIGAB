@@ -43,6 +43,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return order.state == "Pendiente";
     }).toList();
 
+    final double montoContado = ordersContado.fold(0.0, (sum, order) => sum + order.total);
+    final double montoCredito = ordersCredito.fold(0.0, (sum, order) => sum + order.total);
+
     return Scaffold(
       backgroundColor: AppColors.backgris,
       appBar: PreferredSize(
@@ -88,8 +91,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text('Panel de Ventas', style: AppTextStyles.subtitle),
               const SizedBox(height: 20),
               const VentasTotalesCard(),
-              const SizedBox(height: 15),
-              BarraDivididaConTooltip(contado: ordersContado.length, credito: ordersCredito.length),
+              const SizedBox(height: 20),
+              BarraDivididaConTooltip(contado: ordersContado.length, credito: ordersCredito.length, montoContado: montoContado, montoCredito: montoCredito),
               const SizedBox(height: 20),
               Text('Cuota de Ventas y Progreso', style: AppTextStyles.subtitle),
               const SizedBox(height: 15),
