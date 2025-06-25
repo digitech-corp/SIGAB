@@ -111,7 +111,6 @@ class Order {
           : null,
       'dateCreated': dateCreated?.toIso8601String().split('T').first,
       'details': details.map((d) => d.toJson()).toList(),
-      // Exporta como lista para mantener compatibilidad con tu API/mockoon
       'paymentInfo': paymentInfo != null ? [paymentInfo!.toJson()] : [],
     };
   }

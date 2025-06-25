@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:balanced_foods/models/EntregaDetail.dart';
 import 'package:balanced_foods/models/customer.dart';
+import 'package:balanced_foods/models/entrega.dart';
 import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/entregas_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
@@ -172,8 +175,6 @@ class _TransportScreenState extends State<TransportScreen> {
                               String districtName= districtsProvider.getDistrictName(customer.idDistrict);
                               fullAddress = '${customer.customerAddress}, ${districtName}, ${provinceName}, ${departmentName}';
                             }
-                            
-                            final codPedido = 'PEDIDO N° ${order.idOrder.toString().padLeft(2, '0')}-2025';
 
                             return Row(
                               children: [
@@ -182,7 +183,7 @@ class _TransportScreenState extends State<TransportScreen> {
                                     empresa: empresa,
                                     persona: persona,
                                     customerPhone: customerPhone,
-                                    codPedido: codPedido,
+                                    idOrder: order.idOrder,
                                     fullAddress: fullAddress,
                                   ),
                                 ),
@@ -202,9 +203,9 @@ class OrderCard extends StatefulWidget {
   final empresa;
   final persona;
   final customerPhone;
-  final codPedido;
+  final idOrder;
   final fullAddress;
-  const OrderCard({super.key, required this.empresa, required this.persona, required this.customerPhone, required this.codPedido, required this.fullAddress});
+  const OrderCard({super.key, required this.empresa, required this.persona, required this.customerPhone, required this.idOrder, required this.fullAddress});
 
   @override
   State<OrderCard> createState() => _OrderCardState();
@@ -212,9 +213,14 @@ class OrderCard extends StatefulWidget {
 
 class _OrderCardState extends State<OrderCard> {
   bool _isExpanded = false;
+  final _formKey = GlobalKey<FormState>();
+  final _incidencias = TextEditingController();
+  final _firma = TextEditingController();
+  final List<XFile> _images = [];
 
   @override
   Widget build(BuildContext context) {
+    final codPedido = 'PEDIDO N° ${widget.idOrder.toString().padLeft(2, '0')}-2025';
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -235,7 +241,7 @@ class _OrderCardState extends State<OrderCard> {
                         const SizedBox(height: 2),
                         Text(widget.persona, style: AppTextStyles.orderData),
                         const SizedBox(height: 2),
-                        Text(widget.codPedido, style: AppTextStyles.orderData),
+                        Text(codPedido, style: AppTextStyles.orderData),
                       ],
                     ),
                   ),
@@ -375,7 +381,13 @@ class _OrderCardState extends State<OrderCard> {
                   ],
                 ),
               ),
-              if (_isExpanded) OrderExpandedDetail(),
+              if (_isExpanded) OrderExpandedDetail(
+                idOrder: widget.idOrder,
+                formKey: _formKey,
+                incidencias: _incidencias,
+                firma: _firma,
+                images: _images
+              ),
             ],
           ),
         ),
@@ -385,7 +397,20 @@ class _OrderCardState extends State<OrderCard> {
 }
 
 class OrderExpandedDetail extends StatefulWidget {
-  const OrderExpandedDetail({super.key});
+  final GlobalKey<FormState> formKey;
+  final TextEditingController  incidencias;
+  final TextEditingController  firma;
+  final List<XFile> images;
+  final idOrder;
+  
+  const OrderExpandedDetail({
+    super.key,
+    required this.formKey,
+    required this.incidencias,
+    required this.firma,
+    required this.images,
+    required this.idOrder,
+  });
 
   @override
   State<OrderExpandedDetail> createState() => _OrderExpandedDetailState();
@@ -400,6 +425,8 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
     if (pickedImages != null) {
       setState(() {
         _selectedImages.addAll(pickedImages);
+        widget.images.clear();
+        widget.images.addAll(_selectedImages);
       });
     }
   }
@@ -431,6 +458,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildFieldRow('Registro de Incidencias:', TextFormField(
+          controller: widget.incidencias,
           style: const TextStyle(fontSize: 10),
           decoration: const InputDecoration(
             isDense: true,
@@ -440,6 +468,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
         )),
         const SizedBox(height: 10),
         _buildFieldRow('Firma del cliente:', TextFormField(
+          controller: widget.firma,
           style: const TextStyle(fontSize: 10),
           decoration: const InputDecoration(
             isDense: true,
@@ -509,7 +538,12 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
             ),
           ),
         const SizedBox(height: 16),
-        const btnConfirmar(),
+        btnConfirmar(
+          idOrder: widget.idOrder,
+          firma: widget.firma,
+          incidencias: widget.incidencias,
+          images: widget.images,
+        ),
       ],
     );
   }
@@ -537,12 +571,62 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
 }
 
 class btnConfirmar extends StatefulWidget {
-  const btnConfirmar({super.key});
+  final idOrder;
+  final TextEditingController firma;
+  final TextEditingController incidencias;
+  final List<XFile> images;
+  
+  const btnConfirmar({
+    super.key,
+    required this.idOrder,
+    required this.firma,
+    required this.incidencias,
+    required this.images,
+  });
   @override
   State<btnConfirmar> createState() => _btnConfirmarState();
 }
 
 class _btnConfirmarState extends State<btnConfirmar> {
+  final formKey = GlobalKey<FormState>();
+
+  Future<String> _imageToBase64(XFile image) async {
+    final bytes = await image.readAsBytes();
+    return base64Encode(bytes);
+  }
+
+  Future<void> _registerDelivery() async {
+    final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
+    
+    final List<EntregaDetail> imageDetails = [];
+    for (final image in widget.images) {
+      final base64Image = await _imageToBase64(image);
+      imageDetails.add(EntregaDetail(entregaImage: base64Image));
+    }
+
+    final entrega = Entrega(
+      idOrder: widget.idOrder,
+      incidencias: widget.incidencias.text,
+      firma: widget.firma.text,
+      images: imageDetails,
+      entregaTime: TimeOfDay.now(),
+      entregaDate: DateTime.now(),
+    );
+
+    final success = await entregasProvider.registerEntrega(entrega);
+    
+    if (success) {
+      setState(() {
+        widget.images.clear();
+        widget.incidencias.clear();
+        widget.images.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Entrega registrada exitosamente')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -553,11 +637,7 @@ class _btnConfirmarState extends State<btnConfirmar> {
           SizedBox(
             height: 22,
             child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Registrado")),
-                );
-              },
+              onPressed: _registerDelivery,
               style: ElevatedButton.styleFrom(
                 elevation: 0,
                 backgroundColor: AppColors.orange,

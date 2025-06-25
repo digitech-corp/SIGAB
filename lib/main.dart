@@ -3,11 +3,11 @@ import 'package:balanced_foods/providers/companies_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
+import 'package:balanced_foods/providers/entregas_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
-import 'package:balanced_foods/screens/Reportes/invoice_screen.dart';
 import 'package:balanced_foods/screens/front_page_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -86,6 +86,14 @@ class MyApp extends StatelessWidget {
           ),
           update: (_, settingsProvider, __) =>
               OrdersProvider(settingsProvider: settingsProvider),
+        ),
+
+        ChangeNotifierProxyProvider<AppSettingsProvider, EntregasProvider>(
+          create: (context) => EntregasProvider(
+            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
+          ),
+          update: (_, settingsProvider, __) =>
+              EntregasProvider(settingsProvider: settingsProvider),
         ),
       ],
       child: MaterialApp(

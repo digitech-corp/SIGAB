@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppSettingsProvider extends ChangeNotifier {
-  bool _useLocalData = true;
+  bool _useLocalData = false;
 
   bool get useLocalData => _useLocalData;
 
