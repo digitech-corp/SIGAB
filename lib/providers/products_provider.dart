@@ -1,37 +1,31 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/product.dart';
-import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
-import 'package:balanced_foods/screens/modulo_pedidos/product_catalog_screen.dart';
+import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/product_catalog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart' show rootBundle;
 
 class ProductsProvider extends ChangeNotifier{
-  final AppSettingsProvider settingsProvider;
-  ProductsProvider({required this.settingsProvider});
-  bool get useLocalData => settingsProvider.useLocalData;
-  
   bool isLoading = false;
   List<Product> products = [];
 
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts(String token) async {
     isLoading = true;
     notifyListeners();
     try {
-      if (useLocalData) {
-        final data = await loadJsonFromAssets('assets/datos/products.json');
-        products = List<Product>.from(data['products'].map((product) => Product.fromJSON(product)));
+      final url = Uri.parse('https://adysabackend.facturador.es/articulos/getArticulosTodo');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        products = data.map((productJson) => Product.fromJSON(productJson)).toList();
       } else {
-        final url = Uri.parse('http://10.0.2.2:12346/products');
-        final response = await http.get(url);
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          products = List<Product>.from(data['products'].map((product) => Product.fromJSON(product)));
-        } else {
-          print('Error ${response.statusCode}');
-          products = [];
-        }
+        print('Error ${response.statusCode}');
+        products = [];
       }
     } catch (e) {
       print('Error: $e');
@@ -43,8 +37,8 @@ class ProductsProvider extends ChangeNotifier{
   }
 
   final Map<int, Map<int, ProductSelection>> _customerSelections = {};
-
-  void toggleSelection(Product product, {required bool isSelected, required int quantity}) {
+  
+  void toggleSelection(Product product, {required bool isSelected, required double quantity, bool shouldUpdateController = false}) {
     if (_currentCustomerId == null) return;
 
     final customerMap = _customerSelections.putIfAbsent(_currentCustomerId!, () => {});
@@ -53,12 +47,16 @@ class ProductsProvider extends ChangeNotifier{
       final existing = customerMap[product.idProduct]!;
       existing.isSelected = isSelected;
       existing.quantity = quantity;
-      existing.controller.text = quantity > 0 ? quantity.toString() : '';
+      if (shouldUpdateController) {
+        existing.controller.text = quantity > 0 ? quantity.toString() : '';
+      }
     } else {
       final sel = ProductSelection(product: product);
       sel.isSelected = isSelected;
       sel.quantity = quantity;
-      sel.controller.text = quantity > 0 ? quantity.toString() : '';
+      if (shouldUpdateController) {
+        sel.controller.text = quantity > 0 ? quantity.toString() : '';
+      }
       customerMap[product.idProduct] = sel;
     }
 
@@ -66,11 +64,26 @@ class ProductsProvider extends ChangeNotifier{
   }
 
   int? _currentCustomerId;
-
   void setCurrentCustomer(int customerId) {
     _currentCustomerId = customerId;
-    _customerSelections.putIfAbsent(customerId, () => {});
-    notifyListeners();
+    final customerMap = _customerSelections.putIfAbsent(customerId, () => {});
+
+    for (final product in products) {
+      if (!customerMap.containsKey(product.idProduct)) {
+        double precioInicial;
+        if (product.igvType == 14) {
+          precioInicial = (product.price * 1.18).roundToDouble();
+        } else {
+          precioInicial = product.price.roundToDouble();
+        }
+
+        customerMap[product.idProduct] = ProductSelection(
+          product: product,
+          initialPrice: precioInicial,
+          currentPrice: precioInicial,
+        );
+      }
+    }
   }
 
   Map<int, ProductSelection> get selectionMap =>
@@ -84,47 +97,43 @@ class ProductsProvider extends ChangeNotifier{
           ? _customerSelections[_currentCustomerId]!.values.toList()
           : [];
 
-  void setSelectedProducts(List<ProductSelection> selections) {
-    if (_currentCustomerId == null) return;
-
-    final customerMap = <int, ProductSelection>{};
-    for (var sel in selections) {
-      customerMap[sel.product.idProduct] = sel;
-    }
-    _customerSelections[_currentCustomerId!] = customerMap;
-
-    notifyListeners();
+  Map<int, List<Map<String, dynamic>>> _priceHistory = {};
+  
+  Future<void> loadPriceHistory(int customerId, OrdersProvider2 ordersProvider) async {
+    _priceHistory = ordersProvider.getPriceHistoryForCustomer(customerId);
   }
 
-  late Map<int, List<Map<String, dynamic>>> _priceHistory;
-  
-  Future<void> loadPriceHistory(int customerId, OrdersProvider ordersProvider) async {
-    _priceHistory = ordersProvider.getPriceHistoryForCustomer(customerId);
+   bool hasPriceHistoryForProduct(int idProduct) {
+    return _priceHistory.containsKey(idProduct);
   }
 
   List<Map<String, dynamic>> getPriceHistory(int productId) {
     return _priceHistory[productId] ?? [];
   }
-
+ 
   void updatePrice(int productId, double newPrice) {
     if (_currentCustomerId == null) return;
 
     final selectionMap = _customerSelections[_currentCustomerId];
     if (selectionMap != null && selectionMap.containsKey(productId)) {
-      selectionMap[productId]!.product.price = newPrice;
+      final selection = selectionMap[productId]!;
+      selection.product.price = newPrice;
+      selection.currentPrice = newPrice;
       notifyListeners();
     }
   }
   
   void clearSelections() {
+    for (var customerMap in _customerSelections.values) {
+      for (var selection in customerMap.values) {
+        selection.isSelected = false;
+        selection.quantity = 0;
+        selection.currentPrice = null;
+        selection.controller.text = '';
+      }
+    }
     _customerSelections.clear();
     _currentCustomerId = null;
     notifyListeners();
-  }
-
-  // CARGAR DATOS
-  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
-    final jsonString = await rootBundle.loadString(path);
-    return json.decode(jsonString);
   }
 }

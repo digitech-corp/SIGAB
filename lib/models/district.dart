@@ -1,32 +1,28 @@
 class District{
   int idDistrict;
   String district;
-  int idProvince;
 
   District({
     required this.idDistrict,
-    required this.district,
-    required this.idProvince
+    required this.district
   });
 
   factory District.fromJSON(Map<String, dynamic> json){
      return District(
-      idDistrict: json['idDistrict']?? 0,
-      district: json['district'],
-      idProvince: json['idProvince']?? 0
+      idDistrict: json['id'] ?? 0,
+      district: json['distrito']
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'idDistrict': idDistrict,
-      'district': district,
-      'idProvince': idProvince
+      'id': idDistrict,
+      'distrito': district
     };
   }
 
   @override
   String toString() {
-    return 'District{idDistrict: $idDistrict, district: $district, idProvince: $idProvince}';
+    return 'District{id: $idDistrict, distrito: $district}';
   }
 }

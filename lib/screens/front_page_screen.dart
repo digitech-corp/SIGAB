@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
-import 'package:balanced_foods/screens/new_user_screen.dart';
 
 class FrontPage extends StatelessWidget {
   const FrontPage({super.key});
@@ -93,22 +92,6 @@ class FrontActionSection extends StatelessWidget {
               minimumSize: const Size(double.infinity, 42),
             ),
             child: Text('Ingresar', style: AppTextStyles.login),
-          ),
-          SizedBox(height: isLandscape ? 12 : 20),
-          ElevatedButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const NewUserScreen()),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.orange,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: const BorderSide(color: Colors.white),
-              ),
-              minimumSize: const Size(double.infinity, 42),
-            ),
-            child: Text('Registrarse', style: AppTextStyles.register),
           ),
         ],
       ),

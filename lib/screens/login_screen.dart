@@ -1,9 +1,8 @@
 import 'package:balanced_foods/providers/users_provider.dart';
-import 'package:balanced_foods/screens/modulo_transportistas/transport_screen.dart';
+import 'package:balanced_foods/screens/Transportista/transport_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:balanced_foods/screens/new_user_screen.dart';
 import 'package:balanced_foods/screens/recover_password_screen.dart';
-import 'package:balanced_foods/screens/sales_module_screen.dart';
+import 'package:balanced_foods/screens/Vendedor/sales_module_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -75,7 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final isLandscape = screenWidth > screenHeight;
-    // Users();
     return Scaffold(
       backgroundColor: const Color(0xFFFF6600),
       body: SingleChildScrollView(
@@ -195,13 +193,13 @@ class LoginForm extends StatelessWidget {
             context: context,
             controller: userName,
             validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, ingresa un correo electrónico';
-              }
-              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-              if (!emailRegex.hasMatch(value)) {
-                return 'Por favor, ingresa un correo electrónico válido';
-              }
+              // if (value == null || value.isEmpty) {
+              //   return 'Por favor, ingresa un correo electrónico';
+              // }
+              // final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              // if (!emailRegex.hasMatch(value)) {
+              //   return 'Por favor, ingresa un correo electrónico válido';
+              // }
               return null;
             },
           ),
@@ -304,8 +302,6 @@ class LoginButtons extends StatelessWidget {
   Widget build(BuildContext context) {
   final screenWidth = MediaQuery.of(context).size.width;
   final horizontalPadding = screenWidth * 0.0;
-  final screenHeight = MediaQuery.of(context).size.height;
-  final isLandscape = screenWidth > screenHeight;
   
   return ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 480),
@@ -318,33 +314,14 @@ class LoginButtons extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    final userProvider = Provider.of<UsersProvider>(context, listen: false);
-                    final user  = await userProvider.validateUser(
-                      userName.text.trim(),
-                      userPassword.text.trim(),
-                    );
-
-                    if (user  != null) {
+                    final provider = Provider.of<UsersProvider>(context, listen: false);
+                    final tipoUsuario = await provider.login(userName.text, userPassword.text);
+                    if (tipoUsuario != null) {
                       await onSaveCredentials();
+                      onLoginSuccess(context, tipoUsuario);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Inicio de sesión exitoso")),
                       );
-                      final role = user.role.toUpperCase().trim();
-                      if (role == 'VENDEDOR') {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => SalesModuleScreen()),
-                        );
-                      } else if (role == 'TRANSPORTISTA') {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => TransportScreen()),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Rol no reconocido")),
-                        );
-                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Usuario o contraseña incorrectos")),
@@ -361,33 +338,31 @@ class LoginButtons extends StatelessWidget {
                 child: Text('Iniciar Sesión', style: AppTextStyles.orange),
               ),
             ),
-            SizedBox(height: isLandscape ? 5 : 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NewUserScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF6600),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Colors.white),
-                  ),
-                ),
-                child: Text('Registrarse', style: AppTextStyles.register),
-              ),
-            ),
-            SizedBox(height: isLandscape ? 10 : 10),
           ],
         ),
       ),
-  );
+    );
   }
 }
+
+void onLoginSuccess(BuildContext context, int? tipoUsuario) {
+  if (tipoUsuario == 4) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const SalesModuleScreen()),
+    );
+  } else if (tipoUsuario == 2) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const TransportScreen()),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Tipo de usuario no reconocido")),
+    );
+  }
+}
+
 
 class AppTextStyles {
   static const base = TextStyle(

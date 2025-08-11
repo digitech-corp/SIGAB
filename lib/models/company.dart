@@ -1,40 +1,40 @@
 class Company{
-  int? idCompany;
-  String companyName;
-  String companyRUC;
-  String companyAddress;
-  String companyWeb;
+  int? id;
+  String razonSocial;
+  String ruc;
+  String direccion;
+  String? companyWeb;
 
   Company({
-    this.idCompany,
-    required this.companyName,
-    required this.companyRUC,
-    required this.companyAddress,
-    required this.companyWeb
+    this.id,
+    required this.razonSocial,
+    required this.ruc,
+    required this.direccion,
+    this.companyWeb
   });
 
   factory Company.fromJSON(Map<String, dynamic> json){
      return Company(
-      idCompany: json['idCompany'],
-      companyName: json['companyName'],
-      companyRUC: json['companyRUC'],
-      companyAddress: json['companyAddress'],
+      id: json['id'],
+      ruc: json['ruc'],
+      razonSocial: json['razon_social'],
+      direccion: json['direccion'],
       companyWeb: json['companyWeb']
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      if (idCompany != null) 'idCompany': idCompany,
-      'companyName': companyName,
-      'companyRUC': companyRUC,
-      'companyAddress': companyAddress,
+      if (id != null) 'id': id,
+      'ruc': ruc,
+      'razon_social': razonSocial,
+      'direccion': direccion,
       'companyWeb': companyWeb
     };
   }
 
   @override
   String toString() {
-    return 'Company{idCompany: $idCompany, companyName: $companyName, companyRUC: $companyRUC, companyAddress: $companyAddress, companyWeb: $companyWeb}';
+    return 'Company{id: $id, ruc: $ruc, razon_social: $razonSocial, direccion: $direccion, companyWeb: $companyWeb}';
   }
 }

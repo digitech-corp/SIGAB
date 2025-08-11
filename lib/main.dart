@@ -1,13 +1,17 @@
-import 'package:balanced_foods/providers/AppSettingsProvider.dart';
-import 'package:balanced_foods/providers/companies_provider.dart';
+import 'package:balanced_foods/providers/configuraciones_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
 import 'package:balanced_foods/providers/districts_provider.dart';
 import 'package:balanced_foods/providers/entregas_provider.dart';
+import 'package:balanced_foods/providers/facturas_provider.dart';
+import 'package:balanced_foods/providers/follow_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
+import 'package:balanced_foods/providers/roles_provider.dart';
+import 'package:balanced_foods/providers/ubigeos_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
+import 'package:balanced_foods/providers/dashboard_provider.dart';
 import 'package:balanced_foods/screens/front_page_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,84 +27,66 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
-        ChangeNotifierProxyProvider<AppSettingsProvider, CustomersProvider>(
-          create: (context) => CustomersProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              CustomersProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => EntregasProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, CompaniesProvider>(
-          create: (context) => CompaniesProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              CompaniesProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => UsersProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, UsersProvider>(
-          create: (context) => UsersProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              UsersProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => DashboardProvider(),
+        ),
+        
+        ChangeNotifierProvider(
+          create: (_) => FollowProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, DepartmentsProvider>(
-          create: (context) => DepartmentsProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              DepartmentsProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => CustomersProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, ProvincesProvider>(
-          create: (context) => ProvincesProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              ProvincesProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => OrdersProvider2(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, DistrictsProvider>(
-          create: (context) => DistrictsProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              DistrictsProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => DepartmentsProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, ProductsProvider>(
-          create: (context) => ProductsProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              ProductsProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => ProvincesProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, OrdersProvider>(
-          create: (context) => OrdersProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              OrdersProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => DistrictsProvider(),
         ),
 
-        ChangeNotifierProxyProvider<AppSettingsProvider, EntregasProvider>(
-          create: (context) => EntregasProvider(
-            settingsProvider: Provider.of<AppSettingsProvider>(context, listen: false),
-          ),
-          update: (_, settingsProvider, __) =>
-              EntregasProvider(settingsProvider: settingsProvider),
+        ChangeNotifierProvider(
+          create: (_) => UbigeosProvider(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => ProductsProvider(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => RolesProvider(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => OpcionCatalogoProvider(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => FacturasProvider(),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'ADYSA',
         home: FrontPage(),
-        // home: InvoiceScreen(idOrder: 1),
       ),
     );
   }

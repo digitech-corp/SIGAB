@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.5
+  http: ^1.4.0
   provider: ^6.1.5
   shared_preferences: ^2.5.3
   image_picker: ^1.1.2
@@ -44,10 +44,17 @@ dependencies:
   mockito: ^5.4.6
   build_runner: ^2.4.14
   syncfusion_flutter_charts: ^29.2.10
+  fl_chart: ^1.0.0
   file_picker: ^10.2.0
   file_saver: ^0.2.14
   path_provider_android: ^2.2.17
   flutter_file_dialog: ^3.0.2
+  open_file: ^3.5.10
+  mime: ^2.0.0
+  signature: ^5.5.0
+  flutter_map: ^8.2.1
+  location: ^8.0.1
+  latlong2: ^0.9.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -56,6 +63,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -107,3 +115,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logoApp.jpg"

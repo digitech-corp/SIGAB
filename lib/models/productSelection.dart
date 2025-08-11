@@ -4,5 +4,7 @@ class ProductSelection {
   final Product product;
   final int quantity;
 
-  ProductSelection({required this.product, required this.quantity});
+  double? initialPrice;
+
+  ProductSelection({required this.product, required this.quantity, this.initialPrice});
 }

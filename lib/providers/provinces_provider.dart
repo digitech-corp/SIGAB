@@ -1,35 +1,29 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/province.dart';
-import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart' show rootBundle;
 
-class ProvincesProvider extends ChangeNotifier{
-  final AppSettingsProvider settingsProvider;
-  ProvincesProvider({required this.settingsProvider});
-  bool get useLocalData => settingsProvider.useLocalData;
-  
+class ProvincesProvider extends ChangeNotifier {
   bool isLoading = false;
   List<Province> provinces = [];
-  
-  Future<void> fetchProvinces() async {
+
+  Future<void> fetchProvincesByDepartment(String departament, String token) async {
     isLoading = true;
     notifyListeners();
     try {
-      if (useLocalData) {
-        final data = await loadJsonFromAssets('assets/datos/provinces.json');
-        provinces = List<Province>.from(data['provinces'].map((province) => Province.fromJSON(province)));
+      final url = Uri.parse('https://adysabackend.facturador.es/ubigeos/getProvinciasByIdDepartamento/$departament');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        provinces = data.map((item) => Province.fromJSON(item)).toList();
       } else {
-        final url = Uri.parse('http://10.0.2.2:12346/provinces');
-        final response = await http.get(url);
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          provinces = List<Province>.from(data['provinces'].map((province) => Province.fromJSON(province)));
-        } else {
-          print('Error: ${response.statusCode}');
-          provinces = [];
-        }
+        print('Error: ${response.statusCode}');
+        provinces = [];
       }
     } catch (e) {
       print('Error: $e');
@@ -38,24 +32,5 @@ class ProvincesProvider extends ChangeNotifier{
       isLoading = false;
       notifyListeners();
     }
-  }
-
-  String getProvinceName(int idProvince) {
-  return provinces
-          .firstWhere(
-            (p) => p.idProvince == idProvince,
-            orElse: () => Province(idProvince: 0, province: '', idDepartment: 0),
-          )
-          .province;
-  }
-  // Método para obtener provincias por departamento para usarlo más adelante
-  List<Province> getProvincesByDepartment(int idDepartment) {
-    return provinces.where((p) => p.idDepartment == idDepartment).toList();
-  }
-
-  // CARGAR DATOS
-  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
-    final jsonString = await rootBundle.loadString(path);
-    return json.decode(jsonString);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:balanced_foods/providers/users_provider.dart';
+import 'package:balanced_foods/screens/resetPasswordWithCodeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -95,10 +96,20 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-                                  usersProvider.recoverPassword(_userName.text);
-                                  // usersProvider.recoverPassword(_userName.text).then((message) {
-                                  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-                                  // });
+                                  usersProvider.recoverPassword(_userName.text).then((result) {
+                                    final bool state = result['response'];
+                                    final String message = result['message'];
+                                    if (state) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => ResetPasswordWithCodeScreen(email: _userName.text)),
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+                                    }
+                                  });
+                                  
                                 }
                               },
                               style: ElevatedButton.styleFrom(

@@ -1,112 +1,84 @@
 import 'dart:convert';
 import 'package:balanced_foods/models/user.dart';
-import 'package:balanced_foods/providers/AppSettingsProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/services.dart' show rootBundle;
 
-class UsersProvider extends ChangeNotifier{
-  final AppSettingsProvider settingsProvider;
-  UsersProvider({required this.settingsProvider});
-  bool get useLocalData => settingsProvider.useLocalData;
-  
+class UsersProvider extends ChangeNotifier {
   bool isLoading = false;
-  List<User> users= [];
-  
-
+  List<User> users = [];
   User? _loggedUser;
-  User? get loggedUser => _loggedUser;
-  
-  Future<void> fetchUsers() async {
-    isLoading = true; 
-    notifyListeners();
+  String? _token;
 
+  User? get loggedUser => _loggedUser;
+  String? get token => _token;
+
+  void setLoggedUser(User user) {
+    _loggedUser = user;
+    notifyListeners();
+  }
+
+  Future<int?> login(String usuario, String password) async {
+    final url = Uri.parse('https://adysabackend.facturador.es/auth/login');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'usuario': usuario,
+        'password': password,
+        'recordar': 'true',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['exito'] == true && data['token'] != null) {
+        _token = data['token'];
+        final idUsuario = data['data']['id'];
+        await fetchLoggedUserData(idUsuario);
+        return data['id_tipo_usuario'];
+      }
+    }
+    return null;
+  }
+
+  Future<void> fetchLoggedUserData(int idUsuario) async {
+    isLoading = true;
+    notifyListeners();
     try {
-      if (useLocalData) {
-        final data = await loadJsonFromAssets('assets/datos/users.json');
-        users = List<User>.from(data['users'].map((user) => User.fromJSON(user)));
-      } else {
-        final url = Uri.parse('http://10.0.2.2:12346/users');
-        final response = await http.get(url);
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          users = List<User>.from(data['users'].map((user) => User.fromJSON(user)));
-        } else {
-          print('Error ${response.statusCode}');
-          users = [];
+      final url = Uri.parse('https://adysabackend.facturador.es/users/getUsers');
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_token',
+      });
+
+      if (response.statusCode == 200) {
+        final List<dynamic> dataList = jsonDecode(response.body);
+        Map<String, dynamic>? userMap;
+        try {
+          userMap = dataList.firstWhere((user) => user['id_usuario'] == idUsuario);
+        } catch (_) {
+          userMap = null;
         }
+
+        if (userMap != null) {
+          _loggedUser = User.fromJSON(userMap);
+        } else {
+          print('Usuario no encontrado en la lista');
+        }
+        notifyListeners();
+      } else {
+        print('Error ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
-      users = [];
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<User?> validateUser(String email, String password) async {
-    try {
-      Map<String, dynamic> data;
-      if (useLocalData) {
-        data = await loadJsonFromAssets('assets/datos/users.json');
-      } else {
-        final url = Uri.parse('http://10.0.2.2:12346/users');
-        final response = await http.get(url);
-        if (response.statusCode != 200) return null;
-        data = jsonDecode(response.body);
-      }
-
-      final List<dynamic> jsonUsers = data['users'];
-
-      for (final user in jsonUsers) {
-        if (user['email'] == email && user['password'] == password) {
-          _loggedUser = User.fromJSON(user);
-          notifyListeners();
-          return _loggedUser;
-        }
-      }
-    } catch (e) {
-      print('Error validando usuario: $e');
-    }
-    return null;
-  }
-
-  void logout() {
-    _loggedUser = null;
-    notifyListeners();
-  }
-  
-  Future<bool> registerUser(User user) async {
-    if (useLocalData) {
-      print('Modo de prueba: No se puede registrar un usuario en un archivo local.');
-      return false;
-    }
-    final url = Uri.parse('http://10.0.2.2:12346/users');
-    
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(user.toJson()),
-      );
-      
-      if (response.statusCode == 201) {
-        await fetchUsers();
-        return true;
-        
-      } else {
-        print('Error al registrar: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      print('Error: $e');
-      return false;
-    }
-  }
-
-  Future<String> recoverPassword(String email) async {
-    final url = Uri.parse('http://10.0.2.2:12346/recover');
+  Future<Map<String, dynamic>> recoverPassword(String email) async {
+    final url = Uri.parse('https://adysabackend.facturador.es/auth/enviarCodigoCorreo');
 
     try {
       final response = await http.post(
@@ -117,7 +89,35 @@ class UsersProvider extends ChangeNotifier{
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['message'] ?? 'Revisa tu correo electrónico.';
+        final bool responseState = data['response'] == true;
+        final String message = data['message'] ?? 'Verifique su correo';
+        
+        return {'response': responseState, 'message': message};
+      } else {
+        return {'response': false, 'message': 'Error al procesar la solicitud.'};
+      }
+    } catch (e) {
+      return {'response': false, 'message': 'Ocurrió un error. Intenta nuevamente.'};
+    }
+  }
+
+  Future<String> setNewPassword(String email, String code, String newPassword) async {
+    final url = Uri.parse('https://adysabackend.facturador.es/auth/actualizarContrasena');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'code': code,
+          'newPassword': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['message'] ?? 'Contraseña restablecida';
       } else {
         return 'Error al procesar la solicitud.';
       }
@@ -125,10 +125,32 @@ class UsersProvider extends ChangeNotifier{
       return 'Ocurrió un error. Intenta nuevamente.';
     }
   }
+  
+  void logout() {
+    _loggedUser = null;
+    _token = null;
+    notifyListeners();
+  }
 
-  // CARGAR DATOS
-  Future<Map<String, dynamic>> loadJsonFromAssets(String path) async {
-    final jsonString = await rootBundle.loadString(path);
-    return json.decode(jsonString);
+  Future<bool> updateUser(Map<String, dynamic> cuerpo, String token) async {
+    try {
+      final response = await http.put(
+        Uri.parse('https://adysabackend.facturador.es/users/updateUser'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(cuerpo),
+      );
+      if (response.statusCode == 200) {
+        fetchLoggedUserData(_loggedUser?.idUsuario ?? 0);
+        return true;
+      } else {
+        throw Exception('Error al actualizar el usuario: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
   }
 }
