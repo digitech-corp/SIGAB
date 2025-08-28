@@ -34,10 +34,11 @@ class _EntregasPendientesScreenState extends State<EntregasPendientesScreen> {
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
 
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
+      final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
       final token = userProvider.token;
 
       await customersProvider.fetchCustomers(token!);
-      await entregasProvider.fetchEntregas(token, DateFormat('yyyy-MM-dd').format(selectedDate));
+      await entregasProvider.fetchEntregas(token, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), idTransportista);
     });
   }
 
@@ -54,9 +55,10 @@ class _EntregasPendientesScreenState extends State<EntregasPendientesScreen> {
       });
 
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
+      final idTransportista = usersProvider.loggedUser?.idTransportista ?? null;
       final token = usersProvider.token;
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
-      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(selectedDate));
+      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), idTransportista);
     }
   }
 
@@ -148,7 +150,7 @@ class _EntregasPendientesScreenState extends State<EntregasPendientesScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Entregas del día', style: AppTextStyles.subtitle),
+                      Text('Pendientes del día', style: AppTextStyles.subtitle),
                       GestureDetector(
                         onTap: () => _selectDate(context),
                         child: Text(DateFormat('dd/MM/yyyy').format(selectedDate), style: AppTextStyles.date),
@@ -329,10 +331,17 @@ class _OrderCardState extends State<OrderCard> {
                           child: Image.asset('assets/images/phone.png', color: AppColors.orange),
                         ),
                         onPressed: () async {
-                          final String phone = '+51${widget.customerPhone}';
-                          final Uri callUri = Uri(scheme: 'tel', path: phone);
+                          if (widget.customerPhone.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No hay número registrado')),
+                            );
+                            return;
+                          }
+                          final Uri callUri = Uri(scheme: 'tel', path: '+51${widget.customerPhone}');
                           if (await canLaunchUrl(callUri)) {
                             await launchUrl(callUri);
+                          } else {
+                            debugPrint('No se pudo lanzar $callUri');
                           }
                         },
                       ),
@@ -345,10 +354,17 @@ class _OrderCardState extends State<OrderCard> {
                           child: Image.asset('assets/images/whatsapp.png', color: AppColors.orange),
                         ),
                         onPressed: () async {
-                          final String phone = '51${widget.customerPhone}';
-                          final Uri whatsappUri = Uri.parse("https://wa.me/$phone");
+                          if (widget.customerPhone.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No hay número registrado')),
+                            );
+                            return;
+                          }
+                          final Uri whatsappUri = Uri.parse("https://wa.me/+51${widget.customerPhone}");
                           if (await canLaunchUrl(whatsappUri)) {
                             await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                          } else {
+                            debugPrint('No se pudo abrir WhatsApp para +51${widget.customerPhone}');
                           }
                         },
                       ),
@@ -441,6 +457,7 @@ class OrderExpandedDetail extends StatefulWidget {
 }
 
 class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
+  DateTime selectedDate = DateTime.now();
   final ImagePicker _picker = ImagePicker();
   Uint8List? _firmaImage;
   XFile? _selectedImage;
@@ -452,7 +469,6 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
       final bytes = await File(image.path).readAsBytes();
       final mimeType = lookupMimeType(image.path);
       final base64Image = 'data:$mimeType;base64,${base64Encode(bytes)}';
-      // final base64Image = base64Encode(bytes); 
       setState(() {
         _selectedImage = image;
         _base64Image = base64Image;
@@ -482,6 +498,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
     if (_firmaController == null) return;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           title: const Text('Firmar'),
@@ -634,7 +651,7 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(),
                       shape: BoxShape.circle,
                     ),
                     padding: const EdgeInsets.all(2),
@@ -698,48 +715,39 @@ class btnConfirmar extends StatefulWidget {
 class _btnConfirmarState extends State<btnConfirmar> {
   final formKey = GlobalKey<FormState>();
 
-  // Future<String> _imageToBase64(XFile image) async {
-  //   final bytes = await image.readAsBytes();
-  //   return base64Encode(bytes);
-  // }
-
   Future<void> _registerDelivery({required int idEstadoNuevo, bool denied = false}) async {
     final entregasProvider = Provider.of<EntregasProvider>(context, listen: false); 
     final token = Provider.of<UsersProvider>(context, listen: false).token;
-    entregasProvider.fetchEstadoEntrega(token!, widget.idOrder);
-    final entregaAnterior = entregasProvider.entregas;
+    await entregasProvider.fetchEstadoEntrega(token!, widget.idOrder);
+    final entregaAnterior = entregasProvider.entregaAnterior;
 
     final entrega = Entrega(
       idEstadoAnterior: entregaAnterior.first.id,
       idEstadoNuevo: idEstadoNuevo,
       incidencias: widget.incidencias.text,
-      // firma: denied ? '' : widget.firma.text,
-      archivoEvidencia: widget.firma.text,
+      archivoEvidencia: widget.archivoEvidencia,
+      firma: denied ? '' : widget.firma.text,
     );
 
-    // final success = await entregasProvider.registerEntrega(token!, entrega);
+    final success = await entregasProvider.registerEntrega(token, entrega);
 
-    print('Entrega:');
-    print('Entrega:idOrder: ${widget.idOrder}');
-    print('Entrega:idEstadoAnterior: ${entrega.idEstadoAnterior}');
-    print('Entrega:idEstadoNuevo: ${entrega.idEstadoNuevo}');
-    print('Entrega:incidencias: ${entrega.incidencias}');
-    print('Entrega:firma: ${entrega.firma}');
-    print('Entrega:archivoEvidencia: ${entrega.archivoEvidencia}');
-
-    // if (success) {
-    //   setState(() {
-    //     widget.archivoEvidencia == null;
-    //     widget.incidencias.clear();
-    //     widget.firma.clear();
-    //   });
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text(denied ? 'No entregado' : 'Entrega registrada exitosamente')),
-    //   );
-    // }
+    if (success) {
+      setState(() {
+        widget.incidencias.clear();
+        widget.firma.clear();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(denied ? 'No entregado' : 'Entrega registrada exitosamente')),
+      );
+    }
   }
 
   Future<void> _showConfirmationDialog({required bool isDenegar}) async {
+    final entregasProvider = Provider.of<EntregasProvider>(context, listen: false); 
+    final token = Provider.of<UsersProvider>(context, listen: false).token;
+    final userProvider = Provider.of<UsersProvider>(context, listen: false);
+    final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -753,7 +761,9 @@ class _btnConfirmarState extends State<btnConfirmar> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.orange),
             child: const Text('Confirmar'),
           ),
@@ -764,6 +774,14 @@ class _btnConfirmarState extends State<btnConfirmar> {
     if (confirmed == true) {
       final int estado = isDenegar ? 240 : 239;
       await _registerDelivery(idEstadoNuevo: estado, denied: isDenegar);
+
+      await Future.delayed(const Duration(seconds: 1));
+      await entregasProvider.fetchEntregas(
+        token!,
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        idTransportista,
+      );
     }
   }
 
@@ -777,6 +795,7 @@ class _btnConfirmarState extends State<btnConfirmar> {
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.lightGris,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -790,6 +809,7 @@ class _btnConfirmarState extends State<btnConfirmar> {
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.orange,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),

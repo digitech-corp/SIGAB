@@ -34,14 +34,15 @@ class UsersProvider extends ChangeNotifier {
       if (data['exito'] == true && data['token'] != null) {
         _token = data['token'];
         final idUsuario = data['data']['id'];
-        await fetchLoggedUserData(idUsuario);
+        final idTransportista = data['data']['id_transportista'];
+        await fetchLoggedUserData(idUsuario, idTransportista);
         return data['id_tipo_usuario'];
       }
     }
     return null;
   }
 
-  Future<void> fetchLoggedUserData(int idUsuario) async {
+  Future<void> fetchLoggedUserData(int idUsuario, int? idTransportista) async {
     isLoading = true;
     notifyListeners();
     try {
@@ -62,6 +63,7 @@ class UsersProvider extends ChangeNotifier {
 
         if (userMap != null) {
           _loggedUser = User.fromJSON(userMap);
+          _loggedUser?.idTransportista = idTransportista;
         } else {
           print('Usuario no encontrado en la lista');
         }
@@ -143,7 +145,7 @@ class UsersProvider extends ChangeNotifier {
         body: jsonEncode(cuerpo),
       );
       if (response.statusCode == 200) {
-        fetchLoggedUserData(_loggedUser?.idUsuario ?? 0);
+        fetchLoggedUserData(_loggedUser?.idUsuario ?? 0, _loggedUser?.idTransportista ?? 0);
         return true;
       } else {
         throw Exception('Error al actualizar el usuario: ${response.body}');

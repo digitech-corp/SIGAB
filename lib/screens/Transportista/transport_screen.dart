@@ -31,12 +31,16 @@ class _TransportScreenState extends State<TransportScreen> {
   @override
   void initState() {
     super.initState();
-    final today = DateTime.now();
+    final now = DateTime.now();
+    final fechaInicio = DateTime(now.year, now.month, 1);
+    final fechaFin = DateTime(now.year, now.month + 1, 0);
     Future.microtask(() async {
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = userProvider.token;
-      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(today));
+      final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
+      print('id de transportista: $idTransportista');
+      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(fechaInicio), DateFormat('yyyy-MM-dd').format(fechaFin), idTransportista);
     });
   }
 
@@ -318,6 +322,7 @@ class SalesModuleCards extends StatelessWidget {
   Widget build(BuildContext context) {
     final entregasProvider =  Provider.of<EntregasProvider>(context);
     final entregas = entregasProvider.entregas;
+    print('Cantidad de entregas: ${entregas.length}');
     final pendientes = entregas.where((entregas){
       final estadosPermitidos = [239, 240];
       return estadosPermitidos.contains(entregas.idEstado);

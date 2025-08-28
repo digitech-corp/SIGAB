@@ -21,6 +21,7 @@ class Entrega{
   String? fechaEmision;
   String? direccionEntrega;
   String? productos;
+  String? transportista;
   double? peso;
   String? nombres;
   String? nroDocumento;
@@ -29,7 +30,7 @@ class Entrega{
   String? nombrePersonal;
 
   String? firma;
-  final List<EntregaDetail>? images;
+  // final List<EntregaDetail>? images;
 
   Entrega({
     this.id,
@@ -52,6 +53,7 @@ class Entrega{
     this.fechaEmision,
     this.direccionEntrega,
     this.productos,
+    this.transportista,
     this.peso,
     this.nombres,
     this.nroDocumento,
@@ -60,7 +62,7 @@ class Entrega{
     this.nombrePersonal,
 
     this.firma,
-    this.images,
+    // this.images,
   });
 
   factory Entrega.fromJSON(Map<String, dynamic> json){
@@ -91,6 +93,7 @@ class Entrega{
       fechaEmision: json['fecha_emision'],
       direccionEntrega: json['direccion_entrega'],
       productos: json['productos'],
+      transportista: json['transportista'],
       peso: (json['peso'] as num?)?.toDouble(),
       nombres: json['nombres'],
       nroDocumento: json['nro_documento'],
@@ -98,10 +101,10 @@ class Entrega{
       estado: json['estado'] ?? json['nombre_estado'],
       nombrePersonal: json['nombre_personal'],
 
-      firma: json['firma'],
-      images: (json['images'] as List<dynamic>?)
-          ?.map((item) => EntregaDetail.fromJSON(item))
-          .toList(),
+      // firma: json['firma'],
+      // images: (json['images'] as List<dynamic>?)
+      //     ?.map((item) => EntregaDetail.fromJSON(item))
+      //     .toList(),
     );
   }
 

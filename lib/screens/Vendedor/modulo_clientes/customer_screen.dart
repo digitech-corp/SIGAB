@@ -18,6 +18,7 @@ class CustomerScreen extends StatefulWidget {
 }
 
 class _CustomerScreenState extends State<CustomerScreen> {
+  final TextEditingController _searchController = TextEditingController();
   String query = '';
 
   @override
@@ -27,6 +28,12 @@ class _CustomerScreenState extends State<CustomerScreen> {
       final token = Provider.of<UsersProvider>(context, listen: false).token;
       Provider.of<CustomersProvider>(context, listen: false).fetchCustomers(token!);
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
   
   @override
@@ -81,6 +88,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     child: Container(
                       height: 30,
                       child: TextField(
+                        controller: _searchController,
                         onChanged: (val) {
                           setState(() {
                             query = val;
@@ -98,6 +106,18 @@ class _CustomerScreenState extends State<CustomerScreen> {
                             color: Colors.black,
                             size: 15,
                           ),
+                          suffixIcon: query.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 15, color: Colors.black),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    query = '';
+                                  });
+                                  FocusScope.of(context).unfocus();
+                                },
+                              )
+                            : null,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide.none,
@@ -128,9 +148,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
                             final listaFiltrada = customersProvider.customers.where((c) {
                             final nombreCliente = c.nombres.toLowerCase() + ' ' + c.apellidos.toLowerCase();
                             final nombreEmpresa = c.razonSocialAfiliada.toLowerCase();
-                            // final nombreEmpresa = companiesProvider
-                            //     .getCompanyNameById(c.idCompany)
-                            //     .toLowerCase();
                             return nombreCliente.contains(query.toLowerCase()) ||
                                 nombreEmpresa.contains(query.toLowerCase());
                           }).toList();
@@ -174,9 +191,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
   }
   
   Widget _CustomersList(BuildContext context, Map<String, List<Customer>> agrupado) {
-    // final customersProvider = Provider.of<CustomersProvider>(context);
-    // final token = Provider.of<UsersProvider>(context, listen: false).token;
-
     return ListView.builder(
       itemCount: agrupado.length,
       itemBuilder: (context, index) {
@@ -191,10 +205,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
               child: Text(letra, style: AppTextStyles.orange),
             ),
             ...grupo.map((c) {
-              // final photoBytes = customersProvider.customerPhotos[c.idCliente];
-              // if (photoBytes == null && c.fotoPerfil.isNotEmpty) {
-              //   customersProvider.fetchCustomerPhoto(c.fotoPerfil, token!, c.idCliente!);
-              // }
+              String nombreCompleto = (c.nombres + " " + c.apellidos).toUpperCase();
               return Padding(
                 padding: const EdgeInsets.only(left: 10, top: 4, bottom: 4),
                 child: InkWell(
@@ -204,9 +215,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       MaterialPageRoute(builder: (_) => EditCustomerScreen(
                         customer: c,
                         companyName: c.razonSocialAfiliada,
-                        // companyName: companies.firstWhere(
-                        // (comp) => comp.idCompany == c.idCompany,
-                        // ).companyName,
                       )),
                     );
                   },
@@ -216,10 +224,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
                       CircleAvatar(
                         radius: 18,
                         backgroundColor: Colors.grey[300],
-                        backgroundImage: c.fotoPerfil.isNotEmpty//
-                          ? NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(c.fotoPerfil)}')
+                        backgroundImage: c.fotoPerfil!.isNotEmpty
+                          ? NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(c.fotoPerfil!)}')
                           : null,
-                        child: c.fotoPerfil.isEmpty
+                        child: c.fotoPerfil!.isEmpty
                           ? Icon(Icons.person, size: 30, color: AppColors.gris)
                           : null,
                       ),
@@ -228,7 +236,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(c.nombres + " " + c.apellidos, style: AppTextStyles.orange),
+                            Text(nombreCompleto, style: AppTextStyles.orange),
                             const SizedBox(height: 2),
                             Text(
                               c.razonSocialAfiliada.isNotEmpty
@@ -246,10 +254,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           child: Image.asset('assets/images/phone.png', color: Colors.black),
                         ),
                         onPressed: () async {
-                          final String phone = c.razonSocialAfiliada.isNotEmpty
-                                  ? '+51${c.numero}'
-                                  : 'Sin número';
-                          final Uri callUri = Uri(scheme: 'tel', path: phone);
+                          if (c.numero.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No hay número registrado')),
+                            );
+                            return;
+                          }
+                          final Uri callUri = Uri(scheme: 'tel', path: '+51${c.numero}');
                           if (await canLaunchUrl(callUri)) {
                             await launchUrl(callUri);
                           } else {
@@ -265,14 +276,17 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                         ),
                         onPressed: () async {
-                          final String phone = c.razonSocialAfiliada.isNotEmpty
-                                  ? '+51${c.numero}'
-                                  : 'Sin número';
-                          final Uri whatsappUri = Uri.parse("https://wa.me/$phone");
+                          if (c.numero.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No hay número registrado')),
+                            );
+                            return;
+                          }
+                          final Uri whatsappUri = Uri.parse("https://wa.me/+51${c.numero}");
                           if (await canLaunchUrl(whatsappUri)) {
                             await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
                           } else {
-                            debugPrint('No se pudo abrir WhatsApp para $phone');
+                            debugPrint('No se pudo abrir WhatsApp para +51${c.numero}');
                           }
                         },
                       ),

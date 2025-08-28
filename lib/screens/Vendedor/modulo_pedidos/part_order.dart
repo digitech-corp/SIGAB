@@ -4,6 +4,7 @@ import 'package:balanced_foods/models/opcionCatalogo.dart';
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:balanced_foods/models/pagoMixto.dart';
+import 'package:balanced_foods/models/product.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
@@ -53,25 +54,68 @@ class partOrder extends StatelessWidget {
 
 class SearchProduct extends StatefulWidget {
   final int? idCustomer;
-  const SearchProduct({super.key, required this.idCustomer});
+  final List<ProductSelection>? initialSelections;
+  const SearchProduct({super.key, required this.idCustomer, this.initialSelections});
 
   @override
   State<SearchProduct> createState() => _SearchProductState();
 }
 
 class _SearchProductState extends State<SearchProduct> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchText = '';
+   final TextEditingController _searchController = TextEditingController();
+    String _searchText = '';
 
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(() {
-      setState(() {
-        _searchText = _searchController.text.toLowerCase();
+    Product _mergeWithProviderProduct(ProductsProvider provider, Product base) {
+      final fromProvider = provider.products.firstWhere(
+        (p) => p.idProduct == base.idProduct,
+        orElse: () => base,
+      );
+
+      if (identical(fromProvider, base)) {
+        return base;
+      }
+
+      return fromProvider.copyWith(
+        productName: (base.productName.isNotEmpty) ? base.productName : null,
+        unidadMedida: (base.unidadMedida.isNotEmpty) ? base.unidadMedida : null,
+        productType: (base.productType.isNotEmpty) ? base.productType : null,
+        animalType: base.animalType,
+        price: base.price > 0 ? base.price : null,
+        stockActualEmpresa: fromProvider.stockActualEmpresa,
+      );
+    }
+
+    @override
+    void initState() {
+      super.initState();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final provider = Provider.of<ProductsProvider>(context, listen: false);
+
+        if (widget.idCustomer != null) {
+          provider.setCurrentCustomer(widget.idCustomer!);
+        }
+
+        if (widget.initialSelections != null) {
+          for (final selection in widget.initialSelections!) {
+            final mergedProduct = _mergeWithProviderProduct(provider, selection.product);
+
+            provider.toggleSelection(
+              mergedProduct,
+              isSelected: true,
+              quantity: selection.quantity,
+              shouldUpdateController: true,
+            );
+          }
+        }
       });
-    });
-  }
+
+      _searchController.addListener(() {
+        setState(() {
+          _searchText = _searchController.text.toLowerCase();
+        });
+      });
+    }
 
   @override
   void dispose() {
@@ -115,6 +159,15 @@ class _SearchProductState extends State<SearchProduct> {
                       color: Colors.black,
                       size: 15,
                     ),
+                    suffixIcon: _searchText.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 12, color: Colors.black),
+                            onPressed: () {
+                              _searchController.clear();
+                              FocusScope.of(context).unfocus();
+                            },
+                          )
+                        : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                       borderSide: const BorderSide(color: Colors.black),
@@ -145,7 +198,7 @@ class _SearchProductState extends State<SearchProduct> {
                 final product = selection.product;
 
                 return SizedBox(
-                  height: 25,
+                  height: 30,
                   child: Row(
                     children: [
                       Expanded(
@@ -331,21 +384,21 @@ Widget buildCompactPriceEditor({
   required ProductsProvider provider,
   required int idCustomer,
 }) {
+  final controller = selection.priceController;
   final product = selection.product;
-  final currentPrice = selection.currentPrice ?? product.price;
-  final controller = TextEditingController(text: currentPrice.toStringAsFixed(2));
 
   return Expanded(
     flex: 3,
     child: GestureDetector(
       onDoubleTap: () async {
-        final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+        final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
         await provider.loadPriceHistory(idCustomer, ordersProvider);
         final history = provider.getPriceHistory(product.idProduct);
         final selectedPrice = await _buildPriceHistoryModal(context, history);
         if (selectedPrice != null) {
           selection.currentPrice = selectedPrice;
-          provider.updatePrice(product.idProduct, selectedPrice);
+          provider.updatePrice(product.idProduct, selectedPrice, notify: true);
+          selection.priceController.text = selectedPrice.toStringAsFixed(2);
         }
       },
       child: Container(
@@ -353,11 +406,9 @@ Widget buildCompactPriceEditor({
           mainAxisSize: MainAxisSize.min,
           children: [
             _iconButton(Icons.remove, () {
-              final newPrice = currentPrice - 1;
-              if (newPrice >= 0) {
-                selection.currentPrice = newPrice;
-                provider.updatePrice(product.idProduct, newPrice);
-              }
+              final newPrice = selection.currentPrice! - 1;
+              provider.updatePrice(product.idProduct, newPrice, notify: true);
+              selection.priceController.text = newPrice.toStringAsFixed(2);
             }),
             Flexible(
               child: TextFormField(
@@ -373,19 +424,27 @@ Widget buildCompactPriceEditor({
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 1, vertical: 2),
                 ),
+                onChanged: (val) {
+                  final parsed = double.tryParse(val.replaceAll(',', '.'));
+                  if (parsed != null) {
+                    selection.currentPrice = parsed;
+                    provider.updatePrice(product.idProduct, parsed, notify: true);
+                  }
+                },
                 onFieldSubmitted: (val) {
                   final parsed = double.tryParse(val.replaceAll(',', '.'));
                   if (parsed != null) {
                     selection.currentPrice = parsed;
-                    provider.updatePrice(product.idProduct, parsed);
+                    provider.updatePrice(product.idProduct, parsed, notify: true); 
+                    controller.text = parsed.toStringAsFixed(2);
                   }
                 },
               ),
             ),
             _iconButton(Icons.add, () {
-              final newPrice = currentPrice + 1;
-              selection.currentPrice = newPrice;
-              provider.updatePrice(product.idProduct, newPrice);
+              final newPrice = selection.currentPrice! + 1;
+              provider.updatePrice(product.idProduct, newPrice, notify: true);
+              selection.priceController.text = newPrice.toStringAsFixed(2);
             }),
           ],
         ),
@@ -523,8 +582,15 @@ class ResumeProduct extends StatelessWidget {
 
 class receiptType extends StatefulWidget {
   final List<OpcionCatalogo> tiposComprobante;
+  final int? initialSelectedId;
+  final bool readOnly;
 
-  const receiptType({required this.tiposComprobante, super.key});
+  const receiptType({
+    required this.tiposComprobante,
+    super.key,
+    this.initialSelectedId,
+    this.readOnly = false,
+  });
 
   @override
   State<receiptType> createState() => ReceiptTypeState();
@@ -532,6 +598,12 @@ class receiptType extends StatefulWidget {
 
 class ReceiptTypeState extends State<receiptType> {
   int? selectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedId = widget.initialSelectedId;
+  }
 
   int? get selectedReceiptId => selectedId;
 
@@ -553,11 +625,13 @@ class ReceiptTypeState extends State<receiptType> {
                   value: isSelected,
                   activeColor: AppColors.gris,
                   checkColor: Colors.white,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedId = value! ? opcion.id : null;
-                    });
-                  },
+                  onChanged: widget.readOnly
+                      ? null
+                      : (value) {
+                          setState(() {
+                            selectedId = value! ? opcion.id : null;
+                          });
+                        },
                 ),
               ),
             ),
@@ -569,10 +643,20 @@ class ReceiptTypeState extends State<receiptType> {
   }
 }
 
+
 class paymentMethod extends StatefulWidget {
   final List<OpcionCatalogo> tiposPago;
+  final int? initialPaymentId;
+  final double? initialImport;
+  final List<Cuota>? initialCuotas;
 
-  const paymentMethod({required this.tiposPago, super.key});
+  const paymentMethod({
+    required this.tiposPago,
+    super.key,
+    this.initialPaymentId,
+    this.initialImport,
+    this.initialCuotas,
+  });
 
   @override
   State<paymentMethod> createState() => PaymentMethodState();
@@ -581,15 +665,29 @@ class paymentMethod extends StatefulWidget {
 class PaymentMethodState extends State<paymentMethod> {
   bool _contado = false;
   bool _credito = false;
+  int? idselectedPayment;
 
   double? _importeGuardado;
   double? _saldoGuardado;
-  int? _cuotasGuardadas;
-  double? _montoGuardado;
-  DateTime? _fechaGuardada;
 
   List<Cuota> _cuotasCredito = [];
   List<PagoMixto> _pagosMixto = [];
+
+  @override
+  void initState() {
+    super.initState();
+    idselectedPayment = widget.initialPaymentId;
+
+    if (idselectedPayment == 195) { 
+      _contado = true;
+      _credito = false;
+      _importeGuardado = widget.initialImport;
+    } else if (idselectedPayment == 17) { 
+      _credito = true;
+      _contado = false;
+      _cuotasCredito = widget.initialCuotas ?? [];
+    }
+  }
 
   List<Cuota> get cuotasCredito => _cuotasCredito;
   List<PagoMixto> get pagosMixtos => _pagosMixto;
@@ -609,124 +707,126 @@ class PaymentMethodState extends State<paymentMethod> {
 
   @override
   Widget build(BuildContext context) {
-    final bool haySeleccion = _credito || _contado;
-    final products = Provider.of<ProductsProvider>(context, listen: false);
-    final selectedProducts = products.selectedProducts;
+    return Consumer<ProductsProvider>(
+      builder: (context, products, _) {
+        final selectedProducts = products.selectedProducts;
 
-    double total = selectedProducts.fold(
-      0.0,
-      (total, item) => total + (
-        (item.currentPrice ?? item.product.price) * item.quantity
-      ),
-    );
+        double total = selectedProducts.fold(
+          0.0,
+          (total, item) => total + (
+            (item.currentPrice ?? item.product.price) * item.quantity
+          ),
+        );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 10),
-        Text('Modalidad de Pago', style: AppTextStyles.subtitle),
-        const SizedBox(height: 8),
-        Column(
+        final bool haySeleccion = _credito || _contado;
+
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Contado
-            _buildOptionCheckbox('CONTADO', _contado, (value) {
-              setState(() {
-                _contado = value!;
-                if (_contado) _credito = false;
-              });
-            }),
             SizedBox(height: 10),
-
-            // Crédito
-            _buildOptionCheckbox('CRÉDITO', _credito, (value) {
-              setState(() {
-                _credito = value!;
-                if (_credito) _contado = false;
-              });
-            }),
-            const SizedBox(height: 15),
-
-            // Botón Registrar Pago
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Text('Modalidad de Pago', style: AppTextStyles.subtitle),
+            const SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 30,
-                  child: ElevatedButton(
-                    onPressed: haySeleccion
-                        ? () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                if (_contado) {
-                                  _cuotasCredito = [];
-                                  return RegistrarPagoContado(
-                                    importeInicial: _importeGuardado,
-                                    saldoInicial: _saldoGuardado,
-                                    total: total,
-                                    onGuardar: (importe, saldo) {
-                                      setState(() {
-                                        _importeGuardado = importe;
-                                        _saldoGuardado = saldo;
-                                        _pagosMixto = [
-                                          PagoMixto(
-                                            id: 16,
-                                            monto: importe,
-                                            numeroOperacion: '0000-0000',
-                                          ),
-                                        ];
-                                      });
-                                    },
-                                  );
-                                }
+                // Contado
+                _buildOptionCheckbox('CONTADO', _contado, (value) {
+                  setState(() {
+                    _contado = value!;
+                    if (_contado) _credito = false;
+                  });
+                }),
+                SizedBox(height: 10),
 
-                                if (_credito) {
-                                  _pagosMixto = [];
-                                  return RegistrarPagoCredito(
-                                    total: total,
-                                    onGuardar: (cuotasList) {
-                                      setState(() {
-                                        _cuotasGuardadas = cuotasList.length;
-                                        _montoGuardado = cuotasList.fold(
-                                            0.0, (suma, c) => suma! + c.monto!);
-                                        _fechaGuardada = cuotasList.first.fecha;
-                                        _cuotasCredito = cuotasList;
-                                      });
-                                    },
-                                  );
-                                }
+                // Crédito
+                _buildOptionCheckbox('CRÉDITO', _credito, (value) {
+                  setState(() {
+                    _credito = value!;
+                    if (_credito) _contado = false;
+                  });
+                }),
+                const SizedBox(height: 15),
 
-                                return const SizedBox.shrink();
-                              },
-                            );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: haySeleccion
-                          ? AppColors.orange
-                          : Colors.white,
-                      foregroundColor: haySeleccion
-                          ? Colors.white
-                          : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // Botón Registrar Pago
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      height: 30,
+                      child: ElevatedButton(
+                        onPressed: haySeleccion
+                            ? () {
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) {
+                                    if (_contado) {
+                                      _cuotasCredito = [];
+                                      return RegistrarPagoContado(
+                                        importeInicial: _importeGuardado,
+                                        saldoInicial: _saldoGuardado,
+                                        total: total,
+                                        onGuardar: (importe, saldo) {
+                                          setState(() {
+                                            _importeGuardado = importe;
+                                            _saldoGuardado = saldo;
+                                            _pagosMixto = [
+                                              PagoMixto(
+                                                id: 195,
+                                                monto: importe,
+                                                numeroOperacion: '0000-0000',
+                                              ),
+                                            ];
+                                          });
+                                        },
+                                      );
+                                    }
+
+                                    if (_credito) {
+                                      _pagosMixto = [];
+                                      return RegistrarPagoCredito(
+                                        total: total,
+                                        initialCuotas: _cuotasCredito,
+                                        onGuardar: (cuotasList) {
+                                          setState(() {
+                                            _cuotasCredito = cuotasList;
+                                          });
+                                        },
+                                      );
+                                    }
+
+                                    return const SizedBox.shrink();
+                                  },
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: haySeleccion
+                              ? AppColors.orange
+                              : Colors.white,
+                          foregroundColor: haySeleccion
+                              ? Colors.white
+                              : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 40),
+                        ),
+                        child: Text(
+                          'Registrar Pago',
+                          style: AppTextStyles.btnPayment(haySeleccion),
+                        ),
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 40),
                     ),
-                    child: Text(
-                      'Registrar Pago',
-                      style: AppTextStyles.btnPayment(haySeleccion),
-                    ),
-                  ),
+                  ],
                 ),
+                const SizedBox(height: 15),
               ],
             ),
-            const SizedBox(height: 15),
           ],
-        ),
-      ],
+        );
+      }
     );
   }
 
@@ -865,38 +965,50 @@ class _RegistrarPagoContadoState extends State<RegistrarPagoContado> {
               ],
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final importeText = _importeController.text.trim();
-                  final saldoText = _saldoController.text.trim();
-
-                  if (importeText.isEmpty || saldoText.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Por favor, completa todos los campos.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-                  widget.onGuardar( 
-                    double.tryParse(_importeController.text) ?? 0.0,
-                    double.tryParse(_saldoController.text) ?? 0.0,
-                  );
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(color: AppColors.gris),
                   ),
                 ),
-                child: Text('Guardar', style: AppTextStyles.btnSave),
-              ),
-            ),
+
+                ElevatedButton(
+                  onPressed: () {
+                    final importeText = _importeController.text.trim();
+                    final saldoText = _saldoController.text.trim();
+
+                    if (importeText.isEmpty || saldoText.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Por favor, completa todos los campos.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                    widget.onGuardar( 
+                      double.tryParse(_importeController.text) ?? 0.0,
+                      double.tryParse(_saldoController.text) ?? 0.0,
+                    );
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.orange,
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text('Guardar', style: AppTextStyles.btnSave),
+                ),
+              ]
+            )
           ],
         ),
       ),
@@ -908,10 +1020,13 @@ class RegistrarPagoCredito extends StatefulWidget {
   final void Function(List<Cuota> cuotas) onGuardar;
   final double total;
 
+  final List<Cuota>? initialCuotas;
+
   const RegistrarPagoCredito({
     super.key,
     required this.onGuardar,
     required this.total,
+    this.initialCuotas,
   });
 
   @override
@@ -919,11 +1034,39 @@ class RegistrarPagoCredito extends StatefulWidget {
 }
 
 class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
-  final TextEditingController _cuotasController = TextEditingController();
+  late TextEditingController _cuotasController;
   final List<TextEditingController> _montosControllers = [];
   final List<DateTime?> _fechas = [];
 
   double _montoRestante = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cuotasController = TextEditingController(
+      text: widget.initialCuotas?.toString() ?? '',
+    );
+
+    if (widget.initialCuotas != null && widget.initialCuotas!.isNotEmpty) {
+      _cuotasController = TextEditingController(
+        text: widget.initialCuotas!.length.toString(),
+      );
+
+      for (final cuota in widget.initialCuotas!) {
+        final controller = TextEditingController(
+          text: cuota.monto?.toStringAsFixed(2) ?? '',
+        );
+        controller.addListener(_recalcularMontoRestante);
+        _montosControllers.add(controller);
+        _fechas.add(cuota.fecha);
+      }
+    } else {
+      _cuotasController = TextEditingController();
+    }
+
+    _recalcularMontoRestante();
+  }
+
   void _recalcularMontoRestante() {
     final suma = _montosControllers.fold<double>(
       0.0,
@@ -1081,36 +1224,61 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
                 ],
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  final cuotas = <Cuota>[];
-                  for (int i = 0; i < _montosControllers.length; i++) {
-                    final monto = double.tryParse(_montosControllers[i].text.trim());
-                    final fecha = _fechas[i];
-                    if (monto == null || fecha == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Completa todos los campos de cuotas'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-                    cuotas.add(Cuota(monto: monto, fecha: fecha));
-                  }
-
-                  widget.onGuardar(cuotas);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.orange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: AppColors.gris),
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: Text('Guardar', style: AppTextStyles.btnSave),
-              ),
+
+                  ElevatedButton(
+                    onPressed: () {
+                      final cuotas = <Cuota>[];
+                      for (int i = 0; i < _montosControllers.length; i++) {
+                        final monto = double.tryParse(_montosControllers[i].text.trim());
+                        final fecha = _fechas[i];
+                        if (monto == null || fecha == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Completa todos los campos de cuotas'),
+                              backgroundColor: Colors.black,
+                            ),
+                          );
+                          return;
+                        }
+                        cuotas.add(Cuota(monto: monto, fecha: fecha));
+                      }
+
+                      if (cuotas.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Debes ingresar al menos una cuota para crédito'),
+                            backgroundColor: AppColors.gris,
+                          ),
+                        );
+                        return;
+                      }
+
+                      widget.onGuardar(cuotas);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.orange,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: Text('Guardar', style: AppTextStyles.btnSave),
+                  ),
+                ]
+              )
             ],
           ),
         ),
@@ -1121,7 +1289,13 @@ class _RegistrarPagoCreditoState extends State<RegistrarPagoCredito> {
 
 
 class observations extends StatefulWidget  {
-  const observations({super.key});
+  final String? initialDeliveryLocation;
+  final DateTime? initialDeliveryDate;
+  final TimeOfDay? initialDeliveryTime;
+  final String? initialAdditionalInformation;
+  final bool? habilitar;
+  
+  const observations({super.key, this.initialDeliveryLocation, this.initialDeliveryDate, this.initialDeliveryTime, this.initialAdditionalInformation, this.habilitar = true});
 
   @override
   State<observations> createState() => ObservationsState();
@@ -1132,6 +1306,26 @@ class ObservationsState extends State<observations> {
   final _deliveryDate = TextEditingController();
   final _deliveryTime = TextEditingController();
   final _additionalInfo = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialDeliveryTime != null) {
+      final hour = widget.initialDeliveryTime!.hour.toString().padLeft(2, '0');
+      final minute = widget.initialDeliveryTime!.minute.toString().padLeft(2, '0');
+      _deliveryTime.text = "$hour:$minute";
+    } else {
+      _deliveryTime.text = "";
+    }
+
+    deliveryLocation.text = widget.initialDeliveryLocation ?? "";
+    if (widget.initialDeliveryDate != null) {
+      _deliveryDate.text = DateFormat('yyyy-MM-dd').format(widget.initialDeliveryDate!);
+    } else {
+      _deliveryDate.text = "";
+    }
+    _additionalInfo.text = widget.initialAdditionalInformation ?? "";
+  }
   
   @override
   void dispose() {
@@ -1202,6 +1396,7 @@ class ObservationsState extends State<observations> {
                         controller: deliveryLocation,
                         decoration: InputDecoration(
                           isDense: true,
+                          enabled: widget.habilitar!,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
                           enabledBorder: UnderlineInputBorder(
                             borderSide: BorderSide(color: AppColors.lightGris),
@@ -1223,7 +1418,7 @@ class ObservationsState extends State<observations> {
                     Expanded(
                       child: TextField(
                         controller: _deliveryDate,
-                        readOnly: true,
+                        enabled: widget.habilitar,
                         onTap: _selectDate,
                         decoration: InputDecoration(
                           isDense: true,
@@ -1248,7 +1443,7 @@ class ObservationsState extends State<observations> {
                     Expanded(
                       child: TextField(
                         controller: _deliveryTime,
-                        readOnly: true,
+                        enabled: widget.habilitar,
                         onTap: _selectTime,
                         decoration: InputDecoration(
                           isDense: true,
@@ -1278,6 +1473,7 @@ class ObservationsState extends State<observations> {
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(),
+                          enabled: widget.habilitar!,
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 1),
                           enabledBorder: UnderlineInputBorder(
@@ -1312,9 +1508,11 @@ class ObservationsState extends State<observations> {
 
 class buttonRegisterOrder extends StatelessWidget {
   final VoidCallback onPressed;
+  final bool isEdit;
 
   const buttonRegisterOrder({
     required this.onPressed,
+    this.isEdit = false,
     super.key,
   });
 
@@ -1336,7 +1534,10 @@ class buttonRegisterOrder extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text('REGISTRAR PEDIDO', style: AppTextStyles.btnSave),
+            child: Text(
+              isEdit ? 'ACTUALIZAR PEDIDO' : 'REGISTRAR PEDIDO',
+              style: AppTextStyles.btnSave,
+            ),
           ),
         ),
       ],
@@ -1344,7 +1545,9 @@ class buttonRegisterOrder extends StatelessWidget {
   }
 }
 
-Future<void> registerOrder({
+Future<bool> registerOrder({
+  bool? editOrder,
+  int? idOrder,
   required BuildContext context,
   int? idCustomer,
   required GlobalKey<ObservationsState> observationsKey,
@@ -1352,7 +1555,7 @@ Future<void> registerOrder({
   required GlobalKey<ReceiptTypeState> receiptKey,
   required VoidCallback resetForm,
 }) async {
-  final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+  final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
   final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
   final token = Provider.of<UsersProvider>(context, listen: false).token;
   final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
@@ -1367,6 +1570,14 @@ Future<void> registerOrder({
   double total = 0.0;
   double subtotal = 0.0;
   double igv = 0.0;
+
+  for (var item in selectedProducts) {
+    final qtyText = item.controller.text.replaceAll(',', '.');
+    item.quantity = double.tryParse(qtyText) ?? 0.0;
+
+    final priceText = item.priceController.text.replaceAll(',', '.');
+    item.currentPrice = double.tryParse(priceText) ?? item.product.price;
+  }
 
   final details = selectedProducts.map((item) {
     final double unitPrice = item.currentPrice ?? item.product.price;
@@ -1384,9 +1595,9 @@ Future<void> registerOrder({
     return OrderDetail(
       idProduct: item.product.idProduct,
       descripcionItem: item.product.productName,
-      unitPrice: unitPrice.roundToDouble(),
+      unitPrice: unitPrice,
       quantity: item.quantity,
-      importeNeto: itemTotalPrice.roundToDouble(),
+      importeNeto: itemTotalPrice,
       tipoIgv: item.product.igvType == 14 ? 1 : 0,
       detalleItem: "",
       idUnidadMedida: 1,
@@ -1419,14 +1630,22 @@ Future<void> registerOrder({
   final List<Customer> customers = customersProvider.customers;
   final cliente = customers.firstWhere(
     (c) => c.idCliente == idCustomer,
-    orElse: () => Customer(idCliente: 0, nombres: 'Desconocido', apellidos: '', idDocumento: 0, nroDocumento: '', fechaNacimiento: '', nombreTipoDoc: '', idListaPrecio: 0, nombreListaPrecio: '', estado: 0, fechaCreado: '', fotoPerfil: '', label: '', value: 0, idDatosPersona: 0, correo: '', numero: '', ubigeo: '', direccion: '', idCorreo: 0, idDireccion: 0, idTelefono: 0, idDatoGeneral: 0, rucAfiliada: '', razonSocialAfiliada: '', direccionAfiliada: ''),
-  ).nombres;
-
+    orElse: () => Customer(
+      idCliente: 0, nombres: 'Desconocido', apellidos: '', idDocumento: 0,
+      nroDocumento: '', fechaNacimiento: '', nombreTipoDoc: '', idListaPrecio: 0,
+      nombreListaPrecio: '', estado: 0, fechaCreado: '', fotoPerfil: '', label: '',
+      value: 0, idDatosPersona: 0, correo: '', numero: '', ubigeo: '', direccion: '',
+      idCorreo: 0, idDireccion: 0, idTelefono: 0, idDatoGeneral: 0,
+      rucAfiliada: '', razonSocialAfiliada: '', direccionAfiliada: ''
+    ),
+  );
+  
   final order = Order(
+    idOrder: idOrder ?? null,
     idTipoDocumento: receipt,
     idMoneda: 12,
     idPaymentMethod: payment,
-    idTipoVenta: 142, // <- pendiente ajuste si aplica
+    idTipoVenta: 142,
     fechaEmision: DateTime.now(),
     fechaRegistro: DateTime.now(),
     idCustomer: idCustomer!,
@@ -1447,8 +1666,8 @@ Future<void> registerOrder({
     totalDetraccion: 0,
     idTipoRetencion: 137,
     totalRetencion: 0,
-    state: 1,
-    direccionClienteVenta: "",
+    state: 2,
+    direccionClienteVenta: cliente.direccion,
     tipoCambio: 1,
     observaciones: "",
     deliveryLocation: obs['place'] ?? '',
@@ -1456,48 +1675,77 @@ Future<void> registerOrder({
     deliveryTime: _tryParseTimeOfDay(obs['time']),
     additionalInformation: obs['info'] ?? '',
     details: details,
-    cliente: cliente,
+    cliente: cliente.nombres,
     cuotas: cuotas,
     pagosMixtos: pagosMixtos,
   );
 
   final confirm = await showDialog<bool>(
+    barrierDismissible: false,
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text("Confirmar pedido"),
-      content: const Text("¿Estás seguro de que deseas registrar este pedido?"),
+      title: Text(
+        editOrder == true ? "Confirmar actualización" : "Confirmar pedido",
+        style: AppTextStyles.historyTitle,
+      ),
+      content: Text(
+        editOrder == true
+            ? "¿Estás seguro de que deseas actualizar este pedido?"
+            : "¿Estás seguro de que deseas registrar este pedido?",
+        style: AppTextStyles.priceData,
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text("Cancelar"),
+          child: Text("Cancelar", style: AppTextStyles.btnCancelar),
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.orange,
+          ),
           onPressed: () => Navigator.pop(context, true),
-          child: const Text("Registrar"),
+          child: Text(
+            editOrder == true ? "Actualizar" : "Registrar",
+            style: AppTextStyles.btnSave,
+          ),
         ),
       ],
     ),
   );
 
-  if (confirm != true) return;
+  if (confirm != true) return false;
 
   try {
-    await ordersProvider.registerOrder(order, token!);
-    resetForm();
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pedido registrado correctamente")),
-      );
+    if (editOrder == true) {
+      await ordersProvider.updateOrder(order, token!);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Pedido actualizado correctamente")),
+        );
+      }
+    } else {
+      await ordersProvider.registerOrder(order, token!);
+      resetForm();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Pedido registrado correctamente")),
+        );
+      }
     }
+    return true;
   } catch (e) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al registrar pedido")),
+        SnackBar(
+          content: Text(editOrder == true
+              ? "Error al actualizar pedido"
+              : "Error al registrar pedido"),
+        ),
       );
     }
+    return false;
   }
 }
-
 
 class AppTextStyles {
   static const base = TextStyle(
@@ -1521,6 +1769,7 @@ class AppTextStyles {
   static final historyTitle = base.copyWith(fontSize: 16, fontWeight: FontWeight.w500);
   static final historyHead = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
   static final priceData = base.copyWith(fontSize: 13, fontWeight: FontWeight.w300);
+  static final btnCancelar = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.orange);
   static final btnPrice = base.copyWith(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.orange);
   static TextStyle btnPayment(bool haySeleccion) {
     return base.copyWith(
@@ -1532,6 +1781,7 @@ class AppTextStyles {
 class AppColors {
   static const orange = Color(0xFFFF6600);
   static const gris = Color(0xFF333333);
+  static const grisMessage = Color(0xFF333333);
   static const backgris = Color(0xFFECEFF1);
   static const lightGris = Color(0xFFBDBDBD);
 }

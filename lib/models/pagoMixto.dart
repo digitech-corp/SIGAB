@@ -20,9 +20,15 @@ class PagoMixto {
 
   // Para construir desde JSON (opcional)
   factory PagoMixto.fromJson(Map<String, dynamic> json) {
+    double _toDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
     return PagoMixto(
       id: json['id'],
-      monto: (json['monto'] as num).toDouble(),
+      monto: _toDouble(json['monto']),
       numeroOperacion: json['numero_operacion'],
     );
   }

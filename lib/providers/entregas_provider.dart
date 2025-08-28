@@ -7,11 +7,12 @@ import 'package:http/http.dart' as http;
 class EntregasProvider extends ChangeNotifier{
   bool isLoading = false;
   List<Entrega> entregas= [];
+  List<Entrega> entregaAnterior= [];
   List<Order> orders= [];
 
   Map<int, String> estadosPorOrder = {};
   
-  Future<void> fetchEntregas(String token, String fecha) async {
+  Future<void> fetchEntregas(String token, String fechaInicio, String fechaFin, int? idTransportista) async {
     isLoading = true;
     notifyListeners();
 
@@ -21,17 +22,19 @@ class EntregasProvider extends ChangeNotifier{
         entregasUrl,
         headers: {'Authorization': 'Bearer $token'},
         body: jsonEncode({
-          'fecha_inicio': fecha,
+          'fecha_inicio': fechaInicio,
+          'fecha_fin': fechaFin,
+          'id_transportista': idTransportista
         }),
       );
 
-      if (entregasResponse.statusCode != 200) {
-        throw Exception('Error obteniendo entregas: ${entregasResponse.statusCode}');
+      if (entregasResponse.statusCode == 200) {
+        final List<dynamic> entregasData = jsonDecode(entregasResponse.body);
+        entregas = entregasData.map((item) => Entrega.fromJSON(item)).toList();
+      } else {
+        print('Error: ${entregasResponse.statusCode}');
+        entregas = [];
       }
-
-      final List<dynamic> entregasData = jsonDecode(entregasResponse.body);
-      entregas = entregasData.map((json) => Entrega.fromJSON(json)).toList();
-      print('Entregas obtenidas: ${entregas.length}');
     } catch (e) {
       print('Error al obtener entregas: $e');
       entregas = [];
@@ -58,11 +61,11 @@ class EntregasProvider extends ChangeNotifier{
       }
 
       final List<dynamic> entregasData = jsonDecode(response.body);
-      List<Entrega> historialEstados = entregasData.map((json) => Entrega.fromJSON(json)).toList();
+      entregaAnterior = entregasData.map((json) => Entrega.fromJSON(json)).toList();
+      List<Entrega> historialEstados = entregaAnterior;
 
-      historialEstados.sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
       if (historialEstados.isNotEmpty) {
-        final ultimoEstado = historialEstados.last.estado?.trim() ?? '';
+        final ultimoEstado = historialEstados.first.estado?.trim() ?? '';
         estadosPorOrder[idOrder] = ultimoEstado;
       } else {
         estadosPorOrder[idOrder] = '';
@@ -91,7 +94,7 @@ class EntregasProvider extends ChangeNotifier{
       );
       
       if (response.statusCode == 201) {
-        // await fetchEntregas();
+        // await fetchEntregas(token, fechaInicio, fechaFin);
         return true;
         
       } else {

@@ -5,6 +5,7 @@ import 'package:balanced_foods/screens/Transportista/modulo_dashboard/EstadoEntr
 import 'package:balanced_foods/screens/Transportista/modulo_dashboard/Lineas.dart';
 import 'package:balanced_foods/screens/Transportista/transport_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class DashboardTransportScreen extends StatefulWidget {
@@ -15,18 +16,41 @@ class DashboardTransportScreen extends StatefulWidget {
 }
 
 class _DashboardTransportScreenState extends State<DashboardTransportScreen> {
-  
+  String _filtro = 'Día actual'; // valor inicial
+  late DateTime fechaInicio;
+  late DateTime fechaFin;
+
   @override
   void initState() {
-    // final today = DateTime.now();
     super.initState();
-    Future.microtask(() async{
-      final userProvider = Provider.of<UsersProvider>(context, listen: false);
-      final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
-      final token = userProvider.token;
-      // await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(today));
-      await entregasProvider.fetchEntregas(token!,'2025-07-30');
+    _setFechas(); 
+    Future.microtask(() async {
+      await _cargarEntregas();
     });
+  }
+
+  void _setFechas() {
+    final hoy = DateTime.now();
+    if (_filtro == 'Día actual') {
+      fechaInicio = DateTime(hoy.year, hoy.month, hoy.day);
+      fechaFin = fechaInicio;
+    } else if (_filtro == 'Semana actual') {
+      final inicioSemana = hoy.subtract(Duration(days: hoy.weekday - 1));
+      final finSemana = inicioSemana.add(const Duration(days: 6));
+      fechaInicio = DateTime(inicioSemana.year, inicioSemana.month, inicioSemana.day);
+      fechaFin = DateTime(finSemana.year, finSemana.month, finSemana.day);
+    } else if (_filtro == 'Mes actual') {
+      fechaInicio = DateTime(hoy.year, hoy.month, 1);
+      fechaFin = DateTime(hoy.year, hoy.month + 1, 0);
+    }
+  }
+
+  Future<void> _cargarEntregas() async {
+    final userProvider = Provider.of<UsersProvider>(context, listen: false);
+    final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
+    final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
+    final token = userProvider.token;
+    await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(fechaInicio), DateFormat('yyyy-MM-dd').format(fechaFin), idTransportista);
   }
   
   @override
@@ -87,7 +111,47 @@ class _DashboardTransportScreenState extends State<DashboardTransportScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Panel de Entregas', style: AppTextStyles.subtitle),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Panel de Entregas',
+                      style: AppTextStyles.subtitle,
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          'Filtrar por:',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.gris,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        DropdownButton<String>(
+                          value: _filtro,
+                          style: const TextStyle(fontSize: 12, color: AppColors.gris),
+                          items: ['Día actual', 'Semana actual', 'Mes actual']
+                              .map((opcion) => DropdownMenuItem(
+                                    value: opcion,
+                                    child: Text(opcion),
+                                  ))
+                              .toList(),
+                          onChanged: (nuevoValor) async {
+                            setState(() {
+                              _filtro = nuevoValor!;
+                              _setFechas();
+                            });
+                            await _cargarEntregas();
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 20),
               EstadoEntregasCards(entregados: entregadosLenght, noEntregados: noEntregadosLenght),
               const SizedBox(height: 20),

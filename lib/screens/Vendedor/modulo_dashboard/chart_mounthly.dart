@@ -35,9 +35,9 @@ class MonthlyLineChart extends StatelessWidget {
           dataSource: entry.value,
           xValueMapper: (MonthlySalesData sales, _) => sales.weekLabel,
           yValueMapper: (MonthlySalesData sales, _) => sales.total,
-          dataLabelSettings: const DataLabelSettings(
+          dataLabelSettings: DataLabelSettings(
             isVisible: true,
-            textStyle: AppTextStyles.base
+            textStyle: AppTextStyles.Leyend
           ),
         );
       }).toList(),

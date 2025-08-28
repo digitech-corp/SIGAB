@@ -1,24 +1,21 @@
 import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/orderDetail.dart';
-import 'package:balanced_foods/models/product.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/entregas_provider.dart';
 import 'package:balanced_foods/providers/follow_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/ubigeos_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
-import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/part_order.dart';
-import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/product_catalog_screen.dart';
 import 'package:balanced_foods/screens/Vendedor/sales_module_screen.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
-
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_map/flutter_map.dart' as fmap;
-import 'package:latlong2/latlong.dart' as latlng;
 
 class FollowScreen extends StatefulWidget {
   const FollowScreen({super.key});
@@ -28,7 +25,8 @@ class FollowScreen extends StatefulWidget {
 }
 
 class _FollowScreenState extends State<FollowScreen> {
-  DateTime selectedDate = DateTime.now();
+  DateTime selectedDateInicio = DateTime.now();
+  DateTime selectedDateFin = DateTime.now();
   
   @override
   void initState() {
@@ -39,35 +37,64 @@ class _FollowScreenState extends State<FollowScreen> {
         final ubigeosProvider = Provider.of<UbigeosProvider>(context, listen: false);
         final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
         final ordersProvider = Provider.of<FollowProvider>(context, listen: false);
+        final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
         final token = usersProvider.token;
+        final idPersonal = usersProvider.loggedUser?.idUsuario ?? null;
         customersProvider.fetchCustomers(token!);
         productsProvider.fetchProducts(token);
         ubigeosProvider.fetchUbigeos(token);
-        ordersProvider.fetchOrders(token, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), null);
+        await ordersProvider.fetchOrders(
+          token,
+          DateFormat('yyyy-MM-dd').format(selectedDateFin),
+          DateFormat('yyyy-MM-dd').format(selectedDateInicio),
+          idPersonal,
+        );
+        for (var order in ordersProvider.orders) {
+          await entregasProvider.fetchEstadoEntrega(token, order.idOrder!);
+        }
       });
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+ 
+  Future<void> _selectDate({
+    required BuildContext context,
+    required bool isInicio,
+  }) async {
+    final initialDate = isInicio ? selectedDateInicio : selectedDateFin;
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != selectedDate) {
+
+    if (picked != null && picked != initialDate) {
       setState(() {
-        selectedDate = picked;
+        if (isInicio) {
+          selectedDateInicio = picked;
+        } else {
+          selectedDateFin = picked;
+        }
       });
 
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = usersProvider.token;
+      final idPersonal = usersProvider.loggedUser?.idUsuario ?? null;
       final ordersProvider = Provider.of<FollowProvider>(context, listen: false);
+
+      final fechaInicio = selectedDateInicio.isBefore(selectedDateFin)
+          ? selectedDateInicio
+          : selectedDateFin;
+      final fechaFin = selectedDateInicio.isAfter(selectedDateFin)
+          ? selectedDateInicio
+          : selectedDateFin;
 
       await ordersProvider.fetchOrders(
         token!,
-        DateFormat('yyyy-MM-dd').format(selectedDate),
-        DateFormat('yyyy-MM-dd').format(selectedDate),
-        null
+        DateFormat('yyyy-MM-dd').format(fechaFin),
+        DateFormat('yyyy-MM-dd').format(fechaInicio),
+        idPersonal,
       );
     }
   }
@@ -82,27 +109,9 @@ class _FollowScreenState extends State<FollowScreen> {
             final bodyPadding = screenWidth * 0.06;
             final orders = ordersProvider.orders;
 
-            final estadoCargando = 'Cargando...';
-
-            final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-            final token = usersProvider.token;
-
             final filteredOrders = orders.where((order) {
-              final deliveryDate = order.fechaEmision;
-              if (deliveryDate == null || token == null) return false;
-
-              if (deliveryDate.year != selectedDate.year ||
-                  deliveryDate.month != selectedDate.month ||
-                  deliveryDate.day != selectedDate.day) {
-                return false;
-              }
-
               String estado = entregasProvider.getEstadoPorOrder(order.idOrder!);
-              if (estado == estadoCargando) {
-              Future.microtask(() => entregasProvider.fetchEstadoEntrega(token, order.idOrder!));
-              }
-
-              return estado.isNotEmpty && estado != estadoCargando; 
+              return estado.isNotEmpty && estado != 'Cargando...';
             }).toList();
 
             return Scaffold(
@@ -171,17 +180,61 @@ class _FollowScreenState extends State<FollowScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Pedidos del día', style: AppTextStyles.subtitle),
-        GestureDetector(
-          onTap: () => _selectDate(context),
-          child: Text(
-            DateFormat('dd/MM/yyyy').format(selectedDate),
-            style: const TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 12,
-              fontWeight: FontWeight.w300,
-              color: Color(0xFF333333),
-            ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Fecha inicio:', style: AppTextStyles.weak),
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => _selectDate(context: context, isInicio: true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: 10, color: Colors.grey.shade700),
+                      const SizedBox(width: 8),
+                      Text(DateFormat('dd/MM/yyyy').format(selectedDateInicio),
+                          style: AppTextStyles.weak),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Fecha fin:', style: AppTextStyles.weak),
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => _selectDate(context: context, isInicio: false),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: 10, color: Colors.grey.shade700),
+                      const SizedBox(width: 8),
+                      Text(DateFormat('dd/MM/yyyy').format(selectedDateFin),
+                          style: AppTextStyles.weak),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -296,7 +349,7 @@ class _OrderCardState extends State<OrderCard> {
                 Expanded(
                   flex: 2,
                   child: Text(
-                    'P-${widget.order.idOrder.toString().padLeft(2, '0')}-2025',
+                    'P-${widget.order.idOrder.toString().padLeft(2, '0')}-25',
                     style: AppTextStyles.weak,
                   ),
                 ),
@@ -357,79 +410,14 @@ class _OrderCardState extends State<OrderCard> {
 }
 
 class OrderExpandedDetail extends StatelessWidget {
-  // final Entrega entrega;
   final Order order;
   const OrderExpandedDetail({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
     final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
-    // final ubigeosProvider = Provider.of<UbigeosProvider>(context, listen: false);
-    final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
     final screenWidth = MediaQuery.of(context).size.width;
-  //   final customer = customersProvider.customers.firstWhere(
-  //   (c) => c.idCliente == order.idCustomer,
-  //   orElse: () => Customer(
-  //     idCliente: 0,
-  //     idListaPrecio: 0,
-  //     estado: 0,
-  //     fechaCreado: '',
-  //     fotoPerfil: '',
-  //     nroDocumento: '',
-  //     idDocumento: 0,
-  //     nombres: '',
-  //     apellidos: '',
-  //     fechaNacimiento: '',
-  //     nombreTipoDoc: '',
-  //     nombreListaPrecio: '',
-  //     label: '',
-  //     value: 0,
-  //     idDatosPersona: 0,
-  //     correo: '',
-  //     numero: '',
-  //     idUbigeo: null,
-  //     ubigeo: '',
-  //     direccion: '',
-  //     referencia: '',
-  //     idCorreo: 0,
-  //     idDireccion: 0,
-  //     idTelefono: 0,
-  //     idDatoGeneral: 0,
-  //     rucAfiliada: '',
-  //     razonSocialAfiliada: '',
-  //     direccionAfiliada: '',
-  //   ),
-  // );  
-  
-  final address = '${getCompanyAddressForDetail(order.details!.first, order, customersProvider)}';
-  print('Address: $address');
-
-  final selectedProducts = (order.details ?? []).map((detail) {
-    Product? productFound;
-    try {
-      productFound = productsProvider.products.firstWhere(
-        (p) => p.idProduct == detail.idProduct,
-      );
-    } catch (e) {
-      productFound = null;
-    }
-
-    final product = productFound ??
-        Product(
-          idProduct: detail.idProduct!,
-          productName: 'Producto no encontrado',
-          animalType: '',
-          productType: '',
-          price: detail.unitPrice,
-          unidadMedida: '',
-          state: 0,
-        );
-
-    return ProductSelection(
-      product: product,
-      quantity: detail.quantity,
-    );
-  }).toList();
+    final address = order.deliveryLocation ?? '';
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.02),
       child: Column(
@@ -437,17 +425,107 @@ class OrderExpandedDetail extends StatelessWidget {
         children: [
           Text('Resumen del Pedido:', style: AppTextStyles.strong),
           const SizedBox(height: 5),
-          ResumeProduct(selectedProducts: selectedProducts),
+          _resumeProduct(screenWidth),
           const SizedBox(height: 5),
           _buildPagoRow(screenWidth),
           const SizedBox(height: 10),
           _buildEntregaSection(screenWidth, customersProvider),
           const SizedBox(height: 10),
           Text('Ubicación Geográfica', style: AppTextStyles.strong),
-          const SizedBox(height: 10),
-          _buildMapBox(address),
+          const SizedBox(height: 10), 
+          InteractiveMapView(address: address),
         ],
       ),
+    );
+  }
+
+  Widget _resumeProduct(double screenWidth) {
+    double total = order.details!.fold(
+      0.0,
+      (sum, detail) => sum + (detail.unitPrice * detail.quantity),
+    );
+
+    double subtotal = total / 1.18;
+    double igv = total - subtotal;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(flex: 1, child: Text('Cant.', style: AppTextStyles.tableHead)),
+            Expanded(flex: 3, child: Text('Nombre del Producto', style: AppTextStyles.tableHead)),
+            Expanded(flex: 1, child: Text('Pres', style: AppTextStyles.tableHead)),
+            Expanded(flex: 1, child: Text('Tipo', style: AppTextStyles.tableHead)),
+            Expanded(flex: 1, child: Text('Precio', style: AppTextStyles.tableHead, textAlign: TextAlign.right)),
+            Expanded(flex: 1, child: Text('Parcial', style: AppTextStyles.tableHead, textAlign: TextAlign.right)),
+          ],
+        ),
+        const Divider(color: Colors.black, thickness: 1, height: 5),
+
+        ListView.builder(
+          itemCount: order.details!.length,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            final detail = order.details![index];
+
+            String Umedida = detail.nombreUm ?? '';
+            List<String> medida = Umedida.split('|');
+
+            String nombreUm = medida.isNotEmpty ? medida[0] : '';
+            String primeraLetra = nombreUm.isNotEmpty ? nombreUm[0] : '';
+
+            int cantidadUm = detail.cantidadUm ?? 0;
+
+            String pres = "$primeraLetra$cantidadUm";
+            String tipo = (detail.nombrePresentacion ?? '').toUpperCase();
+            String letraType = tipo.isNotEmpty ? tipo[0] : '';
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(flex: 1, child: Text('${detail.quantity.toString().padLeft(2, '0')}', style: AppTextStyles.tableData)),
+                Expanded(flex: 3, child: Text(detail.descripcionItem ?? '-', style: AppTextStyles.tableData)),
+                Expanded(flex: 1, child: Text(pres, style: AppTextStyles.tableData)),
+                Expanded(flex: 1, child: Text(letraType, style: AppTextStyles.tableData)),
+                Expanded(flex: 1, child: Text('${detail.unitPrice.toStringAsFixed(2)}', style: AppTextStyles.tableData, textAlign: TextAlign.right)),
+                Expanded(flex: 1, child: Text('${(detail.unitPrice * detail.quantity).toStringAsFixed(2)}', style: AppTextStyles.tableData, textAlign: TextAlign.right)),
+              ],
+            );
+          },
+        ),
+
+        SizedBox(
+          width: 100,
+          child: const Divider(color: Colors.black, thickness: 0.5, height: 6),
+        ),
+
+        // Totales
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text('SubTotal', style: AppTextStyles.tableData),
+                Text('I.G.V.', style: AppTextStyles.tableData),
+                Text('TOTAL', style: AppTextStyles.tableTotal),
+              ],
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(subtotal.toStringAsFixed(2), style: AppTextStyles.tableData),
+                Text(igv.toStringAsFixed(2), style: AppTextStyles.tableData),
+                Text(order.total!.toStringAsFixed(2), style: AppTextStyles.tableTotal),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -483,10 +561,7 @@ class OrderExpandedDetail extends StatelessWidget {
                   ),
                   Expanded(
                     flex: 4,
-                    child: Text(
-                      (order.details != null && order.details!.isNotEmpty)
-                        ? (getCompanyAddressForDetail(order.details!.first, order, customersProvider) ?? '-')
-                        : 'Sin dirección fiscal',
+                    child: Text(order.deliveryLocation ?? '-',
                       style: AppTextStyles.weak,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -507,7 +582,8 @@ class OrderExpandedDetail extends StatelessWidget {
                       order.deliveryDate != null
                           ? DateFormat('dd/MM/yy').format(order.deliveryDate!)
                           : '-',
-                      style: AppTextStyles.weak,
+                      style
+          : AppTextStyles.weak,
                     ),
                   )
                 ],
@@ -555,68 +631,86 @@ class OrderExpandedDetail extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget _buildMapBox(String address) {
-    return FutureBuilder<latlng.LatLng?>(
-      future: getLatLngFromAddress(address),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
-            height: 150,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
 
-        final coords = snapshot.data;
+class InteractiveMapView extends StatefulWidget {
+  final String address;
 
-        if (coords == null) {
-          return const SizedBox(
-            height: 150,
-            child: Center(child: Text('No se pudo obtener la ubicación')),
-          );
-        }
+  const InteractiveMapView({super.key, required this.address});
 
-        return SizedBox(
-          height: 150,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: fmap.FlutterMap(
-              options: fmap.MapOptions(
-                initialCenter: latlng.LatLng(coords.latitude, coords.longitude),
-                initialZoom: 14,
-              ),
-              children: [
-                fmap.TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: const ['a', 'b', 'c'],
-                  userAgentPackageName: 'com.example.app',
-                ),
-                fmap.MarkerLayer(
-                  markers: [
-                    fmap.Marker(
-                      point: latlng.LatLng(coords.latitude, coords.longitude),
-                      child: const Icon(Icons.location_pin, color: Colors.red, size: 30),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  @override
+  State<InteractiveMapView> createState() => _InteractiveMapViewState();
+}
+
+class _InteractiveMapViewState extends State<InteractiveMapView> {
+  LatLng? _initialPosition;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLatLngFromAddress(widget.address);
   }
 
-  Future<latlng.LatLng?> getLatLngFromAddress(String address) async {
+  Future<void> _loadLatLngFromAddress(String address) async {
     try {
-      List<Location> locations = await locationFromAddress(address);
+      final locations = await locationFromAddress(address);
       if (locations.isNotEmpty) {
-        return latlng.LatLng(locations.first.latitude, locations.first.longitude);
+        setState(() {
+          _initialPosition = LatLng(
+            locations.first.latitude,
+            locations.first.longitude,
+          );
+          _isLoading = false;
+        });
       }
     } catch (e) {
-      debugPrint('Error obteniendo coordenadas: $e');
+      debugPrint("Error obteniendo coordenadas: $e");
+      setState(() {
+        _isLoading = false;
+      });
     }
-    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_initialPosition == null) {
+      return const Center(child: Text("No se pudo obtener la ubicación"));
+    }
+
+    return SizedBox(
+      height: 150,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: GoogleMap(
+          mapType: MapType.normal,
+          initialCameraPosition: CameraPosition(
+            target: _initialPosition!,
+            zoom: 14,
+          ),
+          markers: {
+            Marker(
+              markerId: const MarkerId("addressMarker"),
+              position: _initialPosition!,
+              infoWindow: InfoWindow(title: widget.address),
+            )
+          },
+          zoomGesturesEnabled: true,
+          scrollGesturesEnabled: true,
+          rotateGesturesEnabled: true,
+          tiltGesturesEnabled: true,
+          
+          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+            Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+          },
+        ),
+      ),
+    );
   }
 }
 
@@ -677,8 +771,10 @@ class AppTextStyles {
   static final strong = base.copyWith();
   static final title = base.copyWith(fontSize: 16, fontWeight: FontWeight.w600);
   static final subtitle = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
-  static final date = base.copyWith(fontSize: 12, fontWeight: FontWeight.w300);
   static final itemTable = base.copyWith(fontSize: 12);
+  static final tableHead = base.copyWith(fontSize: 11);
+  static final tableData = base.copyWith(fontSize: 11, fontWeight: FontWeight.w300);
+  static final tableTotal = base.copyWith(fontSize: 11, fontWeight: FontWeight.w500,);
 
   static TextStyle estadoTextStyle(String tipoEstado) {
     Color color;

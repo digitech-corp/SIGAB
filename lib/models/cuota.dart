@@ -13,10 +13,8 @@ class Cuota {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'id_venta': idVenta,
       'monto_cuota': monto,
-      'fecha_vencimiento': fecha!.toIso8601String().split('T')[0],
+      'fecha_cuota': fecha!.toIso8601String().split('T')[0],
     };
   }
 

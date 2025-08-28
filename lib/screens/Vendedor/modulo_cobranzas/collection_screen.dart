@@ -8,6 +8,7 @@ import 'package:balanced_foods/screens/Vendedor/sales_module_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -19,7 +20,6 @@ class CollectionScreen extends StatefulWidget {
 class _CollectionScreenState extends State<CollectionScreen> {
   DateTime selectedDateInicio = DateTime.now().subtract(const Duration(days: 30));
   DateTime selectedDateFin = DateTime.now();
-  // bool _isLoading = true; ultimo comentado
 
   @override
   void initState() {
@@ -27,19 +27,17 @@ class _CollectionScreenState extends State<CollectionScreen> {
     Future.microtask(() async {
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = userProvider.token;
+      final idPersonal = userProvider.loggedUser?.idUsuario ?? null;
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
       await customersProvider.fetchCustomers(token!);
 
-      final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
       await ordersProvider.fetchCreditoOrders(
         token,
         DateFormat('yyyy-MM-dd').format(selectedDateInicio),
         DateFormat('yyyy-MM-dd').format(selectedDateFin),
+        idPersonal,
       );
-      // ultimo comentado
-      // setState(() {
-      //   _isLoading = false;
-      // });
     });
   }
   
@@ -144,9 +142,9 @@ class _CreditosCardState extends State<CreditosCard> {
 
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = usersProvider.token;
-      final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+      final idPersonal = usersProvider.loggedUser?.idUsuario ?? null;
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
 
-      // Asegurar orden correcto de fechas
       final fechaInicio = selectedDateInicio.isBefore(selectedDateFin)
           ? selectedDateInicio
           : selectedDateFin;
@@ -158,6 +156,7 @@ class _CreditosCardState extends State<CreditosCard> {
         token!,
         DateFormat('yyyy-MM-dd').format(fechaInicio),
         DateFormat('yyyy-MM-dd').format(fechaFin),
+        idPersonal,
       );
     }
   }
@@ -175,14 +174,13 @@ class _CreditosCardState extends State<CreditosCard> {
   Widget build(BuildContext context) {
     final customersProvider = Provider.of<CustomersProvider>(context);
     final customers = customersProvider.customers;
-    final ordersProvider = Provider.of<OrdersProvider2>(context);
-    final orders = ordersProvider.orders;
-    final filteredOrders = orders.where((o) => 
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final creditos = ordersProvider.creditos;
+    final filteredOrders = creditos.where((o) => 
       o.total! - o.totalPagado! > 0
     ).toList();
     final DateTime today = DateTime.now();
 
-    // Filtra los pedidos por estado de vencimiento
     final vencidos = filteredOrders.where(
       (o) => o.fechaVencimiento != null && o.fechaVencimiento!.isBefore(today),
     ).toList();
@@ -194,21 +192,21 @@ class _CreditosCardState extends State<CreditosCard> {
 
     List<Order> listaAMostrar = _selectedIndex == 0 ? vencidos : porVencer;
 
-  listaAMostrar.sort((a, b) {
-    switch (_sortBy) {
-      case 'Monto Total':
-        return b.total!.compareTo(a.total!);
-      case 'Días Vencido':
-        final int diasA = today.difference(a.fechaVencimiento ?? today).inDays;
-        final int diasB = today.difference(b.fechaVencimiento ?? today).inDays;
-        return diasB.compareTo(diasA);
-      case 'Fecha Vencimiento':
-      default:
-        final DateTime fechaA = a.fechaVencimiento ?? DateTime(2100);
-        final DateTime fechaB = b.fechaVencimiento ?? DateTime(2100);
-        return fechaA.compareTo(fechaB);
-    }
-  });
+    listaAMostrar.sort((a, b) {
+      switch (_sortBy) {
+        case 'Monto Total':
+          return b.total!.compareTo(a.total!);
+        case 'Días Vencido':
+          final int diasA = today.difference(a.fechaVencimiento ?? today).inDays;
+          final int diasB = today.difference(b.fechaVencimiento ?? today).inDays;
+          return diasB.compareTo(diasA);
+        case 'Fecha Vencimiento':
+        default:
+          final DateTime fechaA = a.fechaVencimiento ?? DateTime(2100);
+          final DateTime fechaB = b.fechaVencimiento ?? DateTime(2100);
+          return fechaA.compareTo(fechaB);
+      }
+    });
 
     return Expanded(
       child: Column(
@@ -371,6 +369,7 @@ class _CreditosCardState extends State<CreditosCard> {
                         String empresa = '${customer?.razonSocialAfiliada}'.isEmpty
                             ? 'Sin empresa'
                             : '${customer?.razonSocialAfiliada}';
+
                         final codPedido = 'PEDIDO N° ${order.idOrder.toString().padLeft(2, '0')}-2025';
                         final total = order.total!.toStringAsFixed(2);
                         final totalPagado = order.totalPagado!.toStringAsFixed(2);
@@ -382,6 +381,7 @@ class _CreditosCardState extends State<CreditosCard> {
                         return _creditCard(
                           idOrder: order.idOrder ?? 0,
                           cliente: empresa,
+                          numero: customer!.numero,
                           contacto: persona,
                           pedido: codPedido,
                           estadoVencimiento: estadoVencimiento,
@@ -404,6 +404,7 @@ class _CreditosCardState extends State<CreditosCard> {
   Widget _creditCard({
     required int idOrder,
     required String cliente,
+    required String numero,
     required String contacto,
     required String pedido,
     required String estadoVencimiento,
@@ -413,7 +414,6 @@ class _CreditosCardState extends State<CreditosCard> {
     required String fechaVencimiento,
     required Color colorTexto,
   }) {
-    //final Color estadoColor = esPorVencer ? Colors.blue : Colors.red;
 
     final _labelStyle = TextStyle(
       fontFamily: 'Montserrat',
@@ -533,7 +533,20 @@ class _CreditosCardState extends State<CreditosCard> {
                             height: 25,
                             width: 113,
                             child: OutlinedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                if (numero.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('No hay número registrado')),
+                                  );
+                                  return;
+                                }
+                                final Uri callUri = Uri(scheme: 'tel', path: '+51${numero}');
+                                if (await canLaunchUrl(callUri)) {
+                                  await launchUrl(callUri);
+                                } else {
+                                  debugPrint('No se pudo lanzar $callUri');
+                                }
+                              },
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.orange,
                                 side: BorderSide(color: AppColors.orange, width: 1),
@@ -561,7 +574,20 @@ class _CreditosCardState extends State<CreditosCard> {
                             height: 25,
                             width: 113,
                             child: OutlinedButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                if (numero.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('No hay número registrado')),
+                                  );
+                                  return;
+                                }
+                                final Uri whatsappUri = Uri.parse("https://wa.me/+51${numero}");
+                                if (await canLaunchUrl(whatsappUri)) {
+                                  await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                                } else {
+                                  debugPrint('No se pudo abrir WhatsApp para +51${numero}');
+                                }
+                              },
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.orange,
                                 side: BorderSide(color: AppColors.orange, width: 1),

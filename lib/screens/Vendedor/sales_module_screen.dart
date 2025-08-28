@@ -1,3 +1,7 @@
+import 'package:balanced_foods/providers/customers_provider.dart';
+import 'package:balanced_foods/providers/dashboard_provider.dart';
+import 'package:balanced_foods/providers/entregas_provider.dart';
+import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:balanced_foods/screens/Vendedor/manual_ayuda.dart';
 import 'package:balanced_foods/screens/Vendedor/modulo_cobranzas/collection_screen.dart';
@@ -32,11 +36,34 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      // final provider = Provider.of<UsersProvider>(context, listen: false);
-      // if (provider.loggedUser == null) {
-      //   provider.fetchLoggedUserData(provider.loggedUser?.id ?? 0);
-      // }
+    Future.microtask(() async {
+      final userProvider = Provider.of<UsersProvider>(context, listen: false);
+      final token = userProvider.token;
+      final idPersonal = userProvider.loggedUser?.idUsuario ?? null;
+      final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+      final dashboardProvider = Provider.of<DashboardProvider>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
+      final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
+      final now = DateTime.now();
+      final fechaInicio = DateTime(now.year, now.month, 1);
+      final fechaFin = DateTime(now.year, now.month + 1, 0);
+      final formato = (DateTime date) => "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+      await customersProvider.fetchCustomers(token!);
+      await dashboardProvider.fetchOrders(
+        token,
+        formato(fechaFin),
+        formato(fechaInicio),
+        idPersonal,
+      );
+      for (var order in ordersProvider.orders) {
+        await entregasProvider.fetchEstadoEntrega(token, order.idOrder!);
+      }
+      await ordersProvider.fetchCreditoOrders(
+        token,
+        formato(fechaInicio),
+        formato(fechaFin),
+        idPersonal,
+      );
     });
   }
 
@@ -318,27 +345,47 @@ class SalesModuleCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final customersProvider = Provider.of<CustomersProvider>(context);
+    final dashboardProvider = Provider.of<DashboardProvider>(context);
+    final entregasProvider = Provider.of<EntregasProvider>(context);
+    final ordersProvider = Provider.of<OrdersProvider>(context);
+    final customersLength = customersProvider.customers.length;
+    final ordersLength = dashboardProvider.orders.length;
+    final orders = dashboardProvider.orders;
+    final creditos = ordersProvider.creditos;
+
+    final filteredEntregas = orders.where((order) {
+      String estado = entregasProvider.getEstadoPorOrder(order.idOrder!);
+      return estado.isNotEmpty && estado != 'Cargando...';
+    }).toList();
+    final programados = filteredEntregas.length;
+    
+    final filteredCreditos = creditos.where((o) => 
+      o.total! - o.totalPagado! > 0
+    ).toList();
+    final cobranzas = filteredCreditos.length;
+    
     return Column(
       children: [
         Row(
           children: [
             Expanded(child: _buildCard('Dashboard', 'barchart', null, () => onCardTap(0))),
             const SizedBox(width: 3),
-            Expanded(child: _buildCard('Clientes', 'customer', '35 Registros', () => onCardTap(1))),
+            Expanded(child: _buildCard('Clientes', 'customer', '$customersLength Registros', () => onCardTap(1))),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildCard('Pedidos', 'shop', '5 Registros', () => onCardTap(2))),
+            Expanded(child: _buildCard('Pedidos', 'shop', '$ordersLength Registros', () => onCardTap(2))),
             const SizedBox(width: 3),
-            Expanded(child: _buildCard('Seguimiento', 'follow', '3 Registros', () => onCardTap(3))),
+            Expanded(child: _buildCard('Seguimiento', 'follow', '$programados Registros', () => onCardTap(3))),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildCard('Cobranzas', 'salary', '4 Pendientes', () => onCardTap(4))),
+            Expanded(child: _buildCard('Cobranzas', 'salary', '$cobranzas Pendientes', () => onCardTap(4))),
             const Spacer(),
           ],
         ),

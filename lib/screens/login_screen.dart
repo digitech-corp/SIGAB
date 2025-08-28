@@ -346,7 +346,7 @@ class LoginButtons extends StatelessWidget {
 }
 
 void onLoginSuccess(BuildContext context, int? tipoUsuario) {
-  if (tipoUsuario == 4) {
+  if (tipoUsuario == 24) {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const SalesModuleScreen()),

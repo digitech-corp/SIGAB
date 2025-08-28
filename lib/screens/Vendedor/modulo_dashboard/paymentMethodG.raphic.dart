@@ -1,8 +1,9 @@
+import 'package:balanced_foods/models/order.dart';
 import 'package:flutter/material.dart';
 
 class BarraDivididaConTooltip extends StatefulWidget {
-  final int contado;
-  final int credito;
+  final contado;
+  final credito;
   final double montoContado;
   final double montoCredito;
 
@@ -75,13 +76,31 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
     });
   }
 
+  int contadoCantidad = 0;
+    int creditoCantidad = 0;
+
+    int sumarCantidadProductos(List<Order> orders) {
+      return orders.fold<int>(0, (total, order) {
+        return total + (order.details?.fold<int>(0, (sum, detail) {
+          return sum + detail.quantity.toInt();
+        }) ?? 0);
+      });
+    }
+
   @override
   Widget build(BuildContext context) {
-    final int total = widget.contado + widget.credito;
-    final double porcentajeContado = total > 0 ? widget.contado / total : 0;
-    final double porcentajeCredito = total > 0 ? widget.credito / total : 0;
-
+    final int total = widget.contado.length + widget.credito.length;
+    final double porcentajeContado = total > 0 ? widget.contado.length / total : 0;
+    final double porcentajeCredito = total > 0 ? widget.credito.length / total : 0;
     final double totalSoles = widget.montoContado + widget.montoCredito;
+    
+    final ordersContado = widget.contado;
+    final ordersCredito = widget.credito;
+    
+    final contadoCantidad = sumarCantidadProductos(ordersContado);
+    final creditoCantidad = sumarCantidadProductos(ordersCredito);
+
+    final totalSacos = contadoCantidad + creditoCantidad;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,7 +110,6 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Total de operaciones
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -100,7 +118,7 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: Text(
-                'Total de Ventas: ${widget.contado + widget.credito}',
+                'Total de Ventas: ${widget.contado.length + widget.credito.length}',
                 style: AppTextStyles.total,
               ),
             ),
@@ -128,14 +146,14 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                 child: GestureDetector(
                   key: _keyContado,
                   onTap: () => _showTooltip(context, _keyContado,
-                    'Contado: ${widget.contado} ventas\nPrecio: S/ ${widget.montoContado.toStringAsFixed(2)}'),
+                    'Contado: ${widget.contado.length} ventas\nPrecio: S/ ${widget.montoContado.toStringAsFixed(2)}\nSacos: S/ $contadoCantidad'),
                   child: Container(
                     height: 30,
                     color: AppColors.orangeLight,
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
-                      "${widget.contado}",
+                      "${widget.contado.length}",
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
@@ -146,14 +164,14 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                 child: GestureDetector(
                   key: _keyCredito,
                   onTap: () => _showTooltip(context, _keyCredito,
-                      'Crédito: ${widget.credito} ventas\nPrecio: S/ ${widget.montoCredito.toStringAsFixed(2)}'),
+                      'Crédito: ${widget.credito.length} ventas\nPrecio: S/ ${widget.montoCredito.toStringAsFixed(2)}\nSacos: S/ $creditoCantidad'),
                   child: Container(
                     height: 30,
                     color: AppColors.grisLight,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
-                      "${widget.credito}",
+                      "${widget.credito.length}",
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
@@ -165,11 +183,24 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
         const SizedBox(height: 8),
         // Leyenda de colores separada
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: const [
-            _Leyenda(color: AppColors.orangeLight, texto: 'Contado'),
-            SizedBox(width: 12),
-            _Leyenda(color: AppColors.grisLight, texto: 'Crédito'),
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Text(
+                'Total de Sacos: $totalSacos',
+                style: AppTextStyles.total,
+              ),
+            ),
+            const Spacer(),
+            const _Leyenda(color: AppColors.orangeLight, texto: 'Contado'),
+            const SizedBox(width: 12),
+            const _Leyenda(color: AppColors.grisLight, texto: 'Crédito'),
           ],
         ),
       ],

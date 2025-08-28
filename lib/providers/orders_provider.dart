@@ -6,9 +6,10 @@ import 'package:balanced_foods/models/orderDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class OrdersProvider2 extends ChangeNotifier{
+class OrdersProvider extends ChangeNotifier{
   bool isLoading = false;
   List<Order> orders = [];
+  List<Order> creditos = [];
   List<Order> pedidosClienteCompletos = [];
 
   Order? _order;
@@ -64,6 +65,7 @@ class OrdersProvider2 extends ChangeNotifier{
               'fecha_emision': order['fecha_emision'],
               'nombre_tipo_pago': order['nombre_tipo_pago'],
               'id_tipo_pago': order['id_tipo_pago'],
+              'nombre_tipo_documento': order['nombre_tipo_documento'],
             }
         };
         orders = await Future.wait(dataDetalles.map<Future<Order>>((json) async {
@@ -73,13 +75,15 @@ class OrdersProvider2 extends ChangeNotifier{
             final fechaEmisionStr = info['fecha_emision'] as String?;
             final nombreTipoPagoStr = info['nombre_tipo_pago'] as String?;
             final idTipoPagoStr = info['id_tipo_pago'] as int?;
+            final tipoDocumentoStr = info['nombre_tipo_documento'] as String?;
 
             if (fechaEmisionStr != null) {
-              order.fechaEmision = DateTime.tryParse(fechaEmisionStr); // si usas un campo separado
+              order.fechaEmision = DateTime.tryParse(fechaEmisionStr);
             }
 
             order.paymentMethod = nombreTipoPagoStr;
             order.idPaymentMethod = idTipoPagoStr;
+            order.nombreTipoDocumento = tipoDocumentoStr;
           }
           if (order.idOrder != null) {
             final detalleResponse = await http.post(
@@ -94,6 +98,9 @@ class OrdersProvider2 extends ChangeNotifier{
             if (detalleResponse.statusCode == 200) {
               final detalleData = jsonDecode(detalleResponse.body);
               order.estadoFacturacion = detalleData['estado_facturacion'];
+              order.cuotas = (detalleData['cuotas'] as List<dynamic>?)
+                ?.map((item) => Cuota.fromJson(item as Map<String, dynamic>))
+                .toList();
             } else {
               print('Error al obtener detalle de pedido ${order.idOrder}: ${detalleResponse.statusCode}');
             }
@@ -112,6 +119,8 @@ class OrdersProvider2 extends ChangeNotifier{
       notifyListeners();
     }
   }
+  
+
 
   Future<void> fetchPedidosClienteCompletos(String token, int idCliente) async {
     isLoading = true;
@@ -156,6 +165,10 @@ class OrdersProvider2 extends ChangeNotifier{
               if (detallesJson['cabeza'] != null && detallesJson['cabeza'].isNotEmpty) {
                 final cabeza = detallesJson['cabeza'][0];
                 order.estadoFacturacion = cabeza['estado_facturacion'];
+                order.idTipoDocumento = cabeza['id_tipo_documento'];
+                orders = (detallesJson['cabeza'] as List)
+                    .map((orderJson) => Order.fromJSON(orderJson))
+                    .toList();
               }
               if (detallesJson['detalles'] != null) {                
                 order.details = (detallesJson['detalles'] as List)
@@ -198,6 +211,53 @@ class OrdersProvider2 extends ChangeNotifier{
     }
   }
 
+  Future<void> fetchVentaCompletaID(String token, int pedidoId) async {
+    try {
+      final detallesResponse = await http.post(
+        Uri.parse('https://adysabackend.facturador.es/ventas/getVentaCompletaID'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'id': pedidoId}),
+      );
+
+      if (detallesResponse.statusCode == 200) {
+        final body = detallesResponse.body.trim();
+        if (body.startsWith('{') || body.startsWith('[')) {
+          final detallesJson = jsonDecode(body);
+
+          if (detallesJson['cabeza'] != null && detallesJson['cabeza'].isNotEmpty) {
+            final cabeza = detallesJson['cabeza'][0];
+            
+            final order = Order(
+              estadoFacturacion: cabeza['estado_facturacion'],
+              idTipoDocumento: cabeza['id_tipo_documento'],
+              idCustomer: cabeza['id_cliente'],
+            );
+            orders.add(order);
+          }
+
+          if (detallesJson['detalles'] != null) {
+            _detalles.addAll((detallesJson['detalles'] as List)
+                .map((detailJson) => OrderDetail.fromJSON(detailJson)));
+          } else {
+            print('⚠️ No se encontraron detalles.');
+          }
+
+          if (detallesJson['cuotas'] != null && detallesJson['cuotas'].isNotEmpty) {
+          } else {
+            print('⚠️ No se encontraron cuotas.');
+          }
+        }
+      } else {
+        print('Error HTTP ${detallesResponse.statusCode} para pedido $pedidoId');
+      }
+    } catch (e) {
+      print('Error al obtener detalles del pedido $pedidoId: $e');
+    }
+  }
+
   Map<int, List<Map<String, dynamic>>> getPriceHistoryForCustomer(int idCustomer) {
     final Map<int, List<Map<String, dynamic>>> priceHistory = {};
     for (var order in pedidosClienteCompletos.where((o) => o.idCustomer == idCustomer)) {
@@ -218,7 +278,7 @@ class OrdersProvider2 extends ChangeNotifier{
     return priceHistory;
   }  
 
-  Future<void> fetchCreditoOrders(String token, String fechaInicio, String fechaFin) async {
+  Future<void> fetchCreditoOrders(String token, String fechaInicio, String fechaFin, int? idPersonal) async {
     isLoading = true;
     notifyListeners();
     try {
@@ -228,6 +288,7 @@ class OrdersProvider2 extends ChangeNotifier{
         'condicion': '1',
         'fecha_inicio': fechaInicio,
         'fecha_fin': fechaFin,
+        'id_personal': idPersonal,
       };
 
       final response = await http.post(
@@ -239,18 +300,15 @@ class OrdersProvider2 extends ChangeNotifier{
         body: jsonEncode(body),
       );
 
-      print('Enviando body: $body');
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List<dynamic>;
-        print('Pedidos por creditos: $data');
-        orders = data.map<Order>((json) {
+        creditos = data.map<Order>((json) {
           final order = Order.fromJSON(json);
           return order;
         }).toList();
       } else {
         print('Error en alguna de las respuestas: detalles(${response.statusCode})');
-        orders = [];
+        creditos = [];
       }
     } catch (e) {
       print('Error: $e');
@@ -264,6 +322,25 @@ class OrdersProvider2 extends ChangeNotifier{
   Future<void> registerOrder(Order order, String token) async {
     final response = await http.post(
       Uri.parse('https://adysabackend.facturador.es/ventas/createVenta'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(order.toJson()),
+    );
+
+    if (response.statusCode ==200){
+      print("respuesta: ${response.body}");
+    }
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw Exception('Error al crear el pedido: ${response.body}');
+    }
+  }
+
+  Future<void> updateOrder(Order order, String token) async {
+    final response = await http.post(
+      Uri.parse('https://adysabackend.facturador.es/ventas/updateVenta'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

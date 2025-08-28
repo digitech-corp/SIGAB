@@ -28,10 +28,11 @@ class _EntregasTerminadasScreenState extends State<EntregasTerminadasScreen> {
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
 
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
+      final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
       final token = userProvider.token;
 
       await customersProvider.fetchCustomers(token!);
-      await entregasProvider.fetchEntregas(token, DateFormat('yyyy-MM-dd').format(selectedDate));
+      await entregasProvider.fetchEntregas(token, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), idTransportista);
     });
   }
 
@@ -48,9 +49,10 @@ class _EntregasTerminadasScreenState extends State<EntregasTerminadasScreen> {
       });
 
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
+      final idTransportista = usersProvider.loggedUser?.idTransportista ?? null;
       final token = usersProvider.token;
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
-      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(selectedDate));
+      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), idTransportista);
     }
   }
 
@@ -301,10 +303,17 @@ class _OrderCardState extends State<OrderCard> {
                     child: Image.asset('assets/images/whatsapp.png', color: AppColors.orange),
                   ),
                   onPressed: () async {
-                    final String phone = '51${widget.customerPhone}';
-                    final Uri whatsappUri = Uri.parse("https://wa.me/$phone");
+                    if (widget.customerPhone.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No hay número registrado')),
+                      );
+                      return;
+                    }
+                    final Uri whatsappUri = Uri.parse("https://wa.me/+51${widget.customerPhone}");
                     if (await canLaunchUrl(whatsappUri)) {
                       await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                    } else {
+                      debugPrint('No se pudo abrir WhatsApp para +51${widget.customerPhone}');
                     }
                   },
                 ),
@@ -317,10 +326,17 @@ class _OrderCardState extends State<OrderCard> {
                     child: Image.asset('assets/images/phone.png', color: AppColors.orange),
                   ),
                   onPressed: () async {
-                    final String phone = '+51${widget.customerPhone}';
-                    final Uri callUri = Uri(scheme: 'tel', path: phone);
+                    if (widget.customerPhone.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No hay número registrado')),
+                      );
+                      return;
+                    }
+                    final Uri callUri = Uri(scheme: 'tel', path: '+51${widget.customerPhone}');
                     if (await canLaunchUrl(callUri)) {
                       await launchUrl(callUri);
+                    } else {
+                      debugPrint('No se pudo lanzar $callUri');
                     }
                   },
                 ),

@@ -1,10 +1,13 @@
 import 'package:balanced_foods/models/customer.dart';
 import 'package:balanced_foods/models/opcionCatalogo.dart';
+import 'package:balanced_foods/models/tipoDocumento.dart';
 import 'package:balanced_foods/providers/configuraciones_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
+import 'package:balanced_foods/providers/tipos_documento_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
+import 'package:balanced_foods/screens/Vendedor/modulo_clientes/form_customer.dart';
 import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +34,13 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
       final documentosProvider = Provider.of<OpcionCatalogoProvider>(context, listen: false);
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
+      final tipoDocumentoProvider = Provider.of<TipoDocumentoProvider>(context, listen: false);
       final token = usersProvider.token;
-  
-      await productsProvider.fetchProducts(token!);
+
+      await tipoDocumentoProvider.fetchTipoDocumento(token!);
+      await productsProvider.fetchProducts(token);
       await customersProvider.fetchCustomers(token);
       await documentosProvider.fetchOpcionesVenta(token);
-      print('Cantidad de productos: ${productsProvider.products.length}');
     });
   }
 
@@ -61,8 +65,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     final documentsProvider = Provider.of<OpcionCatalogoProvider>(context);
     documentosVenta = documentsProvider.documentosVenta;
     tiposPago = documentsProvider.tipoPago;
-    // final documentosProvider = Provider.of<OpcionCatalogoProvider>(context, listen: false);
-    // final receiptType = documentosProvider.documentosProvider;
+    
     void _applySearch() {
       final query = _searchController.text.toLowerCase();
       setState(() {
@@ -102,8 +105,28 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     color: Colors.black,
                     size: 30,
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    final confirmExit = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Descartar cambios', style: AppTextStyles.subtitlebtn),
+                        content: Text('Se descartarán los cambios. ¿Estás seguro?', style: AppTextStyles.subtitle),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text('NO', style: AppTextStyles.btn),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text('SI', style: AppTextStyles.btn),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmExit == true) {
+                      _resetForm();
+                      if (context.mounted) Navigator.pop(context);
+                    }
                   },
                 ),
                 const SizedBox(width: 1),
@@ -121,7 +144,48 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              Text('CLIENTE', style: AppTextStyles.base),
+              Row(
+                children: [
+                  Text('CLIENTE', style: AppTextStyles.subtitle),
+                  const Spacer(),
+                  SizedBox(
+                    height: 30,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final newCustomer = await showNewCustomerDialog(context);
+                        if (newCustomer != null) {
+                          setState(() {
+                            _searchController.text = newCustomer.nombres;
+                            _filteredCustomers = Provider.of<CustomersProvider>(context, listen: false)
+                                .customers
+                                .where((c) => c.nombres
+                                    .toLowerCase()
+                                    .contains(newCustomer.nombres.toLowerCase()))
+                                .toList();
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                        backgroundColor: AppColors.orange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, size: 16),
+                          SizedBox(width: 6),
+                          Text('NUEVO', style: AppTextStyles.btnSave),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
@@ -156,9 +220,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                         itemCount: _filteredCustomers.length,
                         itemBuilder: (context, index) {
                           final customer = _filteredCustomers[index];
+                          final nombreCompleto = ('${customer.nombres} ${customer.apellidos}').toUpperCase();
                           return ListTile(
                             dense: true,
-                            title: Text('${customer.nombres} ${customer.apellidos}', style: AppTextStyles.base),
+                            title: Text(nombreCompleto, style: AppTextStyles.base),
                             subtitle: Text(customer.razonSocialAfiliada, style: AppTextStyles.base),
                             onTap: () {
                               setState(() {
@@ -168,7 +233,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                               });
 
                               final productProvider = Provider.of<ProductsProvider>(context, listen: false);
-                              final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+                              final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
                               final token = Provider.of<UsersProvider>(context, listen: false).token;
                               productProvider.setCurrentCustomer(customer.idCliente!);
                               ordersProvider.fetchPedidosClienteCompletos(token!, customer.idCliente!).then((_) {
@@ -302,7 +367,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     final selectedProducts = products.selectedProducts;
     final paymentMethod = _paymentKey.currentState?.selectedPaymentId;
     final receiptType = _receiptKey.currentState?.selectedId;
-    // final paymentInfo = _paymentKey.currentState!.paymentInfo;
+    final cuotas = _paymentKey.currentState?.cuotasCredito ?? [];
 
     // Validar cliente
     if (idCustomer == null) {
@@ -336,7 +401,14 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       return;
     }
 
-    await registerOrder(
+    if (paymentMethod == 17 && cuotas.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Debes registrar al menos una cuota para pago con crédito")),
+      );
+      return;
+    }
+
+    final success = await registerOrder(
       context: context,
       idCustomer: idCustomer,
       receiptKey: _receiptKey,
@@ -345,10 +417,158 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       resetForm: _resetForm,
     );
 
-    if (context.mounted) {
+    if (success && context.mounted) {
       Navigator.pop(context);
     }
   }
+}
+
+Future<Customer?> showNewCustomerDialog(BuildContext context) async {
+  final tipoDocumentoProvider = Provider.of<TipoDocumentoProvider>(context, listen: false);
+  final customerProvider = Provider.of<CustomersProvider>(context, listen: false);
+  final token =Provider.of<UsersProvider>(context, listen: false).token;
+  final _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final dniController = TextEditingController();
+  final addressController = TextEditingController();
+  String? _selectedTipoCliente;
+  String? _selectedTipoDocumento;
+
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text('Nuevo Cliente (rápido)', style: AppTextStyles.subtitlebtn),
+            content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NewCustomerForm(
+                      formKey: _formKey,
+                      customerName: nameController,
+                      dni: dniController,
+                      onImageChanged: (_) {},
+                      customerAddress: addressController,
+                      selectedTipoDocumento: _selectedTipoDocumento,
+                      onSelectedTipoDocumento: (value) {
+                        setState(() {
+                          _selectedTipoDocumento = value;
+                        });
+                      },
+                      selectedTipoCliente: _selectedTipoCliente,
+                      onSelectedTipoCliente: (value) {
+                        setState(() {
+                          _selectedTipoCliente = value;
+                        });
+                      },
+                      enableImagePicker: false,
+                      enableInfoExtra: false,
+                    ),
+                  ],
+                ),
+              ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text('Cancelar', style: AppTextStyles.btnBack),
+                  ),
+                  SizedBox(
+                    height: 30,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          final dni = dniController.text.trim();
+                    
+                          final customers = Provider.of<CustomersProvider>(context, listen: false).customers;
+                          String? errorMsg;
+                    
+                          if (customers.any((c) => c.nroDocumento == dni)) {
+                            errorMsg = "El DNI ya está registrado";
+                          }
+                    
+                          if (errorMsg != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(errorMsg)),
+                            );
+                            return;
+                          }
+                          final tipoDocumento = tipoDocumentoProvider.tiposDocumento.firstWhere(
+                            (t) => t.nombre == _selectedTipoDocumento,
+                            orElse: () => TipoDocumento(nombre: ''),
+                          );
+                    
+                          try {
+                            String fechaCreada = DateTime.now().toIso8601String();
+                    
+                            final newCustomer = Customer(
+                              idListaPrecio: 1,
+                              idTipoCliente: 0,
+                              estado: 1,
+                              fechaCreado: fechaCreada,
+                              fotoPerfil: '',
+                              nroDocumento: dniController.text,
+                              idTipoDocumento: tipoDocumento.id,
+                              nombres: nameController.text,
+                              apellidos: '',
+                              fechaNacimiento: '',
+                              correo: '',
+                              numero: '',
+                              idPais: 1,
+                              direccion: addressController.text,
+                              referencia: '',
+                              rucAfiliada: '',
+                              razonSocialAfiliada: '',
+                              direccionAfiliada: '',
+                            );
+                    
+                            await customerProvider.registerCustomer(newCustomer, token!);
+                            print('Nuevo cliente: $newCustomer');
+                            await customerProvider.fetchCustomers(token);
+                    
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Se ha añadido exitosamente")),
+                            );
+                            Navigator.pop(context, newCustomer);
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error al registrar: ${e.toString()}")),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.orange,
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: AppColors.orange, width: 1),
+                        ),
+                      ),
+                      child: Text('Añadir Cliente', style: AppTextStyles.btnSave),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
 }
 
 class AppTextStyles {
@@ -362,6 +582,10 @@ class AppTextStyles {
   static final search = base.copyWith(fontWeight: FontWeight.w300, fontSize: 10);
   static final selection = base.copyWith(fontSize: 14, fontWeight: FontWeight.w500);
   static final subtitle = base.copyWith(fontSize: 16);
+  static final subtitlebtn = base.copyWith(fontSize: 16, fontWeight: FontWeight.w500);
+  static final btnSave = base.copyWith(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white);
+  static final btnBack = base.copyWith(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.orange);
+  static final btn = base.copyWith(fontSize: 14, color: AppColors.orange, fontWeight: FontWeight.w500);
 }
 
 class AppColors {

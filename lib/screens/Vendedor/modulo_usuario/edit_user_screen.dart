@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:balanced_foods/models/user.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,12 +40,12 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
     final currentUser = Provider.of<UsersProvider>(context, listen: false).loggedUser;
     if (currentUser != null) {
-      _name.text = currentUser.nombres ?? '';
-      _lastName.text = currentUser.apellidos ?? '';
+      _name.text = currentUser.nombres;
+      _lastName.text = currentUser.apellidos;
       _celular.text = currentUser.celular ?? '';
-      _email.text = currentUser.correo ?? '';
+      _email.text = currentUser.correo;
       _address.text = currentUser.direccion ?? '';
-      final initialImageFileName = currentUser.fotoPerfil;
+      // final initialImageFileName = currentUser.fotoPerfil;
     }
   }
 

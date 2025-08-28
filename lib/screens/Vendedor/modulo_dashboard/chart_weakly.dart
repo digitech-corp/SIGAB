@@ -35,9 +35,10 @@ class WeeklyBarChart extends StatelessWidget {
           xValueMapper: (SalesData d, _) => d.animalType,
           yValueMapper: (SalesData d, _) => d.totalSales,
           pointColorMapper: (SalesData d, _) => d.color,
-          dataLabelSettings: const DataLabelSettings(
+          dataLabelSettings: DataLabelSettings(
+            margin: EdgeInsets.only(bottom: 10),
             isVisible: true,
-            textStyle: AppTextStyles.base
+            textStyle: AppTextStyles.data
           ),
         )
       ],
@@ -97,6 +98,7 @@ class AppTextStyles {
     color: AppColors.gris
   );
   static final number = base.copyWith(fontWeight: FontWeight.w300);
+  static final data = base.copyWith(fontWeight: FontWeight.w500);
 }
 
 class AppColors {

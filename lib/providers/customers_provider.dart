@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:balanced_foods/models/customer.dart';
+import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/models/ubigeo.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,8 @@ import 'package:http/http.dart' as http;
 class CustomersProvider extends ChangeNotifier{  
   bool isLoading = false;
   List<Customer> customers = [];
+  List<Order> pedidosByCliente = [];
+  
   Map<int, Uint8List> customerPhotos = {};
   Map<int, Ubigeo> customerUbigeos = {};
   
@@ -38,9 +41,14 @@ class CustomersProvider extends ChangeNotifier{
     }
   }
 
+
+
   Future<Customer?> fetchCustomerById(String token, int idCustomer) async {
     try {
-      final url = Uri.parse('https://adysabackend.facturador.es/clientes/getClientesById/$idCustomer/');
+      final url = Uri.parse(
+        'https://adysabackend.facturador.es/clientes/getClientesById/$idCustomer/1',
+      );
+
       final response = await http.get(
         url,
         headers: {
@@ -50,8 +58,18 @@ class CustomersProvider extends ChangeNotifier{
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+
         if (data.isNotEmpty) {
-          final customer = Customer.fromJSON(data[0]);
+          // Datos del cliente
+          final clienteData = data[0];
+
+          // Guardar los pedidos en la lista pedidosByCliente
+          final pedidosData = clienteData['pedidos'] as List<dynamic>;
+          pedidosByCliente = pedidosData
+              .map((pedido) => Order.fromJSON(pedido))
+              .toList();
+          // Retornar el objeto Customer
+          final customer = Customer.fromJSON(clienteData);
           return customer;
         }
       } else {
@@ -79,6 +97,9 @@ class CustomersProvider extends ChangeNotifier{
 
   Future<void> registerCustomer(Customer customer, String token) async {
     final body = customer.toApiRequest();
+    print('Cuerpo que se enviará al endpoint:');
+    print('token: $token');
+    print(jsonEncode(body));
     final response = await http.post(
       Uri.parse('https://adysabackend.facturador.es/clientes/createCliente'),
       headers: {
@@ -87,6 +108,8 @@ class CustomersProvider extends ChangeNotifier{
       },
       body: jsonEncode(body),
     );
+    // print('Estructura de envio:');
+    // print('${response.body}');
 
     if (response.statusCode ==200){
       print("respuesta: ${response.body}");

@@ -21,7 +21,7 @@ class Product {
   int? vecesVendido;
   String? colors;
   String? sizes;
-  int state;
+  int? state;
   int? idCategoria;
   String? dataTable;
   int? stockActualEmpresa;
@@ -55,7 +55,7 @@ class Product {
     this.vecesVendido,
     this.colors,
     this.sizes,
-    required this.state,
+    this.state,
     this.idCategoria,
     this.dataTable,
     this.stockActualEmpresa,
@@ -198,6 +198,8 @@ class Product {
     String? imagen,
     String? nombreFormula,
     String? versionFormula,
+    String? animalType,
+    String? productType,
   }) {
     return Product(
       idProduct: idProduct ?? this.idProduct,
@@ -230,8 +232,8 @@ class Product {
       imagen: imagen ?? this.imagen,
       nombreFormula: nombreFormula ?? this.nombreFormula,
       versionFormula: versionFormula ?? this.versionFormula,
-      animalType: this.animalType,
-      productType: this.productType,
+      animalType: animalType ?? this.animalType,
+      productType: productType ?? this.productType,
     );
   }
 }

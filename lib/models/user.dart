@@ -1,6 +1,7 @@
 class User {
   int? id;
   int? idUsuario;
+  int? idTransportista;
   int? idTipoUsuario;
   int? idDatosUsuario;
   int? idSucursal;
@@ -17,10 +18,12 @@ class User {
   String fotoPerfil;
   String? nombreTipoUsuario;
   bool? recordar;
+  double? cuotaMensual;
 
   User({
     this.id,
     this.idUsuario,
+    this.idTransportista,
     this.idTipoUsuario,
     this.idDatosUsuario,
     this.idSucursal,
@@ -37,12 +40,20 @@ class User {
     required this.fotoPerfil,
     this.nombreTipoUsuario,
     this.recordar = false,
+    this.cuotaMensual,
   });
 
   factory User.fromJSON(Map<String, dynamic> json) {
+    double _toDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
     return User(
       id: json['id'],
       idUsuario: json['id_usuario'],
+      idTransportista: json['id_transportista'],
       idTipoUsuario: json['id_tipo_usuario'] ?? 0,
       idDatosUsuario: json['id_datos_usuario'],
       idSucursal: json['id_sucursal'],
@@ -61,6 +72,7 @@ class User {
       fotoPerfil: json['foto_perfil'] ?? '',
       nombreTipoUsuario: json['nombre_tipo_usuario'],
       recordar: json['recordar'] ?? false,
+      cuotaMensual: _toDouble(json['cuota_mensual_soles']),
     );
   }
 
@@ -68,6 +80,7 @@ class User {
     return {
       'id': id,
       'id_usuario': idUsuario,
+      'id_transportista': idTransportista,
       'id_tipo_usuario': idTipoUsuario,
       'id_datos_usuario': idDatosUsuario,
       'id_sucursal': idSucursal,
@@ -89,12 +102,13 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, id_usuario: $idUsuario, id_tipo_usuario: $idTipoUsuario, id_datos_usuario: $idDatosUsuario, id_sucursal: $idSucursal, habilitar_bajar_precio: $habilitarBajarPrecio, dni: $dni, usuario: $usuario, nombres: $nombres, apellidos: $apellidos, celular: $celular, direccion: $direccion, fecha_nacimiento: $fechaNacimiento, correo: $correo, password: $password, foto_perfil: $fotoPerfil, nombre_tipo_usuario: $nombreTipoUsuario, recordar: $recordar)';
+    return 'User(id: $id, id_usuario: $idUsuario, id_transportista: $idTransportista, id_tipo_usuario: $idTipoUsuario, id_datos_usuario: $idDatosUsuario, id_sucursal: $idSucursal, habilitar_bajar_precio: $habilitarBajarPrecio, dni: $dni, usuario: $usuario, nombres: $nombres, apellidos: $apellidos, celular: $celular, direccion: $direccion, fecha_nacimiento: $fechaNacimiento, correo: $correo, password: $password, foto_perfil: $fotoPerfil, nombre_tipo_usuario: $nombreTipoUsuario, recordar: $recordar, cuota_mensual_soles: $cuotaMensual)';
   }  
 
   User copyWith({
     int? idUsuario,
     int? idTipoUsuario,
+    int? idTransportista,
     int? idDatosUsuario,
     int? idSucursal,
     int? habilitarBajarPrecio,
@@ -112,6 +126,7 @@ class User {
   }) {
     return User(
       idUsuario: idUsuario ?? this.idUsuario,
+      idTransportista: idTransportista ?? this.idTransportista,
       idTipoUsuario: idTipoUsuario ?? this.idTipoUsuario,
       idDatosUsuario: idDatosUsuario ?? this.idDatosUsuario,
       idSucursal: idSucursal ?? this.idSucursal,
@@ -126,7 +141,7 @@ class User {
       correo: correo ?? this.correo,
       fotoPerfil: fotoPerfil ?? this.fotoPerfil,
       nombreTipoUsuario: nombreTipoUsuario ?? this.nombreTipoUsuario,
-      recordar: recordar ?? this.recordar,
+      recordar: recordar ?? this.recordar
     );
   }
 
@@ -141,6 +156,7 @@ class User {
         "password": password,
         "foto_perfil": fotoPerfil,
         "habilitado_bajar_precio": habilitarBajarPrecio,
+        "cuota_mensual_soles": cuotaMensual,
       },
       "datosUsuarios": {
         "id": idDatosUsuario,

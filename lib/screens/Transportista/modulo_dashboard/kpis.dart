@@ -53,7 +53,7 @@ class SegmentsLineChartFL extends StatelessWidget {
                       color: Colors.blue,
                       barWidth: 2,
                       dashArray: null,
-                      belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
+                      belowBarData: BarAreaData(show: true, color: Colors.blue.withValues()),
                     ),
                     // Serie 2 - Roja con líneas punteadas
                     LineChartBarData(
@@ -70,7 +70,7 @@ class SegmentsLineChartFL extends StatelessWidget {
                       color: Colors.red,
                       barWidth: 2,
                       dashArray: [6, 4], // Patrón de línea punteada
-                      belowBarData: BarAreaData(show: true, color: Colors.red.withOpacity(0.2)),
+                      belowBarData: BarAreaData(show: true, color: Colors.red.withValues()),
                     ),
                     // Serie 3 - Verde con línea más gruesa
                     LineChartBarData(
@@ -87,7 +87,7 @@ class SegmentsLineChartFL extends StatelessWidget {
                       color: Colors.green,
                       barWidth: 4,
                       dashArray: null,
-                      belowBarData: BarAreaData(show: true, color: Colors.green.withOpacity(0.2)),
+                      belowBarData: BarAreaData(show: true, color: Colors.green.withValues()),
                     ),
                   ],
                 ),

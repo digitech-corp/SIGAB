@@ -18,7 +18,7 @@ class DashboardProvider extends ChangeNotifier{
       final body = {
         'fecha_fin': fechaFin,
         'fecha_inicio': fechaInicio,
-        'id_personal': idPersonal == null || idPersonal == 0 ? "" : idPersonal.toString(),
+        'id_personal': idPersonal,
       };
 
       final responseDetalles = await http.post(

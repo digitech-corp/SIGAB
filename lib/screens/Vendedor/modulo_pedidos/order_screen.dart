@@ -3,6 +3,7 @@ import 'package:balanced_foods/models/order.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
+import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/edit_order_screen.dart';
 import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/new_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/Vendedor/sales_module_screen.dart';
@@ -24,16 +25,16 @@ class _OrderScreenState extends State<OrderScreen> {
     Future.microtask(() async{
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = usersProvider.token;
-      // final idPersonal = usersProvider.loggedUser?.id ?? 0;
+      final idPersonal = usersProvider.loggedUser?.idUsuario ?? null;
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
-      final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
 
       await customersProvider.fetchCustomers(token!);
       await ordersProvider.fetchOrders(
         token, 
         DateFormat('yyyy-MM-dd').format(selectedDate), 
         DateFormat('yyyy-MM-dd').format(selectedDate), 
-        null,
+        idPersonal,
       );
     });
   }
@@ -42,17 +43,7 @@ class _OrderScreenState extends State<OrderScreen> {
     setState(() {
       selectedDate = DateTime.now();
     });
-
-    final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-    final token = usersProvider.token;
-    final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
-
-    await ordersProvider.fetchOrders(
-      token!,
-      DateFormat('yyyy-MM-dd').format(selectedDate),
-      DateFormat('yyyy-MM-dd').format(selectedDate),
-      null,
-    );
+    await _fetchOrdersForSelectedDate();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -62,28 +53,34 @@ class _OrderScreenState extends State<OrderScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
+
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
       });
-
-      // Llama al provider para actualizar los pedidos según la nueva fecha
-      final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-      final token = usersProvider.token;
-      final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
-
-      await ordersProvider.fetchOrders(
-        token!,
-        DateFormat('yyyy-MM-dd').format(selectedDate),
-        DateFormat('yyyy-MM-dd').format(selectedDate),
-        null,
-      );
+      await _fetchOrdersForSelectedDate();
     }
+  }
+
+  Future<void> _fetchOrdersForSelectedDate() async {
+    final usersProvider = Provider.of<UsersProvider>(context, listen: false);
+    final token = usersProvider.token;
+    final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
+    final idPersonal = usersProvider.loggedUser?.idUsuario;
+
+    if (token == null) return;
+
+    await ordersProvider.fetchOrders(
+      token,
+      DateFormat('yyyy-MM-dd').format(selectedDate),
+      DateFormat('yyyy-MM-dd').format(selectedDate),
+      idPersonal,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final ordersProvider = Provider.of<OrdersProvider2>(context);
+    final ordersProvider = Provider.of<OrdersProvider>(context);
     final orders = ordersProvider.orders;
     final customersProvider = Provider.of<CustomersProvider>(context);
     final customers = customersProvider.customers;
@@ -189,11 +186,12 @@ class _OrderScreenState extends State<OrderScreen> {
 
                               if (customer != null) {
                                 persona = customer.nombres;
-                                imagen = customer.fotoPerfil;                            
+                                imagen = customer.fotoPerfil ?? '';
+                                
                                 if (customer.razonSocialAfiliada.trim().isEmpty) {
-                                    empresa = customer.razonSocialAfiliada;
+                                  empresa = "Sin empresa";
                                 } else {
-                                    empresa = "Sin empresa";
+                                  empresa = customer.razonSocialAfiliada;
                                 }
                               }
                               
@@ -202,6 +200,8 @@ class _OrderScreenState extends State<OrderScreen> {
                                   ? '${order.horaRegistro!.hour.toString().padLeft(2, '0')}:${order.horaRegistro!.minute.toString().padLeft(2, '0')}'
                                   : '--:--';
                               final total = order.total!;
+                              final estado = order.state!;
+                              final selectDate = selectedDate;
 
                               return Row(
                                 children: [
@@ -213,13 +213,15 @@ class _OrderScreenState extends State<OrderScreen> {
                                       codPedido,
                                       hora,
                                       total,
+                                      estado,
+                                      order,
+                                      selectDate,
                                     ),
                                   ),
                                 ],
                               );
                             },
                           ),
-                // Botón flotante
                   Positioned(
                     bottom: 20,
                     right: 15,
@@ -234,12 +236,11 @@ class _OrderScreenState extends State<OrderScreen> {
                           context,
                           MaterialPageRoute(builder: (context) => NewOrderScreen()),
                         ).then((value) {
-                          // Aquí hacemos el reset y refrescamos los datos:
                           _resetAndFetchOrders();
                         });
                       },
-                      splashColor: Colors.transparent, // Opcional: sin splash visible
-                      highlightColor: Colors.transparent, // Opcional: sin highlight
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
                     ),
                   ),
                 ],
@@ -279,68 +280,82 @@ class _OrderScreenState extends State<OrderScreen> {
   }
   
 
-  Widget _detailOrder(String company, String person, String imagen, String codOrder, String hour, double total) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: SizedBox(
-        height: 70,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage: (imagen.isNotEmpty)
-                          ? NetworkImage(imagen)
-                          : null,
-                      child: (imagen.isEmpty)
-                          ? Icon(
-                              Icons.person,
-                              size: 30,
-                              color: AppColors.gris,
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(company, style: AppTextStyles.company),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 5,
-                                child: Text(person, style: AppTextStyles.orderinfo, overflow: TextOverflow.ellipsis),
-                              ),
-                              Expanded(
-                                flex: 1,
-                                child: Text(hour, style: AppTextStyles.hour, textAlign: TextAlign.center),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Text('S/. ${total.toStringAsFixed(2)}', style: AppTextStyles.total, textAlign: TextAlign.end),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(codOrder, style: AppTextStyles.orderinfo),
-                        ],
+  Widget _detailOrder(String company, String person, String imagen, String codOrder, String hour, double total, int estado, Order order, selectDate) {
+    return GestureDetector(
+      onTap: () async {
+        if (estado == 2) {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => EditOrderScreen(order: order)),
+          );
+
+          if (result == true) {
+            _fetchOrdersForSelectedDate();
+          }
+        }
+      },
+      child: Card(
+        color: AppColors.estadoConfirmado(estado),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: SizedBox(
+          height: 70,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: (imagen.isNotEmpty)
+                            ? NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(imagen)}')
+                            : null,
+                        child: (imagen.isEmpty)
+                            ? Icon(
+                                Icons.person,
+                                size: 30,
+                                color: AppColors.gris,
+                              )
+                            : null,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            )
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(company, style: AppTextStyles.company),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: Text(person, style: AppTextStyles.orderinfo, overflow: TextOverflow.ellipsis),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Text(hour, style: AppTextStyles.hour, textAlign: TextAlign.center),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Text('S/. ${total.toStringAsFixed(2)}', style: AppTextStyles.total, textAlign: TextAlign.end),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(codOrder, style: AppTextStyles.orderinfo),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            ),
           ),
         ),
       ),
@@ -369,4 +384,14 @@ class AppColors {
   static const gris = Color(0xFF333333);
   static const backgris = Color(0xFFECEFF1);
   static const lightGris = Color(0xFFBDBDBD);
+  static Color estadoConfirmado(int estado) {
+    if (estado == 2) {
+      return Color(0xFFFEFCE8);
+    }
+    if (estado == 1) {
+      return Color(0xFFDCFCE7);
+    } else {
+      return Colors.white;
+    }
+  }
 }

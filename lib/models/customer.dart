@@ -4,7 +4,7 @@ class Customer {
   int idListaPrecio;
   int estado;
   String? fechaCreado;
-  String fotoPerfil;
+  String? fotoPerfil;
   String nroDocumento;
   int? idDocumento;
   int? idTipoDocumento;
@@ -12,6 +12,7 @@ class Customer {
   String apellidos;
   String fechaNacimiento;
   String? nombreTipoDoc;
+  String? nombreTipoCliente;
   String? nombreListaPrecio;
   String? label;
   int? value;
@@ -45,6 +46,7 @@ class Customer {
     required this.apellidos,
     required this.fechaNacimiento,
     this.nombreTipoDoc,
+    this.nombreTipoCliente,
     this.nombreListaPrecio,
     this.label,
     this.value,
@@ -75,11 +77,12 @@ class Customer {
       fotoPerfil: json['foto_perfil'] ?? '',
       nroDocumento: json['nro_documento'],
       idDocumento: json['id_documento'],
-      idTipoDocumento: json['id_tipo_documento'], //nuevo
+      idTipoDocumento: json['id_tipo_documento'],
       nombres: json['nombres'],
       apellidos: json['apellidos'],
       fechaNacimiento: json['fecha_nacimiento'],
       nombreTipoDoc: json['nombre_tipo_doc'],
+      nombreTipoCliente: json['nombre_tipo_cliente'],
       nombreListaPrecio: json['nombre_lista_precio'],
       label: json['label'],
       value: json['value'],
@@ -117,20 +120,13 @@ class Customer {
       'fecha_nacimiento': fechaNacimiento,
       'nombre_tipo_doc': nombreTipoDoc,
       'nombre_lista_precio': nombreListaPrecio,
-      'label': label,
-      'value': value,
       'id_datos_persona': idDatosPersona,
       'id_pais': idPais,
       'correo': correo,
       'numero': numero,
       'id_ubigeo': idUbigeo,
-      'ubigeo': ubigeo,
       'direccion': direccion,
       'referencia': referencia,
-      'id_correo': idCorreo,
-      'id_direccion': idDireccion,
-      'id_telefono': idTelefono,
-      'id_dato_general': idDatoGeneral,
       'ruc_afiliada': rucAfiliada,
       'razon_social_afiliada': razonSocialAfiliada,
       'direccion_afiliada': direccionAfiliada,
@@ -140,6 +136,45 @@ class Customer {
   @override
   String toString() {
     return 'Customer{id_cliente: $idCliente, id_tipo_cliente: $idTipoCliente, id_lista_precio: $idListaPrecio, estado: $estado, fecha_creado: $fechaCreado, foto_perfil: $fotoPerfil, nro_documento: $nroDocumento, id_documento: $idDocumento, id_tipo_documento: $idTipoDocumento, nombres: $nombres, apellidos: $apellidos, fecha_nacimiento: $fechaNacimiento, nombre_tipo_doc: $nombreTipoDoc, nombre_lista_precio: $nombreListaPrecio, label: $label, value: $value, id_datos_persona: $idDatosPersona, correo: $correo, numero: $numero, id_pais: $idPais, id_ubigeo: $idUbigeo, ubigeo: $ubigeo, direccion: $direccion, referencia: $referencia, id_correo: $idCorreo, id_direccion: $idDireccion, id_telefono: $idTelefono, id_dato_general: $idDatoGeneral, ruc_afiliada: $rucAfiliada, razon_social_afiliada: $razonSocialAfiliada, direccion_afiliada: $direccionAfiliada}';
+  }
+
+  Map<String, dynamic> toApiRequest() {
+    return {
+      "cliente": {
+        "id": idCliente,
+        "id_lista_precio": idListaPrecio,
+        "foto_perfil": fotoPerfil,
+        "estado": estado,
+        "id_tipo_cliente": idTipoCliente,
+      },
+      "empresaAfiliada": {
+        "ruc": rucAfiliada,
+        "razon_social": razonSocialAfiliada,
+        "direccion": direccionAfiliada,
+      },
+      "datosGenerales": {
+        "id_tipo_documento": idTipoDocumento,
+        "numero_documento": nroDocumento,
+        "estado": estado,
+      },
+      "datosPersonas": {
+        "nombres": nombres,
+        "apellidos": apellidos,
+        "fecha_nacimiento": fechaNacimiento,
+      },
+      "direcciones": {
+        "id_pais": idPais,
+        "id_ubigeo": idUbigeo?.toString() ?? '',
+        "direccion": direccion,
+        "referencia": referencia,
+      },
+      "correos": {
+        "correo": correo,
+      },
+      "numeros_telefonicos": {
+        "numero": numero,
+      }
+    };
   }
 
   Customer copyWith({
@@ -177,13 +212,14 @@ class Customer {
   }) {
     return Customer(
       idCliente: idCliente ?? this.idCliente,
+      idTipoCliente: idTipoCliente ?? this.idTipoCliente,
+      idTipoDocumento: idTipoDocumento ?? this.idTipoDocumento,
       idListaPrecio: idListaPrecio ?? this.idListaPrecio,
       estado: estado ?? this.estado,
       fechaCreado: fechaCreado ?? this.fechaCreado,
       fotoPerfil: fotoPerfil ?? this.fotoPerfil,
       nroDocumento: nroDocumento ?? this.nroDocumento,
       idDocumento: idDocumento ?? this.idDocumento,
-      idTipoDocumento: idTipoDocumento ?? this.idTipoDocumento,
       nombres: nombres ?? this.nombres,
       apellidos: apellidos ?? this.apellidos,
       fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
@@ -209,55 +245,15 @@ class Customer {
     );
   }
 
-
-  Map<String, dynamic> toApiRequest() {
-    return {
-      "cliente": {
-        "id": idCliente,
-        "id_tipo_cliente": idTipoCliente,
-        "id_lista_precio": idListaPrecio,
-        "foto_perfil": fotoPerfil,
-        "estado": estado,
-      },
-      "empresaAfiliada": {
-        "ruc": rucAfiliada,
-        "razon_social": razonSocialAfiliada,
-        "direccion": direccionAfiliada,
-      },
-      "datosGenerales": {
-        "id_tipo_documento": idTipoDocumento,
-        "numero_documento": nroDocumento,
-        "estado": estado,
-      },
-      "datosPersonas": {
-        "nombres": nombres,
-        "apellidos": apellidos,
-        "fecha_nacimiento": fechaNacimiento,
-      },
-      "direcciones": {
-        "id_pais": idPais,
-        "id_ubigeo": idUbigeo?.toString(),
-        "direccion": direccion,
-        "referencia": referencia,
-      },
-      "correos": {
-        "correo": correo,
-      },
-      "numeros_telefonicos": {
-        "numero": numero,
-      }
-    };
-  }
-
   Map<String, dynamic> toUpdateJson() {
     return {
       'cliente': {
         'id': idCliente,
-        'id_tipo_cliente': idTipoCliente,
         'id_datos_generales': idDatoGeneral,
         'id_lista_precio': idListaPrecio,
         'estado': estado,
         'foto_perfil': fotoPerfil,
+        'id_tipo_cliente': idTipoCliente,
       },
       'empresaAfiliada': {
         'ruc': rucAfiliada,
@@ -266,7 +262,7 @@ class Customer {
       },
       'datosGenerales': {
         'id': idDatoGeneral,
-        'id_tipo_documento': idDocumento,
+        'id_tipo_documento': idTipoDocumento,
         'numero_documento': nroDocumento,
         'estado': estado,
       },

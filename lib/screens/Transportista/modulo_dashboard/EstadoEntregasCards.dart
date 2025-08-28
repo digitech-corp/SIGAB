@@ -19,7 +19,7 @@ class _EstadoEntregasCardsState extends State<EstadoEntregasCards> {
           child: _buildCard(
             title: "Entregado",
             value: entregado,
-            color: const Color(0xFF4A90E2),
+            color: Colors.green,
             icon: Icons.check_circle_outline,
           ),
         ),
@@ -28,7 +28,7 @@ class _EstadoEntregasCardsState extends State<EstadoEntregasCards> {
           child: _buildCard(
             title: "No Entregado",
             value: noEntregado,
-            color: const Color(0xFFD0021B),
+            color: Colors.red,
             icon: Icons.cancel_outlined,
           ),
         ),
@@ -52,7 +52,7 @@ class _EstadoEntregasCardsState extends State<EstadoEntregasCards> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(),
                 borderRadius: BorderRadius.circular(8),
               ),
               padding: const EdgeInsets.all(8),

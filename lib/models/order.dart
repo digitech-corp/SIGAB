@@ -21,8 +21,8 @@ class Order {
   String? deliveryLocation;
   DateTime? deliveryDate;
   TimeOfDay? deliveryTime;
-  DateTime? fechaVencimiento;
   String? additionalInformation;
+  DateTime? fechaVencimiento;
   int? idPaymentMethod;
   int? idTipoVenta;
   String? paymentMethod;
@@ -216,109 +216,12 @@ class Order {
       cuotas: ((json['cuotas'] as List<dynamic>?) ?? [])
         .map((d) => Cuota.fromJson(d))
         .toList(),
-      // pagosMixtos: ((json['pagosMixtos'] as List<dynamic>?) ?? [])
-      //   .map((d) => PagoMixto.fromJson(d))
-      //   .toList(),
+      pagosMixtos: ((json['tipo_pago'] as List<dynamic>?) ?? [])
+        .map((d) => PagoMixto.fromJson(d))
+        .toList(),
       estadoFacturacion: json['estado_facturacion'],
     );
   }
-
-  // factory Order.fromJSONSinCliente(Map<String, dynamic> json) {
-  //   double _toDouble(dynamic value) {
-  //     if (value == null) return 0.0;
-  //     if (value is num) return value.toDouble();
-  //     if (value is String) return double.tryParse(value) ?? 0.0;
-  //     return 0.0;
-  //   }
-
-  //   TimeOfDay? parseTime(String? time) {
-  //     if (time == null || time.isEmpty) return null;
-  //     final parts = time.split(':');
-  //     return TimeOfDay(
-  //       hour: int.tryParse(parts[0]) ?? 0,
-  //       minute: int.tryParse(parts[1]) ?? 0,
-  //     );
-  //   }
-
-  //   return Order(
-  //     idOrder: json['id'],
-  //     idTipoDocumento: json['id_tipo_documento'],
-  //     idCustomer: json['id_cliente'],
-  //     idSucursal: json['id_sucursal'],
-  //     numComprobante: json['comprobante'] ?? json['numero_comprobante'],
-  //     horaRegistro: parseTime(json['hora_registro']) ?? TimeOfDay(hour: 0, minute: 0),
-  //     fechaEmision: (json['fecha_emision'] is String)
-  //         ? DateTime.tryParse(json['fecha_emision'])
-  //         : null,
-  //     fechaRegistro: (json['fecha_registro'] is String)
-  //         ? DateTime.tryParse(json['fecha_registro'])
-  //         : null,
-  //     total: _toDouble(json['total_venta']),
-  //     idPersonal: json['id_personal'],
-  //     idMoneda: json['id_moneda'],
-  //     cliente: null, // No asignamos nada aquí
-  //     vendedor: json['vendedor'],
-  //     state: json['estado_registro'],
-  //     razonSocial: json['razon_social'],
-  //     deliveryLocation: json['direccion_entrega'],
-  //     deliveryDate: (json['fecha_entrega'] is String)
-  //         ? DateTime.tryParse(json['fecha_entrega'])
-  //         : null,
-  //     fechaVencimiento: (json['fecha_vencimiento'] is String)
-  //         ? DateTime.tryParse(json['fecha_vencimiento'])
-  //         : null,
-  //     deliveryTime: parseTime(json['hora_entrega']),
-  //     additionalInformation: json['referencia_entrega'],
-  //     idPaymentMethod: json['id_tipo_pago'],
-  //     paymentMethod: json['nombre_tipo_pago'],
-  //     idTipoVenta: json['id_tipo_venta'],
-
-  //     serie: json['serie'],
-  //     numero: json['numero'],
-  //     totalPagado: _toDouble(json['total_pagado']),
-  //     nroDocumento: json['nro_documento'],
-  //     nombreTipoDocumento: json['nombre_tipo_documento'],
-  //     codigoTipoPago: json['codigo_tipo_pago'],
-  //     nombreSucursal: json['nombre_sucursal'],
-  //     nombreCliente: json['nombre_cliente'],
-
-  //     idMotivoNota: json['id_motivo_nota'],
-  //     idMotivoNotaDebito: json['id_motivo_nota_debito'],
-  //     nroOperacion: json['nro_operacion'],
-  //     serieModifica: json['serie_modifica'],
-  //     nroModifica: json['numero_modifica'],
-  //     dateModifica: (json['fecha_modifica'] is String)
-  //         ? DateTime.tryParse(json['fecha_modifica'])
-  //         : null,
-  //     baseImponible: _toDouble(json['base_imponible']),
-  //     totalExonerado: _toDouble(json['total_exonerado']),
-  //     totalIgv: _toDouble(json['total_igv']),
-  //     detraccion: json['tiene_detraccion'],
-  //     idTipoDetraccion: json['id_tipo_detraccion'],
-  //     porcentajeDetraccion: _toDouble(json['porcentaje_detraccion']),
-  //     totalDetraccion: _toDouble(json['total_detraccion']),
-  //     idTipoRetencion: json['id_tipo_retencion'],
-  //     totalRetencion: _toDouble(json['total_retencion']),
-  //     direccionClienteVenta: json['direccion_cliente_venta'],
-  //     tipoCambio: json['tipo_cambio'],
-  //     observaciones: json['observaciones'],
-  //     idTipoImpresion: json['id_tipo_impresion'],
-  //     creditoDias: json['credito_dias'],
-
-  //     details: ((json['detalles'] as List<dynamic>?) ??
-  //             (json['productos'] as List<dynamic>?) ??
-  //             [])
-  //         .map((d) => OrderDetail.fromJSON(d))
-  //         .toList(),
-  //     cuotas: ((json['cuotas'] as List<dynamic>?) ??[])
-  //         .map((d) => Cuota.fromJson(d))
-  //         .toList(),
-  //     pagosMixtos: (json['pagosMixtos'] != null)
-  //         ? (json['pagosMixtos'] as List).map((d) => PagoMixto.fromJson(d)).toList()
-  //         : [],
-  //     estadoFacturacion: json['estado_facturacion'],
-  //   );
-  // }
 
   Map<String, dynamic> toJson() {
     return {

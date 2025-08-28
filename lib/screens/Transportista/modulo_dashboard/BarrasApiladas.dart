@@ -10,36 +10,6 @@ class BarrasApiladas extends StatefulWidget {
 }
 
 class _BarrasApiladasState extends State<BarrasApiladas> {
-  // final List<String> etapas = [
-  //   'Entregado',
-  //   'No Entregado'
-  // ];
-
-  // final List<double> valores = [30, 75, 45, 20];
-
-  // final List<Color> colores = [
-  //   Color(0xFF4A90E2),
-  //   Color(0xFFF5A623),
-  //   Color(0xFF7ED321),
-  //   Color(0xFFD0021B),
-  // ];
-
-  // int? selectedIndex;
-  // double calculateInterval() {
-  //   final maxValue = valores.reduce((a, b) => a > b ? a : b);
-
-  //   double rawInterval = maxValue / 5;
-
-  //   double roundedInterval = (rawInterval / 10).round() * 10;
-
-  //   if (roundedInterval == 0) {
-  //     roundedInterval = 10;
-  //   }
-
-  //   return roundedInterval.toDouble();
-  // }
-
-
   @override
   Widget build(BuildContext context) {
     final entregas = widget.entregas;
@@ -168,6 +138,26 @@ class _BarrasApiladasState extends State<BarrasApiladas> {
                           );
                         },
                       ),
+                    ),
+                  ),
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (group) => Colors.black87,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        String zona = ['Sur', 'Norte', 'Centro', 'Este', 'Oeste'][group.x];
+                        String tipo = rodIndex == 0 ? 'Entregado' : 'No Entregado';
+                        int cantidad = rod.toY.toInt();
+
+                        return BarTooltipItem(
+                          '$cantidad: $tipo${cantidad == 1 ? '' : 's'} en $zona',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Montserrat',
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

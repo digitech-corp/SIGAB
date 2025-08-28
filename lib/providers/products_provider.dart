@@ -99,7 +99,7 @@ class ProductsProvider extends ChangeNotifier{
 
   Map<int, List<Map<String, dynamic>>> _priceHistory = {};
   
-  Future<void> loadPriceHistory(int customerId, OrdersProvider2 ordersProvider) async {
+  Future<void> loadPriceHistory(int customerId, OrdersProvider ordersProvider) async {
     _priceHistory = ordersProvider.getPriceHistoryForCustomer(customerId);
   }
 
@@ -110,19 +110,27 @@ class ProductsProvider extends ChangeNotifier{
   List<Map<String, dynamic>> getPriceHistory(int productId) {
     return _priceHistory[productId] ?? [];
   }
- 
-  void updatePrice(int productId, double newPrice) {
+
+  void setSelectionsForCustomer(int customerId, List<ProductSelection> selections) {
+    final customerMap = _customerSelections.putIfAbsent(customerId, () => {});
+    for (final sel in selections) {
+      customerMap[sel.product.idProduct] = sel;
+    }
+    _currentCustomerId = customerId;
+    notifyListeners();
+  }
+  
+  void updatePrice(int productId, double newPrice, {bool notify = false}) {
     if (_currentCustomerId == null) return;
 
     final selectionMap = _customerSelections[_currentCustomerId];
     if (selectionMap != null && selectionMap.containsKey(productId)) {
       final selection = selectionMap[productId]!;
-      selection.product.price = newPrice;
       selection.currentPrice = newPrice;
-      notifyListeners();
+      if (notify) notifyListeners();
     }
   }
-  
+
   void clearSelections() {
     for (var customerMap in _customerSelections.values) {
       for (var selection in customerMap.values) {

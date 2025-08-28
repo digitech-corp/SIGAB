@@ -24,7 +24,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
     super.initState();
     Future.microtask(() async {
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
-      final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
       final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
       final token = userProvider.token;
 
@@ -180,12 +180,13 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
         children: [
           Row(
             children: [
-              Expanded(flex: 1, child: Text('Cant.', style: AppTextStyles.tableHead)),
-              Expanded(flex: 6, child: Text('Nombre del Producto', style: AppTextStyles.tableHead, textAlign: TextAlign.center)),
-              Expanded(flex: 2, child: Text('Stock', style: AppTextStyles.tableHead, textAlign: TextAlign.center,)),
-              Expanded(flex: 1, child: Text('Tipo', style: AppTextStyles.tableHead, textAlign: TextAlign.center,)),
-              Expanded(flex: 2, child: Text('Precio', style: AppTextStyles.tableHead, textAlign: TextAlign.center)),
-              Expanded(flex: 1, child: Text('Selec', style: AppTextStyles.tableHead)),
+              Expanded(flex: 2, child: Text('Cant.', style: AppTextStyles.tableHead)),
+              const SizedBox(width: 5),
+              Expanded(flex: 7, child: Text('Nombre del Producto', style: AppTextStyles.tableHead, textAlign: TextAlign.left)),
+              Expanded(flex: 2, child: Text('Stock', style: AppTextStyles.tableHead, textAlign: TextAlign.center)),
+              Expanded(flex: 2, child: Text('Tipo', style: AppTextStyles.tableHead, textAlign: TextAlign.center)),
+              Expanded(flex: 3, child: Text('Precio', style: AppTextStyles.tableHead, textAlign: TextAlign.center)),
+              Expanded(flex: 2, child: Text('Selec', style: AppTextStyles.tableHead)),
             ],
           ),
           const Divider(height: 1),
@@ -204,7 +205,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                   child: Row(
                     children: [
                       Expanded(
-                        flex: 1,
+                        flex: 2,
                         child: TextFormField(
                           controller: selection.controller,
                           enabled: selection.isSelected,
@@ -231,15 +232,15 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                       ),
                       const SizedBox(width: 5),
                       Expanded(
-                        flex: 6,
+                        flex: 7,
                         child: Text(product.productName, style: AppTextStyles.tableData),
                       ),
                       Expanded(
-                        flex: 1,
-                        child: Text('${product.stockActualEmpresa}', style: AppTextStyles.tableData, textAlign: TextAlign.center),
+                        flex: 2,
+                        child: Text('${product.stockActualEmpresa}', style: AppTextStyles.tableData, textAlign: TextAlign.right),
                       ),
                       Expanded(
-                        flex: 1,
+                        flex: 2,
                         child: Text(letraType, style: AppTextStyles.tableData, textAlign: TextAlign.center),
                       ),
                       buildCompactPriceEditor(
@@ -249,7 +250,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                         idCustomer: widget.idCustomer,
                       ),
                       Expanded(
-                        flex: 1,
+                        flex: 2,
                         child: SizedBox(
                           width: 28,
                           child: Checkbox(
@@ -259,7 +260,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                                     setState(() {
                                       selection.isSelected = val ?? false;
                                       if (!selection.isSelected) {
-                                        selection.quantity = 0;
+                                        selection.quantity = 0.0;
                                         selection.controller.text = '';
                                       }
                                       Provider.of<ProductsProvider>(context, listen: false)
@@ -271,8 +272,8 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
                                 : null,
                             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             visualDensity: VisualDensity.compact,
-                            fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-                              if (states.contains(MaterialState.disabled)) {
+                            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                              if (states.contains(WidgetState.disabled)) {
                                 return Colors.grey.shade300;
                               }
                               return selection.isSelected ? AppColors.gris : Colors.white;
@@ -299,6 +300,15 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
           try {
             final provider = Provider.of<ProductsProvider>(context, listen: false);
             final selected = provider.selectedProducts;
+            for (var sel in provider.selectedProducts) {
+              // cantidad
+              final text = sel.controller.text.replaceAll(',', '.');
+              sel.quantity = double.tryParse(text) ?? 0.0;
+
+              // precio
+              final priceText = sel.priceController.text.replaceAll(',', '.');
+              sel.currentPrice = double.tryParse(priceText) ?? sel.product.price;
+            }
 
 
             if (selected.isEmpty) {
@@ -321,7 +331,6 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> {
               );
               return;
             }
-            print("Productos seleccionados: $selected");
             Navigator.pop(context);
           } catch (e, stack) {
             print('Error al guardar selección: $e');
@@ -349,7 +358,8 @@ class ProductSelection {
   double quantity;
   double? initialPrice;
   double? currentPrice;
-  TextEditingController controller;
+  late TextEditingController controller;
+  late TextEditingController priceController;
 
   ProductSelection({
     required this.product,
@@ -357,7 +367,24 @@ class ProductSelection {
     this.quantity = 0.0,
     this.initialPrice,
     this.currentPrice,
-  }): controller = TextEditingController(text: '');
+  }) {
+    controller = TextEditingController(
+      text: quantity > 0 ? quantity.toString() : '',
+    );
+    priceController = TextEditingController(
+      text: (currentPrice ?? initialPrice ?? product.price).toStringAsFixed(2),
+    );
+  }
+
+  void updatePrice(double newPrice) {
+    currentPrice = newPrice;
+    priceController.text = newPrice.toStringAsFixed(2);
+  }
+
+  void updateQuantity(double newQuantity) {
+    quantity = newQuantity;
+    controller.text = newQuantity > 0 ? newQuantity.toString() : '';
+  }
 }
 
 // MODELO DE DATOS

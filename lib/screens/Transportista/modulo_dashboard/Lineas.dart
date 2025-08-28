@@ -96,10 +96,10 @@ class _LineasState extends State<Lineas> {
                     LineChartBarData(
                       spots: spotsEntregados,
                       isCurved: false,
-                      color: Colors.blue,
+                      color: Colors.green,
                       barWidth: 2,
                       dashArray: null,
-                      belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
+                      belowBarData: BarAreaData(show: true, color: Colors.green.withValues()),
                     ),
                     LineChartBarData(
                       spots: spotsNoEntregados,
@@ -107,9 +107,35 @@ class _LineasState extends State<Lineas> {
                       color: Colors.red,
                       barWidth: 2,
                       dashArray: [6, 4],
-                      belowBarData: BarAreaData(show: true, color: Colors.red.withOpacity(0.2)),
+                      belowBarData: BarAreaData(show: true, color: Colors.red.withValues()),
                     ),
                   ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (touchedSpot) =>  Colors.black87,
+                      getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                        return touchedSpots.map((spot) {
+                          final int yValue = spot.y.toInt();
+                          String label = '';
+
+                          if (spot.barIndex == 0) {
+                            label = '$yValue: Entregado${yValue == 1 ? '' : 's'}';
+                          } else if (spot.barIndex == 1) {
+                            label = '$yValue: No Entregado${yValue == 1 ? '' : 's'}';
+                          }
+
+                          return LineTooltipItem(
+                            label,
+                            TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                 ),
               )
             ),

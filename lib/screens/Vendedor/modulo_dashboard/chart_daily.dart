@@ -67,7 +67,6 @@ List<SalesData> buildSalesDataByAnimalType(List<Order> orders, List<Product> pro
     }
   }
 
-  // Asignar colores únicos por tipo (puedes personalizar más)
   final List<Color> colors = [
     Colors.green,
     Colors.orange,

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:balanced_foods/models/opcionCatalogo.dart';
+import 'package:balanced_foods/models/tipoCliente.dart';
+import 'package:balanced_foods/models/tipoDocumento.dart';
 import 'package:balanced_foods/models/ubigeo.dart';
 import 'package:balanced_foods/providers/configuraciones_provider.dart';
 import 'package:balanced_foods/providers/customers_provider.dart';
@@ -10,9 +12,11 @@ import 'package:balanced_foods/providers/facturas_provider.dart';
 import 'package:balanced_foods/providers/orders_provider.dart';
 import 'package:balanced_foods/providers/products_provider.dart';
 import 'package:balanced_foods/providers/provinces_provider.dart';
+import 'package:balanced_foods/providers/tipos_cliente_provider.dart';
+import 'package:balanced_foods/providers/tipos_documento_provider.dart';
 import 'package:balanced_foods/providers/ubigeos_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
-import 'package:balanced_foods/screens/Vendedor/modulo_clientes/new_customer_screen.dart';
+import 'package:balanced_foods/screens/Vendedor/modulo_clientes/form_customer.dart';
 import 'package:balanced_foods/screens/Vendedor/modulo_pedidos/part_order.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/models/customer.dart';
@@ -48,11 +52,13 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
       final ubigeosProvider = Provider.of<UbigeosProvider>(context, listen: false);
       final departmentsProvider = Provider.of<DepartmentsProvider>(context, listen: false);
-      final ordersProvider = Provider.of<OrdersProvider2>(context, listen: false);
+      final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
       final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
       final documentosProvider = Provider.of<OpcionCatalogoProvider>(context, listen: false);
+      final tiposDocumentosProvider = Provider.of<TipoDocumentoProvider>(context, listen: false);
+      final tiposClientesProvider = Provider.of<TipoClienteProvider>(context, listen: false);
 
-      await customersProvider.fetchCustomers(token!);
+      await customersProvider.fetchCustomerById(token!, widget.customer.idCliente!);
       await ubigeosProvider.fetchUbigeos(token);
       await departmentsProvider.fetchDepartments(token);
       await documentosProvider.fetchOpcionesVenta(token);
@@ -61,6 +67,8 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
         productsProvider.loadPriceHistory(widget.customer.idCliente!, ordersProvider);
       });
       productsProvider.setCurrentCustomer(widget.customer.idCliente!);
+      tiposDocumentosProvider.fetchTipoDocumento(token);
+      tiposClientesProvider.fetchTipoCliente(token);
     });
   }
 
@@ -105,11 +113,11 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                     children: [
                       CircleAvatar(
                         radius: 58,
-                        backgroundImage: _customer.fotoPerfil.isNotEmpty
-                            ? NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(_customer.fotoPerfil)}')
+                        backgroundImage: _customer.fotoPerfil!.isNotEmpty
+                            ? NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(_customer.fotoPerfil!)}')
                             : null,
                         backgroundColor: Colors.grey[300],
-                        child: widget.customer.fotoPerfil.isEmpty
+                        child: widget.customer.fotoPerfil!.isEmpty
                             ? Icon(
                                 Icons.person,
                                 size: 100,
@@ -160,8 +168,13 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                           child: Image.asset('assets/images/phone.png', color: Colors.black),
                         ),
                         onPressed: () async {
-                          final String phone = '+51${_customer.numero}';
-                          final Uri callUri = Uri(scheme: 'tel', path: phone);
+                          if (_customer.numero.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No hay número registrado')),
+                            );
+                            return;
+                          }
+                          final Uri callUri = Uri(scheme: 'tel', path: '+51${_customer.numero}');
                           if (await canLaunchUrl(callUri)) {
                             await launchUrl(callUri);
                           } else {
@@ -197,12 +210,17 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                           child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                         ),
                         onPressed: () async {
-                          final String phone = '51${_customer.numero}';
-                          final Uri whatsappUri = Uri.parse("https://wa.me/$phone");
+                          if (_customer.numero.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No hay número registrado')),
+                            );
+                            return;
+                          }
+                          final Uri whatsappUri = Uri.parse("https://wa.me/+51${_customer.numero}");
                           if (await canLaunchUrl(whatsappUri)) {
                             await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
                           } else {
-                            debugPrint('No se pudo abrir WhatsApp para $phone');
+                            debugPrint('No se pudo abrir WhatsApp para +51${_customer.numero}');
                           }
                         },
                       ),
@@ -427,74 +445,71 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
   
   Future<Customer?> showEditCustomerDialog(BuildContext context, Customer customer) async {
     final _formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController(text: _customer.nombres);
-    final lastNameController = TextEditingController(text: _customer.apellidos);
-    final dniController = TextEditingController(text: _customer.nroDocumento);
-    final phoneController = TextEditingController(text: _customer.numero);
-    final emailController = TextEditingController(text: _customer.correo);
-    final addressController = TextEditingController(text: _customer.direccion);
-    final referenceController = TextEditingController(text: _customer.referencia);
-    final rucController = TextEditingController(text: _customer.rucAfiliada);
-    final razonSocialAfiliadaController = TextEditingController(text: _customer.razonSocialAfiliada);
+    final nameController = TextEditingController(text: customer.nombres);
+    final lastNameController = TextEditingController(text: customer.apellidos);
+    final dniController = TextEditingController(text: customer.nroDocumento);
+    final phoneController = TextEditingController(text: customer.numero);
+    final emailController = TextEditingController(text: customer.correo);
+    final addressController = TextEditingController(text: customer.direccion);
+    final referenceController = TextEditingController(text: customer.referencia);
+    final rucController = TextEditingController(text: customer.rucAfiliada);
+    final razonSocialAfiliadaController = TextEditingController(text: customer.razonSocialAfiliada);
+
+    final companyAddressController = TextEditingController(text: customer.direccionAfiliada);
 
     final token = Provider.of<UsersProvider>(context, listen: false).token;
     final customerProvider = Provider.of<CustomersProvider>(context, listen: false);
-    final departmentsProvider = Provider.of<DepartmentsProvider>(context, listen: false);
     final provincesProvider = Provider.of<ProvincesProvider>(context, listen: false);
     final districtsProvider = Provider.of<DistrictsProvider>(context, listen: false);
     final ubigeosProvider = Provider.of<UbigeosProvider>(context, listen: false);
+    final tipoDocumentoProvider = Provider.of<TipoDocumentoProvider>(context, listen: false);
+    final tipoClientesProvider = Provider.of<TipoClienteProvider>(context, listen: false);
 
-    final List<Ubigeo> ubigeos = ubigeosProvider.ubigeos;
-    final Ubigeo? ubigeoCliente = ubigeos.firstWhere(
-      (u) => u.id == widget.customer.idUbigeo, 
+    String? _selectedTipoDocumento = (customer.nombreTipoDoc?.isNotEmpty ?? false) ? customer.nombreTipoDoc : null;
+    String? _selectedTipoCliente = (customer.nombreTipoCliente?.isNotEmpty ?? false) ? customer.nombreTipoCliente : null;
+
+    final ubigeoCliente = ubigeosProvider.ubigeos.firstWhere(
+      (u) => u.id == customer.idUbigeo,
       orElse: () => Ubigeo(id: 0, ubiDepartamento: '', ubiProvincia: '', ubiDistrito: ''),
     );
 
-    String? selectedDepartment = ubigeoCliente?.ubiDepartamento;
-    String? selectedProvince = ubigeoCliente?.ubiProvincia;
-    String? selectedDistrict = ubigeoCliente?.ubiDistrito;
+    String? selectedDepartment = ubigeoCliente.ubiDepartamento;
+    String? selectedProvince = ubigeoCliente.ubiProvincia;
+    String? selectedDistrict = ubigeoCliente.ubiDistrito;
 
-    if (selectedDepartment != null) {
+    if (selectedDepartment.isNotEmpty) {
       await provincesProvider.fetchProvincesByDepartment(selectedDepartment, token!);
     }
-    if (selectedProvince != null) {
+    if (selectedProvince.isNotEmpty) {
       await districtsProvider.fetchDistrictsByProvince(selectedProvince, token!);
     }
 
     return showDialog<Customer>(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
-        // Variables de estado local para el diálogo
         XFile? _selectedImage;
         String? _base64Image;
-        final ImagePicker _picker = ImagePicker();        
+        final ImagePicker _picker = ImagePicker();
+
         return StatefulBuilder(
           builder: (context, setState) {
-            ValueNotifier<bool> _isPickingImage = ValueNotifier(false);
-            // Selección de imagen
             Future<void> _pickImage() async {
-              if (_isPickingImage.value) return;
-              _isPickingImage.value = true;
-              try {
-                final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-                if (image != null) {
-                  final bytes = await File(image.path).readAsBytes();
-                  final mimeType = lookupMimeType(image.path);
-                  final base64Image = 'data:$mimeType;base64,${base64Encode(bytes)}';
-                  setState(() {
-                    _selectedImage = image;
-                    _base64Image = base64Image;
-                  });
-                }
-              } catch (e) {
-                debugPrint('Error picking image: $e');
-              } finally {
-                _isPickingImage.value = false;
+              final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+              if (image != null) {
+                final bytes = await File(image.path).readAsBytes();
+                final mimeType = lookupMimeType(image.path);
+                final base64Image = 'data:$mimeType;base64,${base64Encode(bytes)}';
+                setState(() {
+                  _selectedImage = image;
+                  _base64Image = base64Image;
+                });
               }
             }
 
             Widget _buildCustomerImage(String? imageFileName) {
-              final imageUrl = (imageFileName != null && imageFileName.isNotEmpty)
+              final bool isBase64 = imageFileName != null && imageFileName.startsWith('data:image');
+              final imageUrl = (imageFileName != null && imageFileName.isNotEmpty && !isBase64)
                   ? 'https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(imageFileName)}'
                   : null;
 
@@ -502,8 +517,8 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                 alignment: Alignment.center,
                 children: [
                   Container(
-                    width: 96,
-                    height: 96,
+                    width: 90,
+                    height: 90,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey[300],
@@ -526,11 +541,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                                       Icon(Icons.person, size: 80, color: Colors.grey),
                                 ),
                               )
-                            : Icon(
-                                Icons.person,
-                                size: 80,
-                                color: Colors.grey,
-                              )),
+                            : Icon(Icons.person, size: 80, color: Colors.grey)),
                   ),
                   Positioned(
                     bottom: 0,
@@ -561,252 +572,76 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                 ],
               );
             }
-
             return AlertDialog(
-              insetPadding: EdgeInsets.symmetric(horizontal: 10),
-              title: Text('Editar Cliente', style: AppTextStyles.editTitle),
+              title: Text('Editar Cliente'),
               content: SingleChildScrollView(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildCustomerImage(_customer.fotoPerfil),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: nameController,
-                        decoration: InputDecoration(
-                          labelText: 'Nombres',
-                          labelStyle: AppTextStyles.editVars,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 1),
-                        ),
-                        style: AppTextStyles.base,
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: lastNameController,
-                        decoration: InputDecoration(
-                          labelText: 'Apellidos',
-                          labelStyle: AppTextStyles.editVars,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 1),
-                        ),
-                        style: AppTextStyles.base,
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: dniController,
-                              decoration: InputDecoration(
-                                labelText: 'Dni',
-                                labelStyle: AppTextStyles.editVars,
-                                isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 1),
-                              ),
-                              style: AppTextStyles.base,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(8),
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: phoneController,
-                              decoration: InputDecoration(
-                                labelText: 'Teléfono',
-                                labelStyle: AppTextStyles.editVars,
-                                isDense: true,
-                                contentPadding: EdgeInsets.symmetric(vertical: 1),
-                              ),
-                              style: AppTextStyles.base,
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(9),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Correo',
-                          labelStyle: AppTextStyles.editVars,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 1),
-                        ),
-                        style: AppTextStyles.base,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return null;
-                          }
-                          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                          if (!emailRegex.hasMatch(value)) {
-                            return 'Por favor, ingresa un correo electrónico válido';
-                          }
-                          return null;
-                        },
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                  
-                      TextField(
-                        controller: addressController,
-                        decoration: InputDecoration(
-                          labelText: 'Dirección',
-                          labelStyle: AppTextStyles.editVars,
-                        ),
-                        style: AppTextStyles.base,
-                      ),
-                      TextField(
-                        controller: referenceController,
-                        decoration: InputDecoration(
-                          labelText: 'Referencia',
-                          labelStyle: AppTextStyles.editVars,
-                        ),
-                        style: AppTextStyles.base,
-                      ),
-                      TextField(
-                        controller: razonSocialAfiliadaController,
-                        decoration: InputDecoration(
-                          labelText: 'RUC Empresa',
-                          labelStyle: AppTextStyles.editVars,
-                        ),
-                        style: AppTextStyles.base,
-                      ),
-                      TextField(
-                        controller: rucController,
-                        decoration: InputDecoration(
-                          labelText: 'Razón social',
-                          labelStyle: AppTextStyles.editVars,
-                        ),
-                        style: AppTextStyles.base,
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Departamento', style: AppTextStyles.selectVars),
-                        ],
-                      ),
-                      BuildSelect(
-                        selectedValue: selectedDepartment ?? '',
-                        options: departmentsProvider.departments.map((d) => d.department).toList(),
-                        onChanged: (value) async{
-                          setState(() {
-                            selectedDepartment = value;
-                            selectedProvince = null;
-                            selectedDistrict = null;
-                          });
-                          await provincesProvider.fetchProvincesByDepartment(value!, token!);
-                          districtsProvider.districts = [];
-                          setState(() {});
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            // return 'Por favor, selecciona un departamento';
-                            return null;
-                          }
-                          return null;
-                        },
-                        hintText: 'Departamento',
-                      ),
-                      const SizedBox(height: 7),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Provincia', style: AppTextStyles.selectVars),
-                                const SizedBox(height: 5),
-                                BuildSelect(
-                                  selectedValue: selectedProvince ?? '',
-                                  options: provincesProvider.provinces.map((p) => p.province).toList(),
-                                  onChanged: (value) async {
-                                    setState(() {
-                                      selectedProvince = value;
-                                      selectedDistrict = null;
-                                    });
-                                    await districtsProvider.fetchDistrictsByProvince(value!, token!);
-                                    setState(() {});
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      // return 'Por favor, selecciona una provincia';
-                                      return null;
-                                    }
-                                    return null;
-                                  },
-                                  hintText: 'Provincia',
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Distrito', style: AppTextStyles.selectVars),
-                                const SizedBox(height: 5),
-                                BuildSelect(
-                                  selectedValue: selectedDistrict ?? '',
-                                  options: districtsProvider.districts.map((d) => d.district).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedDistrict = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      // return 'Por favor, selecciona un distrito';
-                                      return null;
-                                    }
-                                    return null;
-                                  },
-                                  hintText: 'Distrito',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    _buildCustomerImage(_base64Image ?? customer.fotoPerfil),
+                    const SizedBox(height: 10),
+
+                    NewCustomerForm(
+                      formKey: _formKey,
+                      customerName: nameController,
+                      customerLastName: lastNameController,
+                      dni: dniController,
+                      onImageChanged: (_) {},
+                      customerPhone: phoneController,
+                      customerEmail: emailController,
+                      customerAddress: addressController,
+                      customerReference: referenceController,
+                      companyRUC: rucController,
+                      companyName: razonSocialAfiliadaController,
+                      companyAddress: companyAddressController,
+                      companyWeb: TextEditingController(),
+                      idCompany: TextEditingController(),
+                      selectedTipoDocumento: _selectedTipoDocumento,
+                      onSelectedTipoDocumento: (value) => setState(() => _selectedTipoDocumento = value),
+                      selectedTipoCliente: _selectedTipoCliente,
+                      onSelectedTipoCliente: (value) => setState(() => _selectedTipoCliente = value),
+                      selectedDepartment: selectedDepartment,
+                      selectedProvince: selectedProvince,
+                      selectedDistrict: selectedDistrict,
+                      onSelectedDepartment: (value) => setState(() => selectedDepartment = value),
+                      onSelectedProvince: (value) => setState(() => selectedProvince = value),
+                      onSelectedDistrict: (value) => setState(() => selectedDistrict = value),
+                      enableImagePicker: false,
+                      enableInfoExtra: true,
+                    ),
+                  ],
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Cancelar', style: AppTextStyles.btn),
+                  child: Text('Cancelar'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
+                      // Mapear nombre ➜ id
+                      final tipoDocObj = tipoDocumentoProvider.tiposDocumento.firstWhere(
+                        (t) => t.nombre == _selectedTipoDocumento,
+                        orElse: () => TipoDocumento(id: customer.idTipoDocumento, nombre: customer.nombreTipoDoc ?? ''),
+                      );
+                      final tipoClienteObj = tipoClientesProvider.tiposCliente.firstWhere(
+                        (t) => t.nombre == _selectedTipoCliente,
+                        orElse: () => TipoCliente(id: customer.idTipoCliente, nombre: customer.nombreTipoCliente ?? ''),
+                      );
+
                       final ubigeoNuevo = ubigeosProvider.ubigeos.firstWhere(
-                        (u) =>
-                          u.ubiDepartamento == selectedDepartment &&
-                          u.ubiProvincia == selectedProvince &&
-                          u.ubiDistrito == selectedDistrict,
+                        (u) => u.ubiDepartamento == selectedDepartment &&
+                              u.ubiProvincia == selectedProvince &&
+                              u.ubiDistrito == selectedDistrict,
                         orElse: () => Ubigeo(id: 0, ubiDepartamento: '', ubiProvincia: '', ubiDistrito: ''),
                       );
+
                       final updatedCustomer = customer.copyWith(
-                        idListaPrecio: 1, // ajustar
-                        estado: customer.estado, // ajustar
-                        idTipoDocumento: 1, // preguntar
-                        idPais: 1,
+                        idTipoDocumento: tipoDocObj.id,
+                        idTipoCliente: tipoClienteObj.id,
                         nombres: nameController.text,
                         apellidos: lastNameController.text,
                         nroDocumento: dniController.text,
-                        fotoPerfil: _base64Image,
                         numero: phoneController.text,
                         correo: emailController.text,
                         direccion: addressController.text,
@@ -814,16 +649,12 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                         rucAfiliada: rucController.text,
                         razonSocialAfiliada: razonSocialAfiliadaController.text,
                         idUbigeo: ubigeoNuevo.id,
-                        ubigeo: '${selectedDepartment ?? ''} ${selectedProvince ?? ''} ${selectedDistrict ?? ''}',
+                        fotoPerfil: _base64Image ?? customer.fotoPerfil,
                       );
 
-                      final updateBody = updatedCustomer.toUpdateJson();
-
-                      // Ejecutas el update en el backend
-                      await customerProvider.updateCustomer(updateBody, token!);
+                      await customerProvider.updateCustomer(updatedCustomer.toUpdateJson(), token!);
                       await customerProvider.fetchCustomers(token);
 
-                      // Buscar el cliente por ID en la lista refrescada
                       final updated = customerProvider.customers.firstWhere(
                         (c) => c.idCliente == customer.idCliente,
                         orElse: () => customer,
@@ -831,8 +662,8 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                       Navigator.pop(context, updated);
                     }
                   },
-                  child: Text('Guardar', style: AppTextStyles.btn),
-                )
+                  child: Text('Guardar'),
+                ),
               ],
             );
           },
@@ -857,20 +688,12 @@ class RecordCard extends StatefulWidget {
 }
 
 class _RecordCardState extends State<RecordCard> {
-  // late Customer _customer;   ultimo comentado
   int _currentRecordPage = 1;
   final int _recordsPerPage = 20;
   int _currentInvoicePage = 1;
   final int _invoicesPerPage = 8;
   int _currentCreditPage = 1;
   final int _creditsPerPage = 10;
-
-  // ultimo comentado
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _customer = widget.customer;
-  // }
 
   int _selectedIndex = 0;
   final List<String> _titulos = ['Historial', 'Pedidos', 'Facturación', 'Créditos'];
@@ -885,8 +708,8 @@ class _RecordCardState extends State<RecordCard> {
       _searchController.clear();
     });
 
-    // final provider = Provider.of<ProductsProvider>(context, listen: false);
-    // provider.clearSelections();
+    final provider = Provider.of<ProductsProvider>(context, listen: false);
+    provider.clearSelections();
   }
 
   @override
@@ -962,11 +785,11 @@ class _RecordCardState extends State<RecordCard> {
   }
 
   Widget _recordDetail() {
-    return Consumer<OrdersProvider2>(
-      builder: (context, ordersProvider, child) {
-        final customerOrders = ordersProvider.pedidosClienteCompletos;
+    return Consumer<CustomersProvider>(
+      builder: (context, customersProvider, child) {
+        final customerOrders = customersProvider.pedidosByCliente;
 
-        if (ordersProvider.isLoading) {
+        if (customersProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -1132,136 +955,131 @@ class _RecordCardState extends State<RecordCard> {
   }
 
   Widget _collectionsDetail() {
-    return Consumer<OrdersProvider2>(
-      builder: (context, ordersProvider, child) {
-        return Consumer<CustomersProvider>(
-          builder: (context, customersProvider, child) {
-            final customerOrders = ordersProvider.pedidosClienteCompletos
-            .where((order) => order.totalPagado != 0)
-            .toList();
+    return Consumer<CustomersProvider>(
+      builder: (context, customersProvider, child) {
+        final customerOrders = customersProvider.pedidosByCliente.where(
+          (order) => (order.estadoFacturacion == 1)
+        ).toList();
 
+        final totalInvoices = customerOrders.length;
+        final totalPages = (totalInvoices / _invoicesPerPage).ceil();
 
-            final totalInvoices = customerOrders.length;
-            final totalPages = (totalInvoices / _invoicesPerPage).ceil();
+        final startIndex = (_currentInvoicePage - 1) * _invoicesPerPage;
+        final endIndex = (_currentInvoicePage * _invoicesPerPage).clamp(0, totalInvoices);
+        final visibleInvoices = customerOrders.sublist(startIndex, endIndex);
 
-            final startIndex = (_currentInvoicePage - 1) * _invoicesPerPage;
-            final endIndex = (_currentInvoicePage * _invoicesPerPage).clamp(0, totalInvoices);
-            final visibleInvoices = customerOrders.sublist(startIndex, endIndex);
+        if (customersProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            if (ordersProvider.isLoading || customersProvider.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        return Card(
+          color: Colors.transparent,
+          elevation: 0,
+          child: SizedBox(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('RELACIÓN DE FACTURAS', style: AppTextStyles.cardTitle),
+                Divider(color: AppColors.lightGris, thickness: 1.0, height: 25),
 
-            return Card(
-              color: Colors.transparent,
-              elevation: 0,
-              child: SizedBox(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('RELACIÓN DE FACTURAS', style: AppTextStyles.cardTitle),
-                    Divider(color: AppColors.lightGris, thickness: 1.0, height: 25),
-
-                    if (visibleInvoices.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Text('No hay facturas registradas', style: AppTextStyles.bodyTable),
-                      )
-                    else
-                      Column(
-                        children: [
-                          ListView.builder(
-                            itemCount: visibleInvoices.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              final order = visibleInvoices[index];
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 2),
-                                child: Row(
-                                  children: [
-                                    Text('Pedido ${order.idOrder ?? "-"}-2025', style: AppTextStyles.base),
-                                    Spacer(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        final facturaProvider = Provider.of<FacturasProvider>(context, listen: false);
-                                        final token = Provider.of<UsersProvider>(context, listen: false).token;
-                                        facturaProvider.generarTicket(token!, order.idOrder!);
-                                      },
-                                      child: Icon(Icons.attach_file, color: Colors.black, size: 20),
-                                    ),
-                                    const SizedBox(width: 20),
-                                    IconButton(
-                                      icon: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
-                                      ),
-                                      onPressed: () async {
-                                        final customer = customersProvider.customers.firstWhere(
-                                          (c) => c.idCliente == order.idCustomer,
-                                        );
-
-                                        final mensaje = Uri.encodeComponent(
-                                            'Hola ${customer.nombres}, te comparto la factura de tu pedido. Gracias por su compra.');
-                                        final numeroSinPrefijo = customer.numero.replaceAll('+', '').replaceAll(' ', '');
-                                        final whatsappUrl = Uri.parse("https://wa.me/$numeroSinPrefijo?text=$mensaje");
-
-                                        if (await canLaunchUrl(whatsappUrl)) {
-                                          await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('No se pudo abrir WhatsApp')),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Paginación
-                          if (totalPages > 1)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                if (visibleInvoices.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('No hay facturas registradas', style: AppTextStyles.bodyTable),
+                  )
+                else
+                  Column(
+                    children: [
+                      ListView.builder(
+                        itemCount: visibleInvoices.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final order = visibleInvoices[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_back),
-                                  iconSize: 15,
-                                  onPressed: _currentInvoicePage > 1
-                                      ? () => setState(() => _currentInvoicePage--)
-                                      : null,
+                                Text('Pedido ${order.idOrder ?? "-"}-2025', style: AppTextStyles.base),
+                                Spacer(),
+                                GestureDetector(
+                                  onTap: () {
+                                    final facturaProvider = Provider.of<FacturasProvider>(context, listen: false);
+                                    final token = Provider.of<UsersProvider>(context, listen: false).token;
+                                    facturaProvider.generarTicket(token!, order.idOrder!);
+                                  },
+                                  child: Icon(Icons.attach_file, color: Colors.black, size: 20),
                                 ),
-                                Text('Página $_currentInvoicePage de $totalPages', style: AppTextStyles.headerTable),
+                                const SizedBox(width: 20),
                                 IconButton(
-                                  icon: const Icon(Icons.arrow_forward),
-                                  iconSize: 15,
-                                  onPressed: _currentInvoicePage < totalPages
-                                      ? () => setState(() => _currentInvoicePage++)
-                                      : null,
+                                  icon: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
+                                  ),
+                                  onPressed: () async {
+                                    final customer = customersProvider.customers.firstWhere(
+                                      (c) => c.idCliente == order.idCustomer,
+                                    );
+
+                                    final mensaje = Uri.encodeComponent(
+                                        'Hola ${customer.nombres}, te comparto la factura de tu pedido. Gracias por su compra.');
+                                    final numeroSinPrefijo = customer.numero.replaceAll('+', '').replaceAll(' ', '');
+                                    final whatsappUrl = Uri.parse("https://wa.me/$numeroSinPrefijo?text=$mensaje");
+
+                                    if (await canLaunchUrl(whatsappUrl)) {
+                                      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('No se pudo abrir WhatsApp')),
+                                      );
+                                    }
+                                  },
                                 ),
                               ],
                             ),
-                        ],
+                          );
+                        },
                       ),
-                  ],
-                ),
-              ),
-            );
-          }
+
+                      const SizedBox(height: 12),
+
+                      // Paginación
+                      if (totalPages > 1)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back),
+                              iconSize: 15,
+                              onPressed: _currentInvoicePage > 1
+                                  ? () => setState(() => _currentInvoicePage--)
+                                  : null,
+                            ),
+                            Text('Página $_currentInvoicePage de $totalPages', style: AppTextStyles.headerTable),
+                            IconButton(
+                              icon: const Icon(Icons.arrow_forward),
+                              iconSize: 15,
+                              onPressed: _currentInvoicePage < totalPages
+                                  ? () => setState(() => _currentInvoicePage++)
+                                  : null,
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
         );
       }
     );
   }
 
   Widget _creditsDetail() {
-    return Consumer<OrdersProvider2>(
-      builder: (context, ordersProvider, child) {
-        final customerOrders = ordersProvider.pedidosClienteCompletos
+    return Consumer<CustomersProvider>(
+      builder: (context, customersProvider, child) {
+        final customerOrders = customersProvider.pedidosByCliente
             .where((order) => order.paymentMethod == 'Credito')
             .toList();
 
@@ -1272,7 +1090,7 @@ class _RecordCardState extends State<RecordCard> {
         final endIndex = (_currentCreditPage * _creditsPerPage).clamp(0, totalCredits);
         final visibleCredits = customerOrders.sublist(startIndex, endIndex);
 
-        if (ordersProvider.isLoading) {
+        if (customersProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -1331,11 +1149,17 @@ class _RecordCardState extends State<RecordCard> {
                                 style: AppTextStyles.bodyTable,
                               ),
                               Text(
-                                order.cuotas != null && order.cuotas!.isNotEmpty && order.cuotas!.first.fecha != null
-                                    ? DateFormat('dd/MM/yy').format(order.cuotas!.first.fecha!)
+                                order.fechaVencimiento != null
+                                    ? DateFormat('dd/MM/yy').format(order.fechaVencimiento!)
                                     : '--/--/--',
                                 style: AppTextStyles.bodyTable,
                               ),
+                              // Text(
+                              //   order.cuotas != null && order.cuotas!.isNotEmpty && order.cuotas!.first.fecha != null
+                              //       ? DateFormat('dd/MM/yy').format(order.cuotas!.first.fecha!)
+                              //       : '--/--/--',
+                              //   style: AppTextStyles.bodyTable,
+                              // ),
                               Text(
                                 'S/. ${order.total!.toStringAsFixed(2)}',
                                 style: AppTextStyles.bodyTable,
@@ -1382,14 +1206,15 @@ class _RecordCardState extends State<RecordCard> {
     );
   }
 
-  void _registerOrder() {
+  void _registerOrder() async {
     final idCustomer = widget.customer.idCliente;
     final products = Provider.of<ProductsProvider>(context, listen: false);
     final selectedProducts = products.selectedProducts;
     final paymentMethod = _paymentKey.currentState?.selectedPaymentId;
     final receiptType = _receiptKey.currentState?.selectedId;
+    final cuotas = _paymentKey.currentState?.cuotasCredito ?? [];
 
-    // Validar tipo de recibo
+    // Validaciones...a
     if (receiptType == null || receiptType == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Selecciona un tipo de recibo")),
@@ -1397,7 +1222,6 @@ class _RecordCardState extends State<RecordCard> {
       return;
     }
 
-    // Validar productos
     if (selectedProducts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Selecciona al menos un producto")),
@@ -1412,7 +1236,14 @@ class _RecordCardState extends State<RecordCard> {
       return;
     }
 
-    registerOrder(
+    if (paymentMethod == 17 && cuotas.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Debes registrar al menos una cuota para pago con crédito")),
+      );
+      return;
+    }
+
+    final success = await registerOrder(
       context: context,
       idCustomer: idCustomer,
       receiptKey: _receiptKey,
@@ -1421,7 +1252,7 @@ class _RecordCardState extends State<RecordCard> {
       resetForm: _resetForm,
     );
 
-    if (context.mounted) {
+    if (success && context.mounted) {
       Navigator.pop(context);
     }
   }
