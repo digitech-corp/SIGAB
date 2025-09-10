@@ -18,7 +18,7 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  DateTime selectedDateInicio = DateTime.now().subtract(const Duration(days: 30));
+  DateTime selectedDateInicio = DateTime.now();
   DateTime selectedDateFin = DateTime.now();
 
   @override

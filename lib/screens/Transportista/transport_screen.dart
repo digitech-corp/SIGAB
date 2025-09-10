@@ -32,14 +32,13 @@ class _TransportScreenState extends State<TransportScreen> {
   void initState() {
     super.initState();
     final now = DateTime.now();
-    final fechaInicio = DateTime(now.year, now.month, 1);
-    final fechaFin = DateTime(now.year, now.month + 1, 0);
+    final fechaInicio = DateTime(now.year, now.month, now.day);
+    final fechaFin = DateTime(now.year, now.month, now.day);
     Future.microtask(() async {
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = userProvider.token;
       final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
-      print('id de transportista: $idTransportista');
       await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(fechaInicio), DateFormat('yyyy-MM-dd').format(fechaFin), idTransportista);
     });
   }
@@ -322,7 +321,6 @@ class SalesModuleCards extends StatelessWidget {
   Widget build(BuildContext context) {
     final entregasProvider =  Provider.of<EntregasProvider>(context);
     final entregas = entregasProvider.entregas;
-    print('Cantidad de entregas: ${entregas.length}');
     final pendientes = entregas.where((entregas){
       final estadosPermitidos = [239, 240];
       return estadosPermitidos.contains(entregas.idEstado);
@@ -341,13 +339,13 @@ class SalesModuleCards extends StatelessWidget {
         const SizedBox(height: 20),
         Row(
           children: [
-            Expanded(child: _buildCard('Entregas Pendientes', 'delivery', '${terminadas.length} Registros', () => onCardTap(1))),
+            Expanded(child: _buildCard('Entregas Pendientes', 'delivery', '${terminadas.length} Registros del día', () => onCardTap(1))),
           ],
         ),
         const SizedBox(height: 20),
         Row(
           children: [
-            Expanded(child: _buildCard('Entregas Terminadas', 'follow', '${pendientes.length} Registros', () => onCardTap(2))),
+            Expanded(child: _buildCard('Entregas Terminadas', 'follow', '${pendientes.length} Registros del día', () => onCardTap(2))),
           ],
         ),
       ],

@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'package:balanced_foods/models/entrega.dart';
 import 'package:balanced_foods/models/order.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class DashboardProvider extends ChangeNotifier{
   bool isLoading = false;
+  List<Entrega> entregas= [];
+  List<Entrega> entregaAnterior= [];
+  Map<int, String> estadosPorOrder = {};
   List<Order> orders = [];
   
   Future<void> fetchOrders(String token, String fechaFin, String fechaInicio, int? idPersonal) async {
@@ -63,7 +67,7 @@ class DashboardProvider extends ChangeNotifier{
             final idTipoPagoStr = info['id_tipo_pago'] as int?;
 
             if (fechaEmisionStr != null) {
-              order.fechaEmision = DateTime.tryParse(fechaEmisionStr); // si usas un campo separado
+              order.fechaEmision = DateTime.tryParse(fechaEmisionStr);
             }
 
             order.paymentMethod = nombreTipoPagoStr;
@@ -97,6 +101,48 @@ class DashboardProvider extends ChangeNotifier{
       orders = [];
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchEstadoEntrega(String token, int idOrder) async {
+    try {
+      final url = Uri.parse(
+        'https://adysabackend.facturador.es/ventas/getHistorialEstadoEntrega',
+      );
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'id_venta': idOrder}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error obteniendo estado entrega: ${response.statusCode}');
+      }
+
+      final entregasData = jsonDecode(response.body) as List<dynamic>;
+      entregaAnterior = entregasData.map((json) => Entrega.fromJSON(json)).toList();
+      final historial = entregasData.map((json) => Entrega.fromJSON(json)).toList();
+
+      String ultimoEstado = '';
+      if (historial.isNotEmpty) {
+        ultimoEstado = historial.first.estado?.trim() ?? '';
+      }
+
+      estadosPorOrder[idOrder] = ultimoEstado;
+
+      final index = entregas.indexWhere((e) => e.idOrder == idOrder);
+      if (index != -1) {
+        entregas[index] = entregas[index].copyWith(estado: ultimoEstado);
+      }
+
+    } catch (e) {
+      print('Error al obtener estados entrega: $e');
+      estadosPorOrder[idOrder] = '';
+    } finally {
       notifyListeners();
     }
   }

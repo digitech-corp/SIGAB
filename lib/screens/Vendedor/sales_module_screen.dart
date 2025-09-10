@@ -41,21 +41,20 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
       final token = userProvider.token;
       final idPersonal = userProvider.loggedUser?.idUsuario ?? null;
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
-      final dashboardProvider = Provider.of<DashboardProvider>(context, listen: false);
       final ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
       final now = DateTime.now();
-      final fechaInicio = DateTime(now.year, now.month, 1);
-      final fechaFin = DateTime(now.year, now.month + 1, 0);
+      final fechaInicio = DateTime(now.year, now.month, now.day);
+      final fechaFin = DateTime(now.year, now.month, now.day);
       final formato = (DateTime date) => "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
       await customersProvider.fetchCustomers(token!);
-      await dashboardProvider.fetchOrders(
+      await ordersProvider.fetchOrders(
         token,
         formato(fechaFin),
         formato(fechaInicio),
         idPersonal,
       );
-      for (var order in dashboardProvider.orders) {
+      for (var order in ordersProvider.orders) {
         await entregasProvider.fetchEstadoEntrega(token, order.idOrder!);
       }
       await ordersProvider.fetchCreditoOrders(
@@ -346,12 +345,12 @@ class SalesModuleCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final customersProvider = Provider.of<CustomersProvider>(context);
-    final dashboardProvider = Provider.of<DashboardProvider>(context);
+    // final dashboardProvider = Provider.of<DashboardProvider>(context);
     final entregasProvider = Provider.of<EntregasProvider>(context);
     final ordersProvider = Provider.of<OrdersProvider>(context);
     final customersLength = customersProvider.customers.length;
-    final ordersLength = dashboardProvider.orders.length;
-    final orders = dashboardProvider.orders;
+    final ordersLength = ordersProvider.orders.length;
+    final orders = ordersProvider.orders;
     final creditos = ordersProvider.creditos;
 
     final filteredEntregas = orders.where((order) {
@@ -377,15 +376,15 @@ class SalesModuleCards extends StatelessWidget {
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildCard('Pedidos', 'shop', '$ordersLength Registros', () => onCardTap(2))),
+            Expanded(child: _buildCard('Pedidos', 'shop', '$ordersLength Registros del día', () => onCardTap(2))),
             const SizedBox(width: 3),
-            Expanded(child: _buildCard('Seguimiento', 'follow', '$programados Registros', () => onCardTap(3))),
+            Expanded(child: _buildCard('Seguimiento', 'follow', '$programados Programados del día', () => onCardTap(3))),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildCard('Cobranzas', 'salary', '$cobranzas Pendientes', () => onCardTap(4))),
+            Expanded(child: _buildCard('Cobranzas', 'salary', '$cobranzas Pendientes del día', () => onCardTap(4))),
             const Spacer(),
           ],
         ),

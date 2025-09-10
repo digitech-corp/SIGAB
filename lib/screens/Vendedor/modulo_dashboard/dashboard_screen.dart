@@ -30,21 +30,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final userProvider = Provider.of<UsersProvider>(context, listen: false);
       final token = userProvider.token;
       final idPersonal = userProvider.loggedUser?.idUsuario ?? null;
-      final ordersProvider = Provider.of<DashboardProvider>(context, listen: false);
-      final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
+      final dashboardProvider = Provider.of<DashboardProvider>(context, listen: false);
       final now = DateTime.now();
       final fechaInicio = DateTime(now.year, now.month, 1);
       final fechaFin = DateTime(now.year, now.month + 1, 0);
       final formato = (DateTime date) => "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-      await ordersProvider.fetchOrders(
+      await dashboardProvider.fetchOrders(
         token!,
         formato(fechaFin),
         formato(fechaInicio),
         idPersonal,
       );
-      for (final order in ordersProvider.orders) {
+      for (final order in dashboardProvider.orders) {
         if (order.idOrder != null) {
-          await entregasProvider.fetchEstadoEntrega(token, order.idOrder!);
+          await dashboardProvider.fetchEstadoEntrega(token, order.idOrder!);
         }
       }
       final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
