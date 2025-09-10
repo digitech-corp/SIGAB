@@ -46,7 +46,7 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
   @override
   void initState() {
     super.initState();
-    _customer = widget.customer;
+    _customer = widget.customer;//
     Future.microtask(() async{
       final token = Provider.of<UsersProvider>(context, listen: false).token;
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
@@ -113,17 +113,20 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                     children: [
                       CircleAvatar(
                         radius: 58,
-                        backgroundImage: _customer.fotoPerfil!.isNotEmpty
-                            ? NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(_customer.fotoPerfil!)}')
-                            : null,
-                        backgroundColor: Colors.grey[300],
-                        child: widget.customer.fotoPerfil!.isEmpty
-                            ? Icon(
-                                Icons.person,
-                                size: 100,
-                                color: AppColors.gris,
-                              )
-                            : null,
+                        backgroundImage: _customer.fotoPerfil != null && _customer.fotoPerfil!.isNotEmpty
+                          ? (_customer.fotoPerfil!.startsWith('data:image')
+                              ? MemoryImage(base64Decode(_customer.fotoPerfil!.split(',').last))
+                              : NetworkImage('https://adysabackend.facturador.es/archivos/clientes/${Uri.encodeComponent(_customer.fotoPerfil!)}')
+                            ) as ImageProvider
+                          : null,
+                        backgroundColor: Colors.grey,
+                        child: (_customer.fotoPerfil == null || _customer.fotoPerfil!.isEmpty)
+                          ? Icon(
+                              Icons.person,
+                              size: 100,
+                              color: AppColors.gris,
+                            )
+                          : null,
                       ),
                       Text('${_customer.nombres} ${_customer.apellidos}', style: AppTextStyles.name),
                       Text(widget.companyName, style: AppTextStyles.company),
@@ -494,8 +497,8 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
 
         return StatefulBuilder(
           builder: (context, setState) {
-            Future<void> _pickImage() async {
-              final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+            Future<void> _selectFile(ImageSource source) async {
+              final XFile? image = await _picker.pickImage(source: source);
               if (image != null) {
                 final bytes = await File(image.path).readAsBytes();
                 final mimeType = lookupMimeType(image.path);
@@ -505,6 +508,39 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                   _base64Image = base64Image;
                 });
               }
+            }
+
+            Future<void> _pickImage() async {
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                builder: (BuildContext context) {
+                  return SafeArea(
+                    child: Wrap(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.photo_library),
+                          title: const Text('Seleccionar de galería'),
+                          onTap: () async {
+                            Navigator.of(context).pop();
+                            await _selectFile(ImageSource.gallery);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.photo_camera),
+                          title: const Text('Tomar foto con cámara'),
+                          onTap: () async {
+                            Navigator.of(context).pop();
+                            await _selectFile(ImageSource.camera);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
             }
 
             Widget _buildCustomerImage(String? imageFileName) {
@@ -619,7 +655,6 @@ class _EditCustomerScreenState extends State<EditCustomerScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // Mapear nombre ➜ id
                       final tipoDocObj = tipoDocumentoProvider.tiposDocumento.firstWhere(
                         (t) => t.nombre == _selectedTipoDocumento,
                         orElse: () => TipoDocumento(id: customer.idTipoDocumento, nombre: customer.nombreTipoDoc ?? ''),
@@ -766,7 +801,7 @@ class _RecordCardState extends State<RecordCard> {
                     ),
                     Row(
                       children: [
-                        Expanded(child: _collectionsDetail()),
+                        Expanded(child: _collectionsDetail(widget.customer)),
                       ],
                     ),
                     Row(
@@ -954,7 +989,7 @@ class _RecordCardState extends State<RecordCard> {
     );
   }
 
-  Widget _collectionsDetail() {
+  Widget _collectionsDetail(Customer customer) {
     return Consumer<CustomersProvider>(
       builder: (context, customersProvider, child) {
         final customerOrders = customersProvider.pedidosByCliente.where(
@@ -1018,10 +1053,6 @@ class _RecordCardState extends State<RecordCard> {
                                     child: Image.asset('assets/images/whatsapp.png', color: Colors.black),
                                   ),
                                   onPressed: () async {
-                                    final customer = customersProvider.customers.firstWhere(
-                                      (c) => c.idCliente == order.idCustomer,
-                                    );
-
                                     final mensaje = Uri.encodeComponent(
                                         'Hola ${customer.nombres}, te comparto la factura de tu pedido. Gracias por su compra.');
                                     final numeroSinPrefijo = customer.numero.replaceAll('+', '').replaceAll(' ', '');

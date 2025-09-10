@@ -31,6 +31,12 @@ class EntregasProvider extends ChangeNotifier{
       if (entregasResponse.statusCode == 200) {
         final List<dynamic> entregasData = jsonDecode(entregasResponse.body);
         entregas = entregasData.map((item) => Entrega.fromJSON(item)).toList();
+
+        for (final entrega in entregas) {
+          if (entrega.idOrder != null) {
+            await fetchEstadoEntrega(token, entrega.idOrder!);
+          }
+        }
       } else {
         print('Error: ${entregasResponse.statusCode}');
         entregas = [];
@@ -45,37 +51,43 @@ class EntregasProvider extends ChangeNotifier{
   }
 
   Future<void> fetchEstadoEntrega(String token, int idOrder) async {
-    isLoading = true;
-    notifyListeners();
-
     try {
-      final url = Uri.parse('https://adysabackend.facturador.es/ventas/getHistorialEstadoEntrega');
+      final url = Uri.parse(
+        'https://adysabackend.facturador.es/ventas/getHistorialEstadoEntrega',
+      );
       final response = await http.post(
         url,
-        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode({'id_venta': idOrder}),
       );
 
       if (response.statusCode != 200) {
-        throw Exception('print:Error obteniendo estado entrega: ${response.statusCode}');
+        throw Exception('Error obteniendo estado entrega: ${response.statusCode}');
       }
 
-      final List<dynamic> entregasData = jsonDecode(response.body);
+      final entregasData = jsonDecode(response.body) as List<dynamic>;
       entregaAnterior = entregasData.map((json) => Entrega.fromJSON(json)).toList();
-      List<Entrega> historialEstados = entregaAnterior;
+      final historial = entregasData.map((json) => Entrega.fromJSON(json)).toList();
 
-      if (historialEstados.isNotEmpty) {
-        final ultimoEstado = historialEstados.first.estado?.trim() ?? '';
-        estadosPorOrder[idOrder] = ultimoEstado;
-      } else {
-        estadosPorOrder[idOrder] = '';
+      String ultimoEstado = '';
+      if (historial.isNotEmpty) {
+        ultimoEstado = historial.first.estado?.trim() ?? '';
+      }
+
+      estadosPorOrder[idOrder] = ultimoEstado;
+
+      final index = entregas.indexWhere((e) => e.idOrder == idOrder);
+      if (index != -1) {
+        entregas[index] = entregas[index].copyWith(estado: ultimoEstado);
       }
 
     } catch (e) {
-      print('print:Error al obtener estados entrega: $e');
+      print('Error al obtener estados entrega: $e');
       estadosPorOrder[idOrder] = '';
     } finally {
-      isLoading = false;
       notifyListeners();
     }
   }
@@ -92,11 +104,19 @@ class EntregasProvider extends ChangeNotifier{
         headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
         body: jsonEncode(entrega.toJson()),
       );
-      
-      if (response.statusCode == 201) {
-        // await fetchEntregas(token, fechaInicio, fechaFin);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final index = entregas.indexWhere((e) => e.idOrder == entrega.idOrder);
+        if (index != -1) {
+          entregas[index] = entregas[index].copyWith(
+            estado: entrega.estado ?? '',
+          );
+        }
+
+        entregaAnterior.add(entrega);
+        notifyListeners();
+
         return true;
-        
       } else {
         print('Error al registrar: ${response.statusCode}');
         return false;

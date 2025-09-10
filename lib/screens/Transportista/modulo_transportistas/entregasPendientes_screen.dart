@@ -29,16 +29,24 @@ class _EntregasPendientesScreenState extends State<EntregasPendientesScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async{
+    Future.microtask(() async {
       final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
+      final usersProvider = Provider.of<UsersProvider>(context, listen: false);
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
 
-      final userProvider = Provider.of<UsersProvider>(context, listen: false);
-      final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
-      final token = userProvider.token;
+      final token = usersProvider.token;
+      final idTransportista = usersProvider.loggedUser?.idTransportista ?? null;
 
       await customersProvider.fetchCustomers(token!);
-      await entregasProvider.fetchEntregas(token, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), idTransportista);
+
+      final fecha = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+      await entregasProvider.fetchEntregas(
+        token,
+        fecha,
+        fecha,
+        idTransportista,
+      );
     });
   }
 
@@ -49,183 +57,188 @@ class _EntregasPendientesScreenState extends State<EntregasPendientesScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
+
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
       });
 
       final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-      final idTransportista = usersProvider.loggedUser?.idTransportista ?? null;
-      final token = usersProvider.token;
       final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
-      await entregasProvider.fetchEntregas(token!, DateFormat('yyyy-MM-dd').format(selectedDate), DateFormat('yyyy-MM-dd').format(selectedDate), idTransportista);
+
+      final token = usersProvider.token;
+      final idTransportista = usersProvider.loggedUser?.idTransportista ?? null;
+
+      final fecha = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+      await entregasProvider.fetchEntregas(
+        token!,
+        fecha,
+        fecha,
+        idTransportista,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final entregasProvider = Provider.of<EntregasProvider>(context);
-    final customersProvider = Provider.of<CustomersProvider>(context);
-    final usersProvider = Provider.of<UsersProvider>(context, listen: false);
-    final token = usersProvider.token;
-    final entrega = entregasProvider.entregas;
-    final isLoading = entregasProvider.isLoading;
-    final customers = customersProvider.customers;
+    return Consumer<EntregasProvider>(
+      builder: (context, entregasProvider, child) {
+        final entregas = entregasProvider.entregas;
+        final customersProvider = Provider.of<CustomersProvider>(context);
+        final customers = customersProvider.customers;
+        final filteredEntregas = entregas.where((entrega) {
+          final estado = entregasProvider.getEstadoPorOrder(entrega.idOrder!);
+          final estadosPermitidos = ['PLANIFICADO', 'DESPACHO'];
+          return estado.isNotEmpty &&
+              estado != 'Cargando...' &&
+              estadosPermitidos.contains(entrega.estado);
+        }).toList();
+        final isLoading = entregasProvider.isLoading;
 
-    final filteredEntregas = entrega.where((entrega) {
-      final fecha = entrega.fechaProgramacion;
-      final estadosPermitidos = [237, 238];
-      if (fecha == null || token == null) return false;
+        final Map<String, List<Entrega>> entregasPorZona = {};
 
-      return fecha.year == selectedDate.year &&
-            fecha.month == selectedDate.month &&
-            fecha.day == selectedDate.day &&
-            estadosPermitidos.contains(entrega.idEstado);
-    }).toList();
+        for (var e in filteredEntregas) {
+          final zona = e.nombreRuta ?? 'Sin zona';
+          entregasPorZona.putIfAbsent(zona, () => []).add(e);
+        }
 
-    final Map<String, List<Entrega>> entregasPorZona = {};
+        const prioridadOrden = {'Alta': 0, 'Media': 1, 'Baja': 2};
 
-    for (var e in filteredEntregas) {
-      final zona = e.nombreRuta ?? 'Sin zona';
-      entregasPorZona.putIfAbsent(zona, () => []).add(e);
-    }
-
-    // Prioridad ordenada: Alta > Media > Baja
-    const prioridadOrden = {'Alta': 0, 'Media': 1, 'Baja': 2};
-
-    // Ordenamos cada lista de entregas por prioridad
-    entregasPorZona.forEach((zona, lista) {
-      lista.sort((a, b) {
-        final prioridadA = prioridadOrden[a.prioridad ?? 'Media'] ?? 1;
-        final prioridadB = prioridadOrden[b.prioridad ?? 'Media'] ?? 1;
-        return prioridadA.compareTo(prioridadB);
-      });
-    });
-        
-    return Scaffold(
-      backgroundColor: AppColors.backgris,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80),
-        child: ClipRRect(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-          ),
-          child: AppBar(
-            toolbarHeight: 80,
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.transparent,
-            title: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.black,
-                    size: 30,
-                  ),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => TransportScreen()),
-                    );
-                  },
+        entregasPorZona.forEach((zona, lista) {
+          lista.sort((a, b) {
+            final prioridadA = prioridadOrden[a.prioridad ?? 'Media'] ?? 1;
+            final prioridadB = prioridadOrden[b.prioridad ?? 'Media'] ?? 1;
+            return prioridadA.compareTo(prioridadB);
+          });
+        });
+            
+        return Scaffold(
+          backgroundColor: AppColors.backgris,
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(80),
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              child: AppBar(
+                toolbarHeight: 80,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.transparent,
+                title: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.black,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => TransportScreen()),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 1),
+                    Text('MODULO DE TRANSPORTISTA', style: AppTextStyles.title),
+                  ],
                 ),
-                const SizedBox(width: 1),
-                Text('MODULO DE TRANSPORTISTA', style: AppTextStyles.title),
+              ),
+            ),
+          ),
+
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Pendientes del día', style: AppTextStyles.subtitle),
+                          GestureDetector(
+                            onTap: () => _selectDate(context),
+                            child: Text(DateFormat('dd/MM/yyyy').format(selectedDate), style: AppTextStyles.date),
+                          ),
+                        ],
+                      ),
+                      const Divider(color: AppColors.backgris, thickness: 1.0),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : entregasPorZona.isEmpty
+                          ? const Center(child: Text('No hay pedidos disponibles'))
+                          : ListView(
+                              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                              children: entregasPorZona.entries.map((entry) {
+                                final zona = entry.key;
+                                final entregasZona = entry.value;
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Zona: $zona',
+                                      style: AppTextStyles.subtitle, // o cualquier estilo que uses
+                                    ),
+                                    const SizedBox(height: 6),
+                                    ...entregasZona.map((entrega) {
+                                      final firstDetail = entrega.idCustomer;
+                                      Customer? customer;
+                                      try {
+                                        customer = customers.firstWhere((c) => c.idCliente == firstDetail);
+                                      } catch (_) {
+                                        customer = null;
+                                      }
+
+                                      String persona = '--';
+                                      String empresa = '--';
+                                      String fullAddress = entrega.direccionEntrega ?? '--';
+                                      String customerPhone = '--';
+                                      String prioridad = entrega.prioridad!;
+
+                                      if (customer != null) {
+                                        persona = '${customer.nombres} ${customer.apellidos}';
+                                        empresa = customer.razonSocialAfiliada.isNotEmpty
+                                            ? customer.razonSocialAfiliada
+                                            : "Sin empresa afiliada";
+                                        customerPhone = customer.numero;
+                                      }
+
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: OrderCard(
+                                          empresa: empresa,
+                                          persona: persona,
+                                          prioridad : prioridad,
+                                          customerPhone: customerPhone,
+                                          idOrder: entrega.idOrder,
+                                          fullAddress: fullAddress,
+                                        ),
+                                      );
+                                    }).toList(),
+                                    const SizedBox(height: 20),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                ),
               ],
             ),
           ),
-        ),
-      ),
-
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Pendientes del día', style: AppTextStyles.subtitle),
-                      GestureDetector(
-                        onTap: () => _selectDate(context),
-                        child: Text(DateFormat('dd/MM/yyyy').format(selectedDate), style: AppTextStyles.date),
-                      ),
-                    ],
-                  ),
-                  const Divider(color: AppColors.backgris, thickness: 1.0),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : entregasPorZona.isEmpty
-                      ? const Center(child: Text('No hay pedidos disponibles'))
-                      : ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-                          children: entregasPorZona.entries.map((entry) {
-                            final zona = entry.key;
-                            final entregasZona = entry.value;
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Zona: $zona',
-                                  style: AppTextStyles.subtitle, // o cualquier estilo que uses
-                                ),
-                                const SizedBox(height: 6),
-                                ...entregasZona.map((entrega) {
-                                  final firstDetail = entrega.idCustomer;
-                                  Customer? customer;
-                                  try {
-                                    customer = customers.firstWhere((c) => c.idCliente == firstDetail);
-                                  } catch (_) {
-                                    customer = null;
-                                  }
-
-                                  String persona = '--';
-                                  String empresa = '--';
-                                  String fullAddress = entrega.direccionEntrega ?? '--';
-                                  String customerPhone = '--';
-                                  String prioridad = entrega.prioridad!;
-
-                                  if (customer != null) {
-                                    persona = '${customer.nombres} ${customer.apellidos}';
-                                    empresa = customer.razonSocialAfiliada.isNotEmpty
-                                        ? customer.razonSocialAfiliada
-                                        : "Sin empresa afiliada";
-                                    customerPhone = customer.numero;
-                                  }
-
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4),
-                                    child: OrderCard(
-                                      empresa: empresa,
-                                      persona: persona,
-                                      prioridad : prioridad,
-                                      customerPhone: customerPhone,
-                                      idOrder: entrega.idOrder,
-                                      fullAddress: fullAddress,
-                                    ),
-                                  );
-                                }).toList(),
-                                const SizedBox(height: 20),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-            ),
-          ],
-        ),
-      ),
+        );
+      }
     );
   } 
 }
@@ -464,7 +477,40 @@ class _OrderExpandedDetailState extends State<OrderExpandedDetail> {
   String? _base64Image;
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Seleccionar de galería'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _selectImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Tomar foto con cámara'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _selectImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectImage(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
       final bytes = await File(image.path).readAsBytes();
       final mimeType = lookupMimeType(image.path);
@@ -713,13 +759,27 @@ class btnConfirmar extends StatefulWidget {
 }
 
 class _btnConfirmarState extends State<btnConfirmar> {
-  final formKey = GlobalKey<FormState>();
-
   Future<void> _registerDelivery({required int idEstadoNuevo, bool denied = false}) async {
     final entregasProvider = Provider.of<EntregasProvider>(context, listen: false); 
     final token = Provider.of<UsersProvider>(context, listen: false).token;
     await entregasProvider.fetchEstadoEntrega(token!, widget.idOrder);
     final entregaAnterior = entregasProvider.entregaAnterior;
+    final userProvider = Provider.of<UsersProvider>(context, listen: false);
+    final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
+
+    if (!denied && widget.firma.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debe registrar la firma para confirmar la entrega')),
+      );
+      return;
+    }
+
+    if (denied && widget.incidencias.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debe registrar incidencias para marcar como no entregado')),
+      );
+      return;
+    }
 
     final entrega = Entrega(
       idEstadoAnterior: entregaAnterior.first.id,
@@ -729,31 +789,39 @@ class _btnConfirmarState extends State<btnConfirmar> {
       firma: denied ? '' : widget.firma.text,
     );
 
+    print('entrega a registrar: ${entrega.toJson()}');
+
     final success = await entregasProvider.registerEntrega(token, entrega);
 
     if (success) {
+      if (!mounted) return;
       setState(() {
         widget.incidencias.clear();
         widget.firma.clear();
       });
+
+      await entregasProvider.fetchEntregas(
+        token,
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        idTransportista,
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(denied ? 'No entregado' : 'Entrega registrada exitosamente')),
+        SnackBar(content: Text(denied ? 'Entrega marcada como No Entregado' : 'Entrega registrada exitosamente')),
       );
     }
   }
 
   Future<void> _showConfirmationDialog({required bool isDenegar}) async {
-    final entregasProvider = Provider.of<EntregasProvider>(context, listen: false); 
-    final token = Provider.of<UsersProvider>(context, listen: false).token;
-    final userProvider = Provider.of<UsersProvider>(context, listen: false);
-    final idTransportista = userProvider.loggedUser?.idTransportista ?? null;
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(isDenegar ? 'No Entregado' : 'Confirmar Entrega'),
         content: Text(isDenegar
-            ? '¿Estás seguro de que deseas no confirmar esta entrega?'
+            ? '¿Estás seguro de que deseas marcar esta entrega como No Entregado?'
             : '¿Estás seguro de que deseas confirmar esta entrega?'),
         actions: [
           TextButton(
@@ -774,14 +842,6 @@ class _btnConfirmarState extends State<btnConfirmar> {
     if (confirmed == true) {
       final int estado = isDenegar ? 240 : 239;
       await _registerDelivery(idEstadoNuevo: estado, denied: isDenegar);
-
-      await Future.delayed(const Duration(seconds: 1));
-      await entregasProvider.fetchEntregas(
-        token!,
-        DateFormat('yyyy-MM-dd').format(DateTime.now()),
-        DateFormat('yyyy-MM-dd').format(DateTime.now()),
-        idTransportista,
-      );
     }
   }
 

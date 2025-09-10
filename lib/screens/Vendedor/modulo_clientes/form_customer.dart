@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:balanced_foods/models/tipoDocumento.dart';
 import 'package:balanced_foods/models/ubigeo.dart';
 import 'package:balanced_foods/providers/departments_provider.dart';
@@ -86,7 +85,40 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
   XFile? _selectedImage;
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Seleccionar de galería'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _selectFile(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Tomar foto con cámara'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _selectFile(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectFile(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
       final bytes = await File(image.path).readAsBytes();
       final mimeType = lookupMimeType(image.path);
@@ -96,31 +128,6 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
       });
       widget.onImageChanged(base64Image);
     }
-  }
-
-  Widget _buildImagePicker() {
-    return GestureDetector(
-      onTap: _pickImage,
-      child: _selectedImage != null
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                File(_selectedImage!.path),
-                fit: BoxFit.cover,
-                width: 80,
-                height: 80,
-              ),
-            )
-          : Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(Icons.add_a_photo, color: Colors.grey),
-            ),
-    );
   }
 
   @override
@@ -367,19 +374,34 @@ class _NewCustomerFormState extends State<NewCustomerForm> {
                 SizedBox(
                   width: 70,
                   height: 70,
-                  child: widget.enableImagePicker
-                      ? _buildImagePicker()
-                      : (_selectedImage != null 
-                          ? ClipRRect(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: _selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: _selectedImage!.path.toLowerCase().endsWith('.pdf')
+                                ? Container(
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: Icon(Icons.picture_as_pdf,
+                                          size: 40, color: Colors.red),
+                                    ),
+                                  )
+                                : Image.file(
+                                    File(_selectedImage!.path),
+                                    fit: BoxFit.cover,
+                                    width: 80,
+                                    height: 80,
+                                  ),
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(_selectedImage!.path),
-                                fit: BoxFit.cover,
-                                width: 80,
-                                height: 80,
-                              ),
-                            )
-                          : const Icon(Icons.person, size: 50, color: Colors.grey)),
+                            ),
+                            child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                          ),
+                  ),
                 ),
               ],
             ],

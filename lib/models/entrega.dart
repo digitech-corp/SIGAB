@@ -1,4 +1,3 @@
-import 'package:balanced_foods/models/EntregaDetail.dart';
 import 'package:flutter/src/material/time.dart';
 class Entrega{
   int? id;
@@ -28,9 +27,7 @@ class Entrega{
   String? nombreRuta;
   String? estado;
   String? nombrePersonal;
-
   String? firma;
-  // final List<EntregaDetail>? images;
 
   Entrega({
     this.id,
@@ -60,9 +57,7 @@ class Entrega{
     this.nombreRuta,
     this.estado,
     this.nombrePersonal,
-
     this.firma,
-    // this.images,
   });
 
   factory Entrega.fromJSON(Map<String, dynamic> json){
@@ -100,11 +95,7 @@ class Entrega{
       nombreRuta: json['nombre_ruta'],
       estado: json['estado'] ?? json['nombre_estado'],
       nombrePersonal: json['nombre_personal'],
-
-      // firma: json['firma'],
-      // images: (json['images'] as List<dynamic>?)
-      //     ?.map((item) => EntregaDetail.fromJSON(item))
-      //     .toList(),
+      firma: json['firma'],
     );
   }
 
@@ -121,5 +112,67 @@ class Entrega{
   @override
   String toString() {
     return 'Entrega{id: $id, idOrder: $idOrder, id_cliente: $idCustomer, idEstado: $idEstado, id_estado_venta_anterior: $idEstadoAnterior, nuevo_estado: $idEstadoNuevo, idRuta: $idRuta, idPersonal: $idPersonal, idVehiculo: $idVehiculo, idTransportista: $idTransportista, fechaProgramacion: $fechaProgramacion, horaProgramacion: $horaProgramacion, prioridad: $prioridad, incidencias: $incidencias, archivoEvidencia: $archivoEvidencia, serie: $serie, numero: $numero, fechaEmision: $fechaEmision, direccionEntrega: $direccionEntrega, productos: $productos, peso: $peso, nombres: $nombres, nroDocumento: $nroDocumento, nombreRuta: $nombreRuta, estado: $estado, nombre_personal: $nombrePersonal}';
+  }
+
+  Entrega copyWith({
+    int? id,
+    int? idOrder,
+    int? idCustomer,
+    int? idEstado,
+    int? idEstadoAnterior,
+    int? idEstadoNuevo,
+    int? idRuta,
+    int? idPersonal,
+    int? idVehiculo,
+    int? idTransportista,
+    DateTime? fechaProgramacion,
+    TimeOfDay? horaProgramacion,
+    String? prioridad,
+    String? incidencias,
+    String? archivoEvidencia,
+    String? serie,
+    int? numero,
+    String? fechaEmision,
+    String? direccionEntrega,
+    String? productos,
+    String? transportista,
+    double? peso,
+    String? nombres,
+    String? nroDocumento,
+    String? nombreRuta,
+    String? estado,
+    String? nombrePersonal,
+    String? firma,
+  }) {
+    return Entrega(
+      id: id ?? this.id,
+      idOrder: idOrder ?? this.idOrder,
+      idCustomer: idCustomer ?? this.idCustomer,
+      idEstado: idEstado ?? this.idEstado,
+      idEstadoAnterior: idEstadoAnterior ?? this.idEstadoAnterior,
+      idEstadoNuevo: idEstadoNuevo ?? this.idEstadoNuevo,
+      idRuta: idRuta ?? this.idRuta,
+      idPersonal: idPersonal ?? this.idPersonal,
+      idVehiculo: idVehiculo ?? this.idVehiculo,
+      idTransportista: idTransportista ?? this.idTransportista,
+      fechaProgramacion: fechaProgramacion ?? this.fechaProgramacion,
+      horaProgramacion: horaProgramacion ?? this.horaProgramacion,
+      prioridad: prioridad ?? this.prioridad,
+      incidencias: incidencias ?? this.incidencias,
+      archivoEvidencia: archivoEvidencia ?? this.archivoEvidencia,
+      serie: serie ?? this.serie,
+      numero: numero ?? this.numero,
+      fechaEmision: fechaEmision ?? this.fechaEmision,
+      direccionEntrega: direccionEntrega ?? this.direccionEntrega,
+      productos: productos ?? this.productos,
+      transportista: transportista ?? this.transportista,
+      peso: peso ?? this.peso,
+      nombres: nombres ?? this.nombres,
+      nroDocumento: nroDocumento ?? this.nroDocumento,
+      nombreRuta: nombreRuta ?? this.nombreRuta,
+      estado: estado ?? this.estado,
+      nombrePersonal: nombrePersonal ?? this.nombrePersonal,
+      firma: firma ?? this.firma,
+    );
   }
 }

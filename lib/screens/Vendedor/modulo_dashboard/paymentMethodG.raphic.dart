@@ -146,7 +146,7 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                 child: GestureDetector(
                   key: _keyContado,
                   onTap: () => _showTooltip(context, _keyContado,
-                    'Contado: ${widget.contado.length} ventas\nPrecio: S/ ${widget.montoContado.toStringAsFixed(2)}\nSacos: S/ $contadoCantidad'),
+                    'Contado: ${widget.contado.length} ventas\nPrecio: S/ ${widget.montoContado.toStringAsFixed(2)}\nSacos: $contadoCantidad'),
                   child: Container(
                     height: 30,
                     color: AppColors.orangeLight,
@@ -164,7 +164,7 @@ class _BarraDivididaConTooltipState extends State<BarraDivididaConTooltip> {
                 child: GestureDetector(
                   key: _keyCredito,
                   onTap: () => _showTooltip(context, _keyCredito,
-                      'Crédito: ${widget.credito.length} ventas\nPrecio: S/ ${widget.montoCredito.toStringAsFixed(2)}\nSacos: S/ $creditoCantidad'),
+                      'Crédito: ${widget.credito.length} ventas\nPrecio: S/ ${widget.montoCredito.toStringAsFixed(2)}\nSacos: $creditoCantidad'),
                   child: Container(
                     height: 30,
                     color: AppColors.grisLight,

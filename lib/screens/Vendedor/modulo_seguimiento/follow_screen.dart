@@ -13,7 +13,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -82,6 +81,7 @@ class _FollowScreenState extends State<FollowScreen> {
       final token = usersProvider.token;
       final idPersonal = usersProvider.loggedUser?.idUsuario ?? null;
       final ordersProvider = Provider.of<FollowProvider>(context, listen: false);
+      final entregasProvider = Provider.of<EntregasProvider>(context, listen: false);
 
       final fechaInicio = selectedDateInicio.isBefore(selectedDateFin)
           ? selectedDateInicio
@@ -96,6 +96,9 @@ class _FollowScreenState extends State<FollowScreen> {
         DateFormat('yyyy-MM-dd').format(fechaInicio),
         idPersonal,
       );
+      for (var order in ordersProvider.orders) {
+        await entregasProvider.fetchEstadoEntrega(token, order.idOrder!);
+      }
     }
   }
   
@@ -416,20 +419,21 @@ class OrderExpandedDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final customersProvider = Provider.of<CustomersProvider>(context, listen: false);
-    final screenWidth = MediaQuery.of(context).size.width;
     final address = order.deliveryLocation ?? '';
     return Padding(
-      padding: EdgeInsets.all(screenWidth * 0.02),
+      padding: EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Resumen del Pedido:', style: AppTextStyles.strong),
           const SizedBox(height: 5),
-          _resumeProduct(screenWidth),
+          _resumeProduct(),
           const SizedBox(height: 5),
-          _buildPagoRow(screenWidth),
+          _buildPagoRow(),
+          const SizedBox(height: 5),
+          _buildClienteRow(),
           const SizedBox(height: 10),
-          _buildEntregaSection(screenWidth, customersProvider),
+          _buildEntregaSection(customersProvider),
           const SizedBox(height: 10),
           Text('Ubicación Geográfica', style: AppTextStyles.strong),
           const SizedBox(height: 10), 
@@ -439,7 +443,7 @@ class OrderExpandedDetail extends StatelessWidget {
     );
   }
 
-  Widget _resumeProduct(double screenWidth) {
+  Widget _resumeProduct() {
     double total = order.details!.fold(
       0.0,
       (sum, detail) => sum + (detail.unitPrice * detail.quantity),
@@ -448,7 +452,7 @@ class OrderExpandedDetail extends StatelessWidget {
     double subtotal = total / 1.18;
     double igv = total - subtotal;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         // Header
         Row(
@@ -529,26 +533,35 @@ class OrderExpandedDetail extends StatelessWidget {
     );
   }
 
-  Widget _buildPagoRow(double screenWidth) => Row(
+  Widget _buildPagoRow() => Row(
     children: [
-      Text('Tipo de Pago', style: AppTextStyles.strong),
-      SizedBox(width: min(screenWidth * 0.088, 350)),
-      Text(order.paymentMethod ?? "No tiene", style: AppTextStyles.weak),
+      Expanded(flex: 3, child: Text('Tipo de Pago', style: AppTextStyles.strong)),
+      Expanded(flex: 7, child: Text(order.paymentMethod ?? "No tiene", style: AppTextStyles.weak)),
     ],
   );
 
-  Widget _buildEntregaSection(double screenWidth, CustomersProvider customersProvider) {
+  Widget _buildClienteRow() => Row(
+    children: [
+      Expanded(flex: 3, child: Text('Cliente', style: AppTextStyles.strong)),
+      Expanded(flex: 7, child: Text(order.cliente ?? "No encontrado", style: AppTextStyles.weak)),
+    ],
+  );
+
+  Widget _buildEntregaSection(CustomersProvider customersProvider) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Datos de Entrega', style: AppTextStyles.strong),
-          ],
-        ),
-        SizedBox(width: screenWidth * 0.040),
         Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Datos de Entrega', style: AppTextStyles.strong),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 7,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

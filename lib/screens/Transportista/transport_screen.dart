@@ -1,6 +1,6 @@
 import 'package:balanced_foods/providers/entregas_provider.dart';
 import 'package:balanced_foods/providers/users_provider.dart';
-import 'package:balanced_foods/screens/Transportista/modulo_transportistas/manual_ayuda_transport.dart';
+import 'package:balanced_foods/screens/Transportista/manual_ayuda_transport.dart';
 import 'package:flutter/material.dart';
 import 'package:balanced_foods/screens/login_screen.dart';
 import 'package:balanced_foods/screens/Transportista/modulo_transportistas/entregasPendientes_screen.dart';

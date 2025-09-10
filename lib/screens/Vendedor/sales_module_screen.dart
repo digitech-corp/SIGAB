@@ -55,7 +55,7 @@ class _SalesModuleScreenState extends State<SalesModuleScreen> {
         formato(fechaInicio),
         idPersonal,
       );
-      for (var order in ordersProvider.orders) {
+      for (var order in dashboardProvider.orders) {
         await entregasProvider.fetchEstadoEntrega(token, order.idOrder!);
       }
       await ordersProvider.fetchCreditoOrders(

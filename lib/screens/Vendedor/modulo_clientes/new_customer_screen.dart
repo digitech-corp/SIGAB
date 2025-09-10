@@ -105,8 +105,28 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                     color: Colors.black,
                     size: 30,
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    final confirmExit = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => AlertDialog(
+                        title: Text('Descartar cambios', style: AppTextStyles.subtitleBack),
+                        content: Text('Se descartarán los cambios. ¿Estás seguro?', style: AppTextStyles.subtitle),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text('NO', style: AppTextStyles.btn),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text('SI', style: AppTextStyles.btn),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmExit == true) {
+                      if (context.mounted) Navigator.pop(context);
+                    }
                   },
                 ),
                 const SizedBox(width: 1),
@@ -299,6 +319,8 @@ class AppTextStyles {
   static final name = base.copyWith(fontSize: 20);
   static final btn = base.copyWith(fontSize: 14, color: AppColors.orange, fontWeight: FontWeight.w500);
   static final selectStyle = base.copyWith(fontSize: 13, color: AppColors.gris);
+  static final subtitlebtn = base.copyWith(color: AppColors.gris, fontSize: 16, fontWeight: FontWeight.w500);
+  static final subtitleBack = base.copyWith(color: AppColors.gris, fontWeight: FontWeight.w400);
 }
 
 class AppColors {

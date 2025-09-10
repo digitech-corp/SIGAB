@@ -108,6 +108,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   onPressed: () async {
                     final confirmExit = await showDialog<bool>(
                       context: context,
+                      barrierDismissible: false,
                       builder: (context) => AlertDialog(
                         title: Text('Descartar cambios', style: AppTextStyles.subtitlebtn),
                         content: Text('Se descartarán los cambios. ¿Estás seguro?', style: AppTextStyles.subtitle),
